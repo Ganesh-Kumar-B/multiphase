@@ -409,7 +409,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
     {   
         double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
         myLattice[iX].FNid =  - myVDW.a * myLattice[iX].rho*myLattice[iX].rho   -   myLattice[iX].rho*myD1Q3.T0 *(3.0 * eta_EOS*eta_EOS - 4.0*eta_EOS) / pow(1 - eta_EOS,2)
-                            // - myVDW.kappa *(myLattice[iX+1].rho -myLattice[iX-1].rho)/(dx*2.0)
+                            - myVDW.kappa * 0.5*(myLattice[iX+1].rho -myLattice[iX-1].rho)/(dx*2.0)
         ;
     }
 
@@ -433,7 +433,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         //from continuous derivative
         double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
 
-        myLattice[iX].muA += myD1Q3.T0*(3.0*pow(eta_EOS,3) - 9.0 *eta_EOS*eta_EOS + 8.0 *eta_EOS )/(pow(1 - eta_EOS,3));
+        myLattice[iX].muA = myD1Q3.T0*(3.0*pow(eta_EOS,3) - 9.0 *eta_EOS*eta_EOS + 8.0 *eta_EOS )/(pow(1 - eta_EOS,3));
         myLattice[iX].muA -= 2.0*myLattice[iX].rho*myVDW.a ;
 
         myLattice[iX].muA -= -myVDW.kappa*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
@@ -466,7 +466,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
     {
         mass += myLattice[iX].rho;
 		
-        // myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
+        myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
         // myLattice[iX].Force = (myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dx*2.0);
         
         // //# second order
@@ -502,7 +502,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
 
                         )
                         ;
-        myLattice[iX].Force = myLattice[iX].rho*(del_muA_second_order + del_muA_fourth_order); //total force
+        // myLattice[iX].Force = myLattice[iX].rho*(del_muA_second_order + del_muA_fourth_order); //total force
 
 
         // # from direct continuous derivative
