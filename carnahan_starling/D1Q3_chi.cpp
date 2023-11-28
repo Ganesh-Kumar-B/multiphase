@@ -170,9 +170,9 @@ main()
 	c = sqrt(3.0);
 	getLatticeD1Q3(c, &myD1Q3);
  
-    nX = 1000;
+    nX = 500;
 	beta = 0.6;
-	TbyTc = 0.93;
+	TbyTc = 0.96;
 	rho0byrhoc = 0.9;
 	kappabar = 0.0625;//0.0625;
 	dX = 1.0/(nX-1.0);
@@ -505,7 +505,8 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         // myLattice[iX].Force = myLattice[iX].rho*(del_muA_second_order + del_muA_fourth_order); //total force
 
 //   //#fourth order to second order smoothly
-        double a = 4.0/3.0; double b = 1.0 - a;
+    //a = 1 represents 2nd order a = 4/3 represents 4th order
+        double a = 1.2; double b = 1.0 - a;
         double del_muA_fourth_order =   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid)*
                                         (   (a/(2.0*dx)) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
                                             (b/(4.0*dx)) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
