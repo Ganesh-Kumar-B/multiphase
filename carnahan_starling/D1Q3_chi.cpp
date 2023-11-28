@@ -172,7 +172,7 @@ main()
  
     nX = 1000;
 	beta = 0.7;
-	TbyTc = 0.97;
+	TbyTc = 0.95;
 	rho0byrhoc = 0.9;
 	kappabar = 0.0625;//0.0625;
 	dX = 1.0/(nX-1.0);
@@ -202,8 +202,8 @@ main()
        {
           myLattice[iX].rho = myLattice[iX].f[ZERO] + myLattice[iX].f[DX] + myLattice[iX].f[DMX];
 //           myLattice[iX].vel = (myD1Q3.dvD1Q3[DX]*(myLattice[iX].f[DX]-myLattice[iX].f[DMX]))/myLattice[iX].rho ; 
-          double Force_i    = -(myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dX*2.0);
-          myLattice[iX].vel = (myLattice[iX].vel + 0.5*dt*Force_i)/myLattice[iX].rho ;
+        //   double Force_i    = -(myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dX*2.0);
+        //   myLattice[iX].vel = (myLattice[iX].vel + 0.5*dt*Force_i)/myLattice[iX].rho ; //the velocity is actually not needed this thing is for computing the kappa term gradient
        }
        /* Set Periodicity for computing gradients */
 	   myLattice[0     ].vel  = myLattice[nX     ].vel ;
@@ -220,9 +220,9 @@ main()
        myLattice[nX + 4].rho = myLattice[4].rho;
        myLattice[nX + 5].rho = myLattice[5].rho;
         
-       relaxGrandPnid  ( myLattice, myD1Q3, myVDW, nX, dt, tau, dX);   
-       advectGrandPnid ( myLattice, myD1Q3, nX, dt, dX );                    
-       relaxGrandPnid  ( myLattice, myD1Q3, myVDW, nX, dt, tau, dX);           
+    //    relaxGrandPnid  ( myLattice, myD1Q3, myVDW, nX, dt, tau, dX);   
+    //    advectGrandPnid ( myLattice, myD1Q3, nX, dt, dX );                    
+    //    relaxGrandPnid  ( myLattice, myD1Q3, myVDW, nX, dt, tau, dX);           
         
 	   collideWorking (  myLattice,   myD1Q3, myVDW,   nX,  beta,tau,time,c);  
        
@@ -469,7 +469,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
         // myLattice[iX].Force = (myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dx*2.0);
         
-        // //# second order
+        // // //# second order
         double del_muA_second_order =  (1.0/ (2.0 *dx))* ( 
                         (eta)*
                         (
@@ -482,7 +482,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         
                         );
 
-        // //#fourth order
+        // // //#fourth order
         double del_muA_fourth_order = (1.0/ (12.0 *dx))*( 
                         
                         (1.0 - eta)*  
@@ -507,12 +507,12 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
 //   //#fourth order to second order smoothly
         // double a = 4.0/3.0; double b = 1.0 - a;
         // double del_muA_fourth_order =   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid)*
-        //                                 (   (a/2.0*dx) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
-        //                                     (b/4.0*dx) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
+        //                                 (   (a/(2.0*dx)) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
+        //                                     (b/(4.0*dx)) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
                                        
         //                                 (1.0 /myLattice[iX   ].rho )*
-        //                                 (   (a/2.0*dx) *( ( myLattice[iX+1].pNid  + myLattice[iX+1].FNid ) - (myLattice[iX-1].pNid  + myLattice[iX-1].FNid)) +   
-        //                                     (b/4.0*dx) *( ( myLattice[iX+2].pNid  + myLattice[iX+2].FNid ) - (myLattice[iX-2].pNid  + myLattice[iX-2].FNid))  ) 
+        //                                 (   (a/(2.0*dx)) *( ( myLattice[iX+1].pNid  + myLattice[iX+1].FNid ) - (myLattice[iX-1].pNid  + myLattice[iX-1].FNid)) +   
+        //                                     (b/(4.0*dx)) *( ( myLattice[iX+2].pNid  + myLattice[iX+2].FNid ) - (myLattice[iX-2].pNid  + myLattice[iX-2].FNid))  ) 
 
 
 
