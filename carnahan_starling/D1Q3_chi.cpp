@@ -172,7 +172,7 @@ main()
  
     nX = 500;
 	beta = 0.6;
-	TbyTc = 0.96;
+	TbyTc = 0.94;
 	rho0byrhoc = 0.9;
 	kappabar = 0.0625;//0.0625;
 	dX = 1.0/(nX-1.0);
@@ -192,7 +192,7 @@ main()
 
     finalTime = 990000    ;
 
-	initializePerturbPeriodic(  myLattice,   myD1Q3,    nX, 0.0, myVDW.rho0, 0.0005,2 );//0.001,2
+	initializePerturbPeriodic(  myLattice,   myD1Q3,    nX, 0.0, myVDW.rho0, 0.001,2 );//0.001,2
 	initializeGrandPotential (  myLattice,   myD1Q3,  myVDW,  nX, 0.0, myVDW.rho0, 0.001, 2 );//0.001,2
 	createBoundaryPeriodic(  myLattice,  nX );
     
@@ -229,7 +229,7 @@ main()
 	   createBoundaryPeriodic ( myLattice,  nX );
 	   advect(   myLattice,       nX);
 
-       if(time % 9900 == 0) {
+       if(time % 9900== 0) {
          printRho(myLattice,myD1Q3,myVDW,nX,beta,3,nX+2,time,c);
        }
 /*  ______________________________________________________________   */	  
@@ -400,8 +400,11 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         for( iX = nX+2 ; iX >=3 ; iX--)
     {
         double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
-        myLattice[iX].pNid = (myLattice[iX].rho*myD1Q3.T0  ) *(1+eta_EOS + eta_EOS*eta_EOS - pow(eta_EOS, 3) )/pow((1.0 - eta_EOS), 3)  - myVDW.a * myLattice[iX].rho*myLattice[iX].rho ;
-                  // pnid =  (rho**2 b theta) / (1 - rho * b) - a rho**2  
+        myLattice[iX].pNid = (myLattice[iX].rho*myD1Q3.T0  ) *(1+eta_EOS + eta_EOS*eta_EOS - pow(eta_EOS, 3) )/pow((1.0 - eta_EOS), 3)
+                            - myVDW.a * myLattice[iX].rho*myLattice[iX].rho 
+                            - myLattice[iX].rho*myD1Q3.T0
+                            ;
+                  // pnid =  (rho**2 b theta) / (1 - rho * b) - a rho**2 - rho theta
     }
 
     //$ F_nid  free energy
@@ -506,7 +509,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
 
 //   //#fourth order to second order smoothly
     //a = 1 represents 2nd order a = 4/3 represents 4th order
-        double a = 1.2; double b = 1.0 - a;
+        double a = 4.0/3.0; double b = 1.0 - a;
         double del_muA_fourth_order =   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid)*
                                         (   (a/(2.0*dx)) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
                                             (b/(4.0*dx)) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
@@ -514,10 +517,6 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
                                         (1.0 /myLattice[iX   ].rho )*
                                         (   (a/(2.0*dx)) *( ( myLattice[iX+1].pNid  + myLattice[iX+1].FNid ) - (myLattice[iX-1].pNid  + myLattice[iX-1].FNid)) +   
                                             (b/(4.0*dx)) *( ( myLattice[iX+2].pNid  + myLattice[iX+2].FNid ) - (myLattice[iX-2].pNid  + myLattice[iX-2].FNid))  ) 
-
-
-
-
 
                         - (1.0/ (2.0 *dx))*(myVDW.kappa* (myLattice[iX + 1 ].surface - myLattice[iX -1 ].surface) )
                         ;
