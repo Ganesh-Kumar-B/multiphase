@@ -8,7 +8,7 @@
 #include <math.h>
 #include <stddef.h>
 /*****Max Size of Array *******/
-#define MAX_SIZE  5000 
+#define MAX_SIZE  2000 
 #define N_DV 5
  
 enum direction
@@ -94,12 +94,10 @@ main()
 	double c, rho,u, beta,  T_critical, tau, dt, dX, rho_critical;
 	nonIdealParam myVDW;
 	int iX,nX,time, finalTime;
-	c = sqrt(3.0);
+	c = 1;
 	getLatticeD1Q3(c, &myD1Q3);
  
-    getFeqPQuad(myLattice[5].fEq ,   myD1Q3,   1.0,   0.002523);
 
-    std::cout<<myLattice[5].fEq[1] - myLattice[5].fEq[2] + 3*myLattice[5].fEq[3] -3* myLattice[5].fEq[4]<<std::endl; 
 
     nX = 500;
 	beta = 0.6;
@@ -232,11 +230,15 @@ void advect(latticeArr myLattice, int nX)
     end =nX+2;
     for(iX =3; iX<=end;iX++)
     {
-        myLattice[iX] .f[DMX] =myLattice[iX+1] .f[DMX]; 
+        myLattice[iX] .f[DMX]   =myLattice[iX+1] .f[DMX]; 
+        myLattice[iX] .f[DM3X]  =myLattice[iX+3] .f[DM3X]; 
+
     }
     for(iX =end; iX>=3;iX--)
     {
-        myLattice[iX] .f[DX] =myLattice[iX-1] .f[DX]; 
+        myLattice[iX] .f[DX]    =myLattice[iX-1] .f[DX]; 
+        myLattice[iX] .f[D3X]   =myLattice[iX-3] .f[D3X]; 
+
     }
     return;
 } 
@@ -460,6 +462,8 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         myLattice[iX].Force = -myLattice[iX].Force /myLattice[iX].rho; //force density
 
     	myLattice[iX].vel = (myD1Q3.dvD1Q3[DX]*(myLattice[iX].f[DX]-myLattice[iX].f[DMX])) ; 
+        myLattice[iX].vel = (myD1Q3.dvD1Q3[DX]*(myLattice[iX].f[DX]-myLattice[iX].f[DMX]) + 3*myLattice[iX].f[D3X] - 3*myLattice[iX].f[DM3X]  ) ;
+
         myLattice[iX].vel = myLattice[iX].vel/myLattice[iX].rho +  0.5*dt*(myLattice[iX].Force);
         
         getFeqPQuad( myLattice[iX].fEq ,   myD1Q3,    myLattice[iX].rho,   myLattice[iX].vel); 
@@ -468,7 +472,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
     for( iX = nX+2  ; iX >=3 ; iX--)
     {
 	    alpha = 2.0;
-//       	    calculateAlpha( myLattice, alpha, iX, time);
+      	    // calculateAlpha( myLattice, alpha, iX, time);
 	
 	    double chi = 0.0;
 
@@ -577,3 +581,16 @@ void calculateAlpha( latticeArr myLattice, double& alpha, int i,int time)
 	}
      
 }
+
+
+
+
+
+
+
+
+
+
+// //just some tests
+//     getFeqPQuad(myLattice[5].fEq ,   myD1Q3,   1.0,   0.0025231234);
+//     std::cout<<myLattice[5].fEq[1] - myLattice[5].fEq[2] + 3*myLattice[5].fEq[3] -3* myLattice[5].fEq[4]<<std::endl; 
