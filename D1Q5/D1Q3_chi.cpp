@@ -101,7 +101,7 @@ main()
 
     nX = 500;
 	beta = 0.6;
-	TbyTc = 0.94;
+	TbyTc = 0.92;
 	rho0byrhoc = 0.9;
 	kappabar = 0.0625;//0.0625;
 	dX = 1.0/(nX-1.0);
@@ -472,7 +472,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
     for( iX = nX+2  ; iX >=3 ; iX--)
     {
 	    alpha = 2.0;
-      	    // calculateAlpha( myLattice, alpha, iX, time);
+      	    calculateAlpha( myLattice, alpha, iX, time);
 	
 	    double chi = 0.0;
 
@@ -530,13 +530,13 @@ void calculateAlpha( latticeArr myLattice, double& alpha, int i,int time)
       
       for(int dv = 0; dv<N_DV; dv++)
       {
-	x_i[dv] = myLattice[i].fEq[dv]/myLattice[i].f[dv]-1.0;
+	    x_i[dv] = myLattice[i].fEq[dv]/myLattice[i].f[dv]-1.0;
       }
 	
       ximax = 0.0;
       for(int dv = 0; dv<N_DV; dv++)
       {
-	ximax = std::max(fabs(ximax),x_i[dv]);
+	    ximax = std::max(fabs(ximax),x_i[dv]);
       }
       
       if(ximax>0.01)
