@@ -82,6 +82,8 @@ void createBoundaryPeriodic(latticeArr lattice, int nX );
 void collideWorking (latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVDW, int nX, double beta,double tau, int time,double c);
 void advect(latticeArr lattice, int nX);
 void calculateAlpha( latticeArr myLattice, double& alpha, int i, int time);
+void calculateAlpha1( latticeArr myLattice, double& alpha, int i, int time, double beta);
+
 void initializePerturbPeriodic(latticeArr lattice, latticeD1Q3 myD1Q3,  int nX, double vel, double rhoMean, double ampDisturb, double periodDisturb);
 
 
@@ -99,10 +101,10 @@ main()
  
 
 
-    nX = 1000;
+    nX = 500;
 	beta = 0.6;
-	TbyTc = 0.88;
-	rho0byrhoc = 0.9;
+	TbyTc = 0.98;
+	rho0byrhoc = 0.96;
 	kappabar = 0.0625;//0.0625;
 	dX = 1.0/(nX-1.0);
 	dt =  dX/c;
@@ -113,8 +115,8 @@ main()
     T_critical = myD1Q3.T0/TbyTc ;
     rho_critical = 1.0;
 
-    myVDW.b = 1.0/(3.0*rho_critical);
-    myVDW.a = myVDW.b*T_critical*27.0/8.0  ;
+    myVDW.b = 0.521772/(rho_critical);
+    myVDW.a = myVDW.b*T_critical/0.377332  ;
 
 	myVDW.kappa = kappabar*myVDW.a*dX*dX;
 	myVDW.rho0 = rho0byrhoc*rho_critical;	
@@ -327,21 +329,24 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
 //         //surface energy
 //     } 
 
-    //$pressure from VW EOS
+    //$pressure from Pnid carnahan starling EOS
         for( iX = nX+2 ; iX >=3 ; iX--)
     {
-        myLattice[iX].pNid = (myLattice[iX].rho*myLattice[iX].rho* myVDW.b *myD1Q3.T0  )/(1.0 - myLattice[iX].rho*myVDW.b)  - 
-                            myVDW.a * myLattice[iX].rho*myLattice[iX].rho ;
-                  // pnid =  (rho**2 b theta) / (1 - rho * b) - a rho**2 
+        double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
+        myLattice[iX].pNid = (myLattice[iX].rho*myD1Q3.T0  ) *(1+eta_EOS + eta_EOS*eta_EOS - pow(eta_EOS, 3) )/pow((1.0 - eta_EOS), 3)
+                            - myVDW.a * myLattice[iX].rho*myLattice[iX].rho 
+                            - myLattice[iX].rho*myD1Q3.T0
+                            ;
+                  // pnid =  (rho**2 b theta) / (1 - rho * b) - a rho**2 - rho theta
     }
 
     //$ F_nid  free energy
         for( iX = nX+2 ; iX >=3 ; iX--)
     {   
-        myLattice[iX].FNid =  - myVDW.a * myLattice[iX].rho*myLattice[iX].rho   -   myLattice[iX].rho*myD1Q3.T0 *log(1.0 - myLattice[iX].rho*myVDW.b)
-                                - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(dx*2.0),2)
-
-       ;
+        double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
+        myLattice[iX].FNid =  - myVDW.a * myLattice[iX].rho*myLattice[iX].rho   -   myLattice[iX].rho*myD1Q3.T0 *(3.0 * eta_EOS*eta_EOS - 4.0*eta_EOS) / pow(1 - eta_EOS,2)
+                            - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(dx*2.0),2)
+        ;
     }
 
     myLattice[0     ].FNid = myLattice[nX       ].FNid ;
@@ -362,11 +367,12 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
    	for( iX = nX+2; iX >=3; iX--)
     {
         //from continuous derivative
-         myLattice[iX].muA = -myD1Q3.T0*log(1.0 - myLattice[iX].rho*myVDW.b) ;
-        myLattice[iX].muA += myLattice[iX].rho*myVDW.b*myD1Q3.T0/(1.0 - myLattice[iX].rho*myVDW.b);
+        double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
+
+        myLattice[iX].muA = myD1Q3.T0*(3.0*pow(eta_EOS,3) - 9.0 *eta_EOS*eta_EOS + 8.0 *eta_EOS )/(pow(1 - eta_EOS,3));
         myLattice[iX].muA -= 2.0*myLattice[iX].rho*myVDW.a ;
 
-        myLattice[iX].muA -= -myVDW.kappa*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
+        myLattice[iX].muA -= myVDW.kappa*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
 
     }
 	myLattice[0].muA = myLattice[nX].muA    ;
@@ -435,24 +441,24 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         // myLattice[iX].Force = myLattice[iX].rho*(del_muA_second_order + del_muA_fourth_order); //total force
 
 //   //#fourth order to second order smoothly
-    //a = 1 represents 2nd order a = 4/3 represents 4th order
-        // double a = 4.0/3.0; double b = 1.0 - a;
-        // double del_muA_fourth_order =   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid)*
-        //                                 (   (a/(2.0*dx)) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
-        //                                     (b/(4.0*dx)) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
+    // // a = 1 represents 2nd order a = 4/3 represents 4th order
+        double a = 3.0/3.0; double b = 1.0 - a;
+        double del_muA_fourth_order =   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid)*
+                                        (   (a/(2.0*dx)) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
+                                            (b/(4.0*dx)) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
                                        
-        //                                 (1.0 /myLattice[iX   ].rho )*
-        //                                 (   (a/(2.0*dx)) *( ( myLattice[iX+1].pNid  + myLattice[iX+1].FNid ) - (myLattice[iX-1].pNid  + myLattice[iX-1].FNid)) +   
-        //                                     (b/(4.0*dx)) *( ( myLattice[iX+2].pNid  + myLattice[iX+2].FNid ) - (myLattice[iX-2].pNid  + myLattice[iX-2].FNid))  ) 
+                                        (1.0 /myLattice[iX   ].rho )*
+                                        (   (a/(2.0*dx)) *( ( myLattice[iX+1].pNid  + myLattice[iX+1].FNid ) - (myLattice[iX-1].pNid  + myLattice[iX-1].FNid)) +   
+                                            (b/(4.0*dx)) *( ( myLattice[iX+2].pNid  + myLattice[iX+2].FNid ) - (myLattice[iX-2].pNid  + myLattice[iX-2].FNid))  ) 
 
-        //                 - (1.0/ (2.0 *dx))*(myVDW.kappa* (myLattice[iX + 1 ].surface - myLattice[iX -1 ].surface) )
-        //                 ;
+                        - (1.0/ (2.0 *dx))*(myVDW.kappa* (myLattice[iX + 1 ].surface - myLattice[iX -1 ].surface) )
+                        ;
 
-        // myLattice[iX].Force = myLattice[iX].rho*(del_muA_fourth_order); //total force
+        myLattice[iX].Force = myLattice[iX].rho*(del_muA_fourth_order); //total force
 
 
         // # from direct continuous derivative
-        myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
+        // myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
         // std::cout<<myLattice[iX].Force<<std::endl;
 
         myLattice[iX].Force = -myLattice[iX].Force /myLattice[iX].rho; //force density
@@ -467,7 +473,8 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
     for( iX = nX+2  ; iX >=3 ; iX--)
     {
 	    alpha = 2.0;
-      	    // calculateAlpha( myLattice, alpha, iX, time);
+        // calculateAlpha( myLattice, alpha, iX, time);
+        // calculateAlpha1( myLattice, alpha, iX, time,betaM);
 	
 	    double chi = 0.0;
 
@@ -479,7 +486,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
       
         for(dv = 0; dv < N_DV; dv++)
         {
-            myLattice[iX].f[dv]  = myLattice[iX] .f[dv] + 2.0*betaM*(myLattice[iX].fEq[dv] - myLattice[iX] .f[dv]); 
+            myLattice[iX].f[dv]  = myLattice[iX] .f[dv] + alpha*betaM*(myLattice[iX].fEq[dv] - myLattice[iX] .f[dv]); 
             myLattice[iX].f[dv] += alpha*betaM*tauM*myD1Q3.T0Inv*myLattice[iX].rho*myD1Q3.weight[dv]*myD1Q3.dvD1Q3[dv]*myLattice[iX].Force;
         }      
     }
@@ -516,6 +523,107 @@ void getFeqPQuad(double fEq[N_DV], latticeD1Q3 myD1Q3,  double rho,  double vel)
 }
 
 
+void calculateAlpha1( latticeArr myLattice, double& alpha, int i,int , double beta)
+{
+    alpha = 2.0; 
+    
+    double a(0.), b(0.), c(0.), ximax,ximin(0.0);
+    double x_i[N_DV], xSq[N_DV],fxSq[N_DV];
+    
+    for(int dv = 0; dv<N_DV; dv++)
+    {
+    x_i[dv] = myLattice[i].fEq[dv]/myLattice[i].f[dv]-1.0;
+    }
+
+    ximax = 0.0;
+    for(int dv = 0; dv<N_DV; dv++)
+    {
+    ximax = std::max(fabs(ximax),x_i[dv]);
+    ximin = std::min(ximin, x_i[dv])  ;
+    }
+
+    if(ximax>0.001)  // this is the main loop for steps 2 to 5  /refere Atif's thesis
+    {
+
+        for(int dv = 0;dv<N_DV;dv++)
+        {
+            xSq[dv]  = x_i[dv]*x_i[dv] ;
+            fxSq[dv] = myLattice[i].f[dv]*x_i[dv]*x_i[dv] ;
+
+            if(x_i[dv]<0.0)
+            a += fxSq[dv]*x_i[dv]*0.5 ;
+
+            b += fxSq[dv]*0.5 ;
+            c += fxSq[dv]/(1.0 + 0.5*x_i[dv]) ;
+        }
+
+        
+        double alphaMax = -1.0/(beta*ximin);
+
+        double k;
+        if(a<0 && b>0 && c>0)
+            k = (b-sqrt(b*b - 4.0*a*c))/(2.0*a);
+        else
+            k = 1.5;
+
+        a = 0.0;b=0.0;c=0.0;
+        //   double kBeta   = k*beta;
+        double beta2   = beta*beta;
+        double fourByK = 4.0/k;
+        double hBeta = 0.0;
+
+        for(int dv = 0; dv < N_DV; dv++)
+        {
+            if(x_i[dv]<0.0)
+            {
+            a += fxSq[dv]*x_i[dv]*beta2*( 1.0/6.0 - hBeta*x_i[dv]/12.0 + hBeta*hBeta*x_i[dv]*x_i[dv]/20 - hBeta*hBeta*hBeta*x_i[dv]*x_i[dv]*x_i[dv]/5.0 );
+            b += fxSq[dv]*0.5;
+            }
+
+            if(x_i[dv]>0.0)
+                b += myLattice[i].f[dv]*( (x_i[dv]*x_i[dv]*0.5) - beta2*(x_i[dv]*x_i[dv]*x_i[dv]/15.0)* ( (4.0/(fourByK+x_i[dv])) + (2.0/(fourByK+2.0*x_i[dv])) + (4.0/(fourByK+3.0*x_i[dv])) ));
+
+            c += myLattice[i].f[dv]*(60.0*x_i[dv]*x_i[dv] + 60.0*x_i[dv]*x_i[dv]*x_i[dv] + 11.0*x_i[dv]*x_i[dv]*x_i[dv]*x_i[dv])/( 60.0 + 90.0*x_i[dv] + 36.0*x_i[dv]*x_i[dv] + 3.0*x_i[dv]*x_i[dv]*x_i[dv]);
+        }
+
+        double  h;
+        if(a<0 && b>0 && c>0)
+            h = (b-std::sqrt(b*b - 4.0*a*c))/(2.0*a);
+        else
+            h = 2.1;
+
+        a = 0.0;
+        hBeta = h*beta;
+
+        for(int dv = 0; dv < N_DV; dv++)
+        {
+            if(x_i[dv]<0.0)
+            {
+            a += myLattice[i].f[dv]*x_i[dv]*x_i[dv]*x_i[dv]*beta2*( 1.0/6.0 - hBeta*x_i[dv]/12.0 + hBeta*hBeta*x_i[dv]*x_i[dv]/20 - hBeta*hBeta*hBeta*x_i[dv]*x_i[dv]*x_i[dv]/5.0 );
+            }
+        }
+
+        if(a<0 && b>0 && c>0)
+            alpha = 2.0*c/(b+sqrt(b*b - 4.0*a*c));
+
+        if(alpha > alphaMax)
+        {
+            if ( alphaMax > 1.0)
+            alpha = 0.5*(1.0+alphaMax) ;
+            else
+            alpha = 0.95*alphaMax;
+        }
+
+    }
+    
+    // std::cout<<alpha<<std::endl;
+
+}
+
+
+
+
+
 void calculateAlpha( latticeArr myLattice, double& alpha, int i,int time)
 {
       alpha = 2.0; 
@@ -525,31 +633,31 @@ void calculateAlpha( latticeArr myLattice, double& alpha, int i,int time)
       
       for(int dv = 0; dv<N_DV; dv++)
       {
-	    x_i[dv] = myLattice[i].fEq[dv]/myLattice[i].f[dv]-1.0;
+	x_i[dv] = myLattice[i].fEq[dv]/myLattice[i].f[dv]-1.0;
       }
 	
       ximax = 0.0;
       for(int dv = 0; dv<N_DV; dv++)
       {
-	    ximax = std::max(fabs(ximax),x_i[dv]);
+	ximax = std::max(fabs(ximax),x_i[dv]);
       }
       
       if(ximax>0.01)
       {
 	  for(int dv = 0; dv<N_DV; dv++)
 	  {
-            if(x_i[dv]<0.0)
-            {
-            a += myLattice[i].f[dv]*x_i[dv]*x_i[dv]*x_i[dv]*0.5;
-            c += myLattice[i].f[dv]*x_i[dv]*x_i[dv];
-            }
-            
-            else
-            {
-            c += myLattice[i].f[dv]*x_i[dv]*x_i[dv]/(1.0+x_i[dv]);
-            }
-            
-            b += myLattice[i].f[dv]*x_i[dv]*x_i[dv]*0.5;
+	      if(x_i[dv]<0.0)
+	      {
+		  a += myLattice[i].f[dv]*x_i[dv]*x_i[dv]*x_i[dv]*0.5;
+		  c += myLattice[i].f[dv]*x_i[dv]*x_i[dv];
+	      }
+	      
+	      else
+	      {
+		  c += myLattice[i].f[dv]*x_i[dv]*x_i[dv]/(1.0+x_i[dv]);
+	      }
+	      
+	      b += myLattice[i].f[dv]*x_i[dv]*x_i[dv]*0.5;
 	  }
 	  alpha = (b-sqrt(b*b - 4.0*a*c))/(2.0*a);       
       }
@@ -575,101 +683,5 @@ void calculateAlpha( latticeArr myLattice, double& alpha, int i,int time)
 // 	  if (time==3427) std::cout << myLattice[i] .f[dv]<< "  " << myLattice[i] .fEq[dv]<< "  " << alpha << "  "<< dv << "  "<<i << "\n";
 	}
      
+    //  std::cout<<alpha<<std::endl;
 }
-
-
-
-
-
-
-// template<typename dataType1>
-// void calculateAlpha(lbmRD3Q41<dataType1> &lbModel,dataType1* x_i,dataType1* f_i,dataType1 beta,int index,dataType1& alpha)
-// {
-//   double a(0.0), b(0.0), c(0.0),oneBySix(1.0/6.0);
-//   double ximin(0.0), ximax(0.0);
-
-//   alignas(32) dataType1 xSq[41];
-//   alignas(32) dataType1 fxSq[41];
-
-//   for(int dv = 0;dv<41;dv++)
-//   {
-//     ximin = std::min(ximin, x_i[dv])  ;
-//     ximax = std::max(ximax, x_i[dv])  ;
-//   }
-
-//   for(int dv = 0;dv<41;dv++)
-//   {
-//     xSq[dv]  = x_i[dv]*x_i[dv] ;
-//     fxSq[dv] = f_i[dv]*x_i[dv]*x_i[dv] ;
-
-//     if(x_i[dv]<0.0)
-//       a += fxSq[dv]*x_i[dv]*0.5 ;
-
-//     b += fxSq[dv]*0.5 ;
-//     c += fxSq[dv]/(1.0 + 0.5*x_i[dv]) ;
-//   }
-
-//   dataType1 alphaMax = -1.0/(beta*ximin);
-
-//   dataType1 k;
-//   if(a<0 && b>0 && c>0)
-//     k = (b-sqrt(b*b - 4.0*a*c))/(2.0*a);
-//   else
-//     k = 1.5;
-
-//   a = 0.0;b=0.0;c=0.0;
-// //   dataType1 kBeta   = k*beta;
-//   dataType1 beta2   = beta*beta;
-//   dataType1 fourByK = 4.0/k;
-//   dataType1 hBeta = 0.0;
-
-//   for(int dv = 0; dv < 41; dv++)
-//   {
-//     if(x_i[dv]<0.0)
-//     {
-//       a += fxSq[dv]*x_i[dv]*beta2*( 1.0/6.0 - hBeta*x_i[dv]/12.0 + hBeta*hBeta*x_i[dv]*x_i[dv]/20 - hBeta*hBeta*hBeta*x_i[dv]*x_i[dv]*x_i[dv]/5.0 );
-//       b += fxSq[dv]*0.5;
-//     }
-
-//     if(x_i[dv]>0.0)
-//       b += f_i[dv]*( (x_i[dv]*x_i[dv]*0.5) - beta2*(x_i[dv]*x_i[dv]*x_i[dv]/15.0)* ( (4.0/(fourByK+x_i[dv])) + (2.0/(fourByK+2.0*x_i[dv])) + (4.0/(fourByK+3.0*x_i[dv])) ));
-
-//     c += f_i[dv]*(60.0*x_i[dv]*x_i[dv] + 60.0*x_i[dv]*x_i[dv]*x_i[dv] + 11.0*x_i[dv]*x_i[dv]*x_i[dv]*x_i[dv])/( 60.0 + 90.0*x_i[dv] + 36.0*x_i[dv]*x_i[dv] + 3.0*x_i[dv]*x_i[dv]*x_i[dv]);
-//   }
-
-//   dataType1  h;
-//   if(a<0 && b>0 && c>0)
-//     h = (b-std::sqrt(b*b - 4.0*a*c))/(2.0*a);
-//   else
-//     h = 2.1;
-
-//   a = 0.0;
-//   hBeta = h*beta;
-
-//   for(int dv = 0; dv < 41; dv++)
-//   {
-//     if(x_i[dv]<0.0)
-//     {
-//       a += f_i[dv]*x_i[dv]*x_i[dv]*x_i[dv]*beta2*( 1.0/6.0 - hBeta*x_i[dv]/12.0 + hBeta*hBeta*x_i[dv]*x_i[dv]/20 - hBeta*hBeta*hBeta*x_i[dv]*x_i[dv]*x_i[dv]/5.0 );
-//     }
-//   }
-
-//   if(a<0 && b>0 && c>0)
-//     alpha = 2.0*c/(b+sqrt(b*b - 4.0*a*c));
-
-//   if(alpha > alphaMax)
-//   {
-//     if ( alphaMax > 1.0)
-//       alpha = 0.5*(1.0+alphaMax) ;
-//     else
-//       alpha = 0.95*alphaMax;
-//   }
-// }
-
-
-
-
-
-// //just some tests
-//     getFeqPQuad(myLattice[5].fEq ,   myD1Q3,   1.0,   0.0025231234);
-//     std::cout<<myLattice[5].fEq[1] - myLattice[5].fEq[2] + 3*myLattice[5].fEq[3] -3* myLattice[5].fEq[4]<<std::endl; 
