@@ -42,14 +42,17 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
             for(int dv = 0; dv< grid.d_v; dv++)
                 laplacian_rho += lb.W[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
 
-            laplacian_rho =Coeff * ( laplacian_rho - rho.Node(i,j));
+            laplacian_rho = Coeff * ( laplacian_rho - rho.Node(i,j));
 
             //> gradient of Rho
-            double grad_rho = 1.0;
+            double grad_rho = 0.0;
             del_t = 1.0;
             Coeff = (1.0/(del_t*lb.theta0));
+
             for(int dv = 0; dv< grid.d_v; dv++)
                 grad_rho += lb.W[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+
+            grad_rho = Coeff* grad_rho;
 
 
             //> pnid
