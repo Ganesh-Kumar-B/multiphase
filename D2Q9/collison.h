@@ -46,15 +46,22 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 
             //> gradient of Rho
             double grad_rho = 1.0;
+            del_t = 1.0;
+            Coeff = (1.0/(del_t*lb.theta0));
+            for(int dv = 0; dv< grid.d_v; dv++)
+                grad_rho += lb.W[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
 
 
+            //> pnid
             pnid.Node(i,j) = (rho*rho*b *lb.theta0 )/(1.0 - rho*b)  - 
                             a * rho*rho ;
             
+            //> Fnid
             fnid.Node(i,j) =  - a * rho*rho   -   rho*lb.theta0 *log(1.0 - rho*b)
                          // - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(2.0),2)
                                 ;
-
+            
+            //> munid
             munid.Node(i,j) = -lb.theta0*log(1.0 - rho*b) ;
             munid.Node(i,j) += rho*b*lb.theta0/(1.0 - rho*b);
             munid.Node(i,j) -= 2.0*rho*a 
