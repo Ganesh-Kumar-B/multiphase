@@ -8,46 +8,6 @@
 
 
 
-template<typename T, typename T1>
-void printVtk(lbmD2Q9<T1> &lbModel,  Grid_N_C_2D<T> &gridLB,  int step)
-{
-  T u1,u2,u3, rho;
-  std::ofstream file;
-  char fileName[250];
-  sprintf(fileName,"./result/velocity_%d.vtk",step) ;
-  file.open(fileName) ;
-
-     //   vtk file header
-  file<<"# vtk DataFile Version 3.0"<<std::endl<<"Velocity"<<std::endl;
-  file<<"ASCII"<<std::endl<<"DATASET STRUCTURED_GRID"<<std::endl;
-  file<<"DIMENSIONS "<<gridLB.n_x*2<<" "<<gridLB.n_y*2<<" "<<1<<std::endl;
-  file<<"POINTS "<< gridLB.n_x*gridLB.n_y*2 <<" double"<<std::endl;
-
-  for(int i = 0 + gridLB.noghost; i < gridLB.n_x_node - (gridLB.noghost); i++) 
-	for (int j = 0 + gridLB.noghost; j < gridLB.n_y_node - (gridLB.noghost); j++)
-		{
-         file<<i-3<<" "<< j-3<<" "<<0<< "\n" ;         //for Nodes
-       file<<i+0.5-3<<" "<<j + 0.5-3<<" "<<0<<"\n";       //cell
-        }
-  
-  file<<"POINT_DATA "<< gridLB.n_x*gridLB.n_y*2 <<std::endl ;
-  file<<"VECTORS"<<" "<<"velocity"<<" "<<"double"<<std::endl ;
-
-for(int i = 0 + gridLB.noghost; i < gridLB.n_x_node - (gridLB.noghost); i++) 
-	for (int j = 0 + gridLB.noghost; j < gridLB.n_y_node - (gridLB.noghost); j++){ 
-
-    get_moments(gridLB,lbModel,u1, u2, rho, i,j,0);
-    if(fabs(u1) < 0.000000000001){u1 = 0; }
-    if(fabs(u2) < 0.000000000001){u2 = 0; }
-	  file << u1 << " " <<u2<<" "<<0.0<< std::endl ;
-   
-     get_moments(gridLB,lbModel,u1,u2, rho, i,j,1);
-      if(fabs(u1) < 0.000000001){u1 = 0;}
-    if(fabs(u2) < 0.000000001){u2 = 0;}
-     file << u1 << " " << u2  <<" "<<0.0<< std::endl ;
-    }
-  file.close();
-}
 
 
 
@@ -75,7 +35,7 @@ void printdata(lbmD2Q9<T1> &lbModel,  Grid_N_C_2D<T> &gridLB,  int step, double 
 	for (int j = 0 + gridLB.noghost; j < gridLB.n_y_node - (gridLB.noghost); j++)
 		{{
 
-    get_moments(gridLB,lbModel,u1, u2, rho1, i,j,0);
+    get_moments(gridLB,lbModel,u1, u2, rho1, i,j);
     // if(fabs(u1) < 0.0000001){u1 = 0; }
     // if(fabs(u2) < 0.0000001){u2 = 0; }
 

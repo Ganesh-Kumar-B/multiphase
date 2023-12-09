@@ -20,6 +20,7 @@ int main()
    Grid_N_C_2D<double> pnid      (Nx,Ny,1,1);
    Grid_N_C_2D<double> munid     (Nx,Ny,1,1);
    Grid_N_C_2D<double> fnid      (Nx,Ny,1,1);
+   Grid_N_C_2D<double> rho      (Nx,Ny,1,1);
 
    
    lbmD2Q9<double> d2q9(1.0,0.33333333333333);
@@ -27,12 +28,11 @@ int main()
 
    double cs = sqrt(d2q9.theta0);
    std::cout<<"theta= "<<d2q9.theta0<<std::endl;
-   // std::cout<<cs<<std::endl;
 
 
-   double Re = 100;
+   double Re = 1;
    double L = Ny;
-   double Kn =0.0005;
+   double Kn =0.002;
    double Ma = Kn * Re;
    double u0 = Ma * cs;
    std::cout<<"u0 = "<<u0<<std::endl;
@@ -48,8 +48,8 @@ int main()
 
 
    double Rho_mean = 1.0;
-  
-
+   double TbyTc = 0.8;
+   double kappa = 0.0625;
 
 
    //fixed ------------------------------Main code--------------------------//
@@ -64,10 +64,10 @@ int main()
 
    for(int t = 1; t <=100000;t++){
       
-      Periodic_left_Right(grid);
-      Periodic_top_bottom(grid);
+      // Periodic_left_Right(grid);
+      // Periodic_top_bottom(grid);
 
-      collide(grid,d2q9,beta,tau,gx,gy);
+      collide(grid,rho,pnid,fnid,munid,d2q9,beta,tau,TbyTc,kappa);
 
 
 
@@ -79,7 +79,7 @@ int main()
       advection_D2Q9(grid);
 
    
-      if(t%1000== 0){
+      if(t%10000== 0){
          std::cout<<t<<" ";
          printMass(grid);
          printdata(d2q9,grid,t,u0);

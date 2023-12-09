@@ -14,19 +14,20 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_N_C_2D<T> &fnid,Grid_N_C_2D<T> &munid,
-            lbmD2Q9<T1> &lb,double beta,double tau, double TbyTc ){
+            lbmD2Q9<T1> &lb,double beta,double tau, double TbyTc, double kappa ){
 
-    double feq_Node[9] = {0},feq_Cell[9]={0}, ux = 0, uy = 0, rho = 0, G[9]={0};
+    double feq_Node[9] = {0},feq_Cell[9]={0}, ux = 0, uy = 0, G[9]={0};
 
     double rho_critical = 1.0, T_critical = lb.theta0/TbyTc ; 
-    double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.;
+    double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;
 
 
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
             
-            get_moments(grid, lb,  ux, uy,rho, i, j, 0); 
-            rho.Node(i,j) = rho;
+            double Rho = 0;
+            get_moments(grid, lb,  ux, uy,Rho, i, j); 
+            rho.Node(i,j) = Rho;
 
         }
     }
@@ -45,35 +46,34 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
             laplacian_rho = Coeff * ( laplacian_rho - rho.Node(i,j));
 
             //> gradient of Rho
-            double grad_rho = 0.0;
-            del_t = 1.0;
-            Coeff = (1.0/(del_t*lb.theta0));
+            // double grad_rhox = 0.0,grad_rhoy = 0.0;
+            // del_t = 1.0;
+            // Coeff = (1.0/(del_t*lb.theta0));
 
-            for(int dv = 0; dv< grid.d_v; dv++)
-                grad_rho += lb.W[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+            // for(int dv = 0; dv< grid.d_v; dv++){
+            //     grad_rhox += lb.W[dv]*lb.Cx[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+            //     grad_rhoy += lb.W[dv]*lb.Cy[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+            // }
+            // double grad_rho = Coeff* (grad_rhox + grad_rhoy);
 
-            grad_rho = Coeff* grad_rho;
 
-
-            //> pnid
-            pnid.Node(i,j) = (rho*rho*b *lb.theta0 )/(1.0 - rho*b)  - 
-                            a * rho*rho ;
+            // //> pnid
+            // pnid.Node(i,j) = (rho*rho*b *lb.theta0 )/(1.0 - rho*b)  - 
+            //                 a * rho*rho ;
             
-            //> Fnid
-            fnid.Node(i,j) =  - a * rho*rho   -   rho*lb.theta0 *log(1.0 - rho*b)
-                         // - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(2.0),2)
-                                ;
+            // //> Fnid
+            // fnid.Node(i,j) =  - a * rho*rho   -   rho*lb.theta0 *log(1.0 - rho*b)
+            //              // - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(2.0),2)
+            //                     ;
             
             //> munid
-            munid.Node(i,j) = -lb.theta0*log(1.0 - rho*b) ;
-            munid.Node(i,j) += rho*b*lb.theta0/(1.0 - rho*b);
-            munid.Node(i,j) -= 2.0*rho*a 
-      
-            ;
+            munid.Node(i,j) = -lb.theta0*log(1.0 - rho.Node(i,j)*b) ;
+            munid.Node(i,j) += rho.Node(i,j)*b*lb.theta0/(1.0 - rho.Node(i,j)*b);
+            munid.Node(i,j) -= 2.0*rho.Node(i,j)*a 
+                                -kappa*laplacian_rho
+                                ;
 
 
-                               
-     
         }    
     }
 
@@ -84,15 +84,29 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 /// first the population of nodes are resetted and second  the population of the cells are resetted
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
+
+            double Rho = 0.0;
+            double grad_mux = 0.0, grad_muy = 0.0;
+            double del_t = 1.0;
+            double Coeff_grad = (1.0/(del_t*lb.theta0));
+
+            for(int dv = 0; dv< grid.d_v; dv++){
+                grad_mux += lb.W[dv]*lb.Cx[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+                grad_muy += lb.W[dv]*lb.Cy[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+            }
+
+            grad_mux = Coeff_grad*(grad_mux);
+            grad_muy = Coeff_grad*(grad_muy);    
+
             
-            get_moments(grid, lb,  ux, uy,rho, i, j, 0);            //for the node
-            get_equi(feq_Node,lb, ux, uy, rho);
+
+            get_moments(grid, lb,  ux, uy,Rho, i, j);            //for the node
+            get_equi(feq_Node,lb, ux, uy, Rho);
 
             for (int dv = 0; dv< 9; dv++){
-
-                G[dv] = rho * lb.W[dv] * lb.thetaInverse * ( (lb.Cx[dv])*gx /*+ (lbD2Q9.Cy[dv])*gy */) ;
                  
-                grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))+ (2.0*beta*tau*G[dv]);
+                grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
+                                    + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (grad_mux * lb.Cx[dv] + grad_muy * lb.Cy[dv]) ;
          
             } 
         }
