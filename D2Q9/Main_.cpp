@@ -48,7 +48,7 @@ int main()
 
 
    double Rho_mean = 1.0;
-   double TbyTc = 0.8;
+   double TbyTc = 0.85;
    double kappa = 0.0625;
 
 
@@ -64,8 +64,8 @@ int main()
 
    for(int t = 1; t <=100000;t++){
       
-      // Periodic_left_Right(grid);
-      // Periodic_top_bottom(grid);
+      Periodic_left_Right(grid);
+      Periodic_top_bottom(grid);
 
       collide(grid,rho,pnid,fnid,munid,d2q9,beta,tau,TbyTc,kappa);
 

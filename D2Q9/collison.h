@@ -44,6 +44,7 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
                 laplacian_rho += lb.W[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
 
             laplacian_rho = Coeff * ( laplacian_rho - rho.Node(i,j));
+            // std::cout<<laplacian_rho <<" , "<<i<<" , "<<j<<std::endl;
 
             //> gradient of Rho
             // double grad_rhox = 0.0,grad_rhoy = 0.0;
@@ -63,7 +64,7 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
             
             // //> Fnid
             // fnid.Node(i,j) =  - a * rho*rho   -   rho*lb.theta0 *log(1.0 - rho*b)
-            //              // - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(2.0),2)
+            //              // - myVDW.kappa * 0.5*pow( grad_rho ,2)
             //                     ;
             
             //> munid
@@ -80,13 +81,14 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 
 
 
-
-/// first the population of nodes are resetted and second  the population of the cells are resetted
+    //< Collision
+    /// first the population of nodes are resetted and second  the population of the cells are resetted
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
 
             double Rho = 0.0;
             double grad_mux = 0.0, grad_muy = 0.0;
+            double Fx = 0, Fy = 0;
             double del_t = 1.0;
             double Coeff_grad = (1.0/(del_t*lb.theta0));
 
@@ -95,18 +97,18 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
                 grad_muy += lb.W[dv]*lb.Cy[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
             }
 
-            grad_mux = Coeff_grad*(grad_mux);
-            grad_muy = Coeff_grad*(grad_muy);    
+            Fx = - Coeff_grad*(grad_mux);
+            Fy = - Coeff_grad*(grad_muy);    
 
             
 
-            get_moments(grid, lb,  ux, uy,Rho, i, j);            //for the node
+            get_moments(grid, lb,  ux, uy,Rho, i, j, Fx, Fy );            //for the node
             get_equi(feq_Node,lb, ux, uy, Rho);
 
             for (int dv = 0; dv< 9; dv++){
                  
                 grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
-                                    + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (grad_mux * lb.Cx[dv] + grad_muy * lb.Cy[dv]) ;
+                                    + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv]) ;
          
             } 
         }
@@ -145,7 +147,7 @@ void get_equi(double feq[9], lbmD2Q9<T> &lbD2Q9, double ux, double uy, double rh
 
 
 template<typename T,typename T1>
-void get_moments(Grid_N_C_2D<T> &lbgrid, lbmD2Q9<T1> &lbD2Q9,double &Ux, double &Uy,double &Rho,  int X, int Y){ ///node or cell 0-Node 1- cell
+void get_moments(Grid_N_C_2D<T> &lbgrid, lbmD2Q9<T1> &lbD2Q9,double &Ux, double &Uy,double &Rho,  int X, int Y, double Fx = 0  , double Fy = 0){ ///node or cell 0-Node 1- cell
    Ux  = 0.0;
    Uy  = 0.0;
    Rho = 0.0;
@@ -157,8 +159,8 @@ void get_moments(Grid_N_C_2D<T> &lbgrid, lbmD2Q9<T1> &lbD2Q9,double &Ux, double 
         Rho += lbgrid.Node(X,Y,dv);
     }  
 
-    Ux = Ux/Rho;
-    Uy = Uy/Rho;  
+    Ux = Ux/Rho + 0.5*Fx;
+    Uy = Uy/Rho + 0.5*Fy;  
 
 }
 
