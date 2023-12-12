@@ -16,11 +16,12 @@ int main()
 
    int Nx =100;int Ny = 100;
 
-   Grid_N_C_2D<double> grid      (Nx,Ny,1,9);
-   Grid_N_C_2D<double> pnid      (Nx,Ny,1,1);
-   Grid_N_C_2D<double> munid     (Nx,Ny,1,1);
-   Grid_N_C_2D<double> fnid      (Nx,Ny,1,1);
-   Grid_N_C_2D<double> rho      (Nx,Ny,1,1);
+   Grid_N_C_2D<double> grid            (Nx,Ny,1,9);
+   Grid_N_C_2D<double> pnid            (Nx,Ny,1,1);
+   Grid_N_C_2D<double> munid           (Nx,Ny,1,1);
+   Grid_N_C_2D<double> fnid            (Nx,Ny,1,1);
+   Grid_N_C_2D<double> rho             (Nx,Ny,1,1);
+   Grid_N_C_2D<double> laplacian_rho   (Nx,Ny,1,1);
 
    
    lbmD2Q9<double> d2q9(1.0,0.33333333333333);
@@ -48,7 +49,7 @@ int main()
 
 
    double Rho_mean = 1.0;
-   double TbyTc = 0.85;
+   double TbyTc = 0.98;
    double kappa = 0.0625;
 
 
@@ -60,14 +61,14 @@ int main()
    int sim_time = 20*Nx/u0;
 
    std::cout<<"Simulation time "<< sim_time<<std::endl;
-
+ 
 
    for(int t = 1; t <=100000;t++){
       
       Periodic_left_Right(grid);
       Periodic_top_bottom(grid);
 
-      collide(grid,rho,pnid,fnid,munid,d2q9,beta,tau,TbyTc,kappa);
+      collide(grid,rho,pnid,fnid,munid,laplacian_rho,d2q9,beta,tau,TbyTc,kappa);
 
 
 
