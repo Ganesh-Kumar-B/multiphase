@@ -49,7 +49,7 @@ int main()
 
 
    double Rho_mean = 1.0;
-   double TbyTc = 0.98;
+   double TbyTc = 0.90;
    double kappa = 0.0625;
 
 
@@ -65,22 +65,20 @@ int main()
 
    for(int t = 1; t <=100000;t++){
       
-      Periodic_left_Right(grid);
-      Periodic_top_bottom(grid);
-
-      collide(grid,rho,pnid,fnid,munid,laplacian_rho,d2q9,beta,tau,TbyTc,kappa);
-
+      Periodic(grid);
+      
+      collide(grid,rho,pnid,fnid,munid,laplacian_rho,d2q9,beta,tau,TbyTc,kappa, t);
 
 
-      Periodic_left_Right(grid);
-      Periodic_top_bottom(grid);
+
+      Periodic(grid);
 
 
 
       advection_D2Q9(grid);
 
    
-      if(t%10000== 0){
+      if(t%2500== 0){
          std::cout<<t<<" ";
          printMass(grid);
          printdata(d2q9,grid,t,u0);

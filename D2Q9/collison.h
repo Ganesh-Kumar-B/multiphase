@@ -14,16 +14,16 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_N_C_2D<T> &fnid,Grid_N_C_2D<T> &munid, Grid_N_C_2D<T> &laplacian_rho,
-            lbmD2Q9<T1> &lb,double beta,double tau, double TbyTc, double kappa ){
+            lbmD2Q9<T1> &lb,double beta,double tau, double TbyTc, double kappa, int t ){
 
-    double feq_Node[9] = {0},feq_Cell[9]={0}, ux = 0, uy = 0, G[9]={0};
+    double feq_Node[9] = {0}, ux = 0, uy = 0, G[9]={0};
 
     double rho_critical = 1.0, T_critical = lb.theta0/TbyTc ; 
     double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;
 
 
-    for(int i = 0 ; i < grid.n_x_node  ; i++){
-        for(int j = 0 ;j < grid.n_y_node  ; j++){
+    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
+        for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
             
             double Rho = 0;
             get_moments(grid, lb,  ux, uy,Rho, i, j); 
@@ -31,9 +31,10 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 
         }
     }
+    Periodic(rho);
 
-    for(int i = 0; i < grid.n_x_node  ; i++){
-        for(int j = 0;j < grid.n_y_node  ; j++){
+   for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
+        for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
      
             //> laplacian of Rho  
             laplacian_rho.Node(i,j)  = 0.0;
@@ -73,9 +74,14 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
                                 -kappa*laplacian_rho.Node(i,j)
                                 ;
 
-
         }    
     }
+
+    Periodic(laplacian_rho);
+    Periodic(pnid);
+    Periodic(fnid);
+    Periodic(munid); 
+
 
 
 
@@ -112,32 +118,24 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
                 Fx += Coeff_grad*(  (1.0/rho.Node(i,j))               *( lb.W[dv]*lb.Cx[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ))  +
                                     (pnid.Node(i,j) + munid.Node(i,j))*( lb.W[dv]*lb.Cx[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
                                     )
-                                - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+                                    - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
 
                                     ;
 
-                std::cout<< (1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))
-                             <<", "<<dv<<std::endl;
-
+               
 
                 Fy += Coeff_grad*(  (1.0/rho.Node(i,j))               *( lb.W[dv]*lb.Cy[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ))  +
                                     (pnid.Node(i,j) + munid.Node(i,j))*( lb.W[dv]*lb.Cy[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
                                     )
-                                - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-
+                                    - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
                                     ;                
                                 
                                 
             }
-            std::cout<<Fx<<std::endl;
 
             Fx = -Fx;
             Fy = -Fy;
-
-
-
-
-
+            std::cout<<Fx<<std::endl;
 
             get_moments(grid, lb,  ux, uy,Rho, i, j, Fx, Fy );            //for the node
             get_equi(feq_Node,lb, ux, uy, Rho);

@@ -98,35 +98,32 @@ grid.Node(i,j,dV_M1_M1)   = grid.Node(i-1, j-1, dV_P1_P1);
 
 
 template<typename T>
-void Periodic_left_Right(Grid_N_C_2D<T> &grid){
-
+void Periodic(Grid_N_C_2D<T> &grid){
+    
+    //>period left right
     for(int j = 0 ; j < grid.n_y_node;j++ ){
-        for(int dv = 0; dv<9; dv++){
+        for(int dv = 0; dv<grid.d_v; dv++){
 
             grid.Node(0,j,dv) = grid.Node((grid.n_x_node-grid.noghost) -1, j, dv);
             grid.Node((grid.n_x_node - grid.noghost), j , dv) = grid.Node(1,j,dv);
 
         }
-
     }
 
-
-}
-
-
-
-template<typename T>
-void Periodic_top_bottom(Grid_N_C_2D<T> &grid){
-
-      for(int i = 0 ; i < grid.n_x_node;i++ ){
-        for(int dv = 0; dv<9; dv++){
+    //> period top bottom
+    for(int i = 0 ; i < grid.n_x_node;i++ ){
+        for(int dv = 0; dv<grid.d_v; dv++){
 
             grid.Node(i,0,dv) = grid.Node(i,(grid.n_y_node-grid.noghost) -1, dv);
             grid.Node(i,(grid.n_y_node - grid.noghost), dv) = grid.Node(i,1,dv);
 
         }
+    }
 
-      }}
+}
+
+
+
 
 
 
