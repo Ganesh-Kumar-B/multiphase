@@ -50,6 +50,7 @@ int main()
 
    double Rho_mean = 1.0;
    double TbyTc = 0.90;
+   std::cout<<"T/T0"<<std::endl;
    double kappa = 0.0625;
 
 

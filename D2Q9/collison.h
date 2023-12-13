@@ -118,7 +118,7 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
                 Fx += Coeff_grad*(  (1.0/rho.Node(i,j))               *( lb.W[dv]*lb.Cx[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ))  +
                                     (pnid.Node(i,j) + munid.Node(i,j))*( lb.W[dv]*lb.Cx[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
                                     )
-                                    - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+                                    // - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
 
                                     ;
 
@@ -127,7 +127,7 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
                 Fy += Coeff_grad*(  (1.0/rho.Node(i,j))               *( lb.W[dv]*lb.Cy[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ))  +
                                     (pnid.Node(i,j) + munid.Node(i,j))*( lb.W[dv]*lb.Cy[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
                                     )
-                                    - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+                                    // - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
                                     ;                
                                 
                                 
@@ -135,7 +135,7 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 
             Fx = -Fx;
             Fy = -Fy;
-            std::cout<<Fx<<std::endl;
+            // std::cout<<Fx<<std::endl;
 
             get_moments(grid, lb,  ux, uy,Rho, i, j, Fx, Fy );            //for the node
             get_equi(feq_Node,lb, ux, uy, Rho);
