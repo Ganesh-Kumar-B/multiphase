@@ -20,7 +20,7 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 
     double rho_critical = 1.0, T_critical = lb.theta0/TbyTc ; 
     double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;
-
+    kappa = kappa*a;
 
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
@@ -73,7 +73,6 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
             munid.Node(i,j) -= 2.0*rho.Node(i,j)*a 
                                 -kappa*laplacian_rho.Node(i,j)
                                 ;
-
         }    
     }
 
@@ -94,47 +93,56 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
             double Rho = 0.0;
 
             //> CHEMICAL POTENTIAL FORMULATION 
-            // double grad_mux = 0.0, grad_muy = 0.0;
-            // double Fx = 0, Fy = 0;
-            // double del_t = 1.0;
-            // double Coeff_grad = (1.0/(del_t*lb.theta0));
-
-            // for(int dv = 0; dv< grid.d_v; dv++){
-            //     grad_mux += lb.W[dv]*lb.Cx[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
-            //     grad_muy += lb.W[dv]*lb.Cy[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
-            // }
-
-            // Fx = - Coeff_grad*(grad_mux);
-            // Fy = - Coeff_grad*(grad_muy);    
-            // std::cout<<Fx<<std::endl;
-
-            //> MECHANICAL FORMULATION
-            //> SECOND ORDER 
-            double Fx  = 0, Fy = 0;
+            double grad_mux = 0.0, grad_muy = 0.0;
+            double Fx = 0, Fy = 0;
             double del_t = 1.0;
             double Coeff_grad = (1.0/(del_t*lb.theta0));
 
-            for(int dv = 0; dv < grid.d_v; dv++){
-                Fx += Coeff_grad*(  (1.0/rho.Node(i,j))               *( lb.W[dv]*lb.Cx[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ))  +
-                                    (pnid.Node(i,j) + munid.Node(i,j))*( lb.W[dv]*lb.Cx[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-                                    )
-                                    // - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            for(int dv = 0; dv< grid.d_v; dv++){
+                grad_mux += lb.W[dv]*lb.Cx[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+                grad_muy += lb.W[dv]*lb.Cy[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
 
-                                    ;
-
-               
-
-                Fy += Coeff_grad*(  (1.0/rho.Node(i,j))               *( lb.W[dv]*lb.Cy[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ))  +
-                                    (pnid.Node(i,j) + munid.Node(i,j))*( lb.W[dv]*lb.Cy[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-                                    )
-                                    // - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-                                    ;                
-                                
-                                
             }
 
-            Fx = -Fx;
-            Fy = -Fy;
+            Fx = - Coeff_grad*(grad_mux);
+            Fy = - Coeff_grad*(grad_muy);    
+            
+
+            //> MECHANICAL FORMULATION
+            //> SECOND ORDER 
+            // double Fx  = 0, Fy = 0;
+            // double del_t = 1.0;
+            // double Coeff_grad = (1.0/(del_t*lb.theta0));
+
+            // for(int dv = 0; dv < grid.d_v; dv++){
+
+            //     Fx += Coeff_grad*(  (1.0/rho.Node(i,j))               
+            //                         *( lb.W[dv]*lb.Cx[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) )) 
+            //                          +
+            //                         (pnid.Node(i,j) + munid.Node(i,j))
+            //                         *( lb.W[dv]*lb.Cx[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            //                         )
+            //                         - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            //                         ;
+
+            //     std::cout<<(  (1.0/rho.Node(i,j))               
+            //                         *( lb.W[dv]*lb.Cx[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) )) 
+            //                          +
+            //                         (pnid.Node(i,j) + munid.Node(i,j))
+            //                         *( lb.W[dv]*lb.Cx[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            //                         )<<std::endl;
+
+            //     Fy += Coeff_grad*(  (1.0/rho.Node(i,j))               *( lb.W[dv]*lb.Cy[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ))  +
+            //                         (pnid.Node(i,j) + munid.Node(i,j))*( lb.W[dv]*lb.Cy[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            //                         )
+            //                         - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            //                         ;                
+                                
+                                
+            // }
+
+            Fx = 0;
+            Fy = 0;
             // std::cout<<Fx<<std::endl;
 
             get_moments(grid, lb,  ux, uy,Rho, i, j, Fx, Fy );            //for the node
