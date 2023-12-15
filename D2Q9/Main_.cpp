@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =100;int Ny = 100;
+   int Nx =300;int Ny = 300;
 
    Grid_N_C_2D<double> grid            (Nx,Ny,1,9);
    Grid_N_C_2D<double> pnid            (Nx,Ny,1,1);
@@ -44,18 +44,20 @@ int main()
    double tau = Kin_Vis/(cs*cs);
    std::cout<<"tau "<<tau<<std::endl;
 
+
    double beta = 1.0/(2.0*tau + 1);
    std::cout<<"beta"<<beta<<std::endl;
 
 
    double Rho_mean = 1.0;
-   double TbyTc = 0.95;
-   std::cout<<"T/T0"<<std::endl;
+
+   double TbyTc = 0.90;
+   std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
 
 
    //fixed ------------------------------Main code--------------------------//
-   initialization(grid,d2q9,Rho_mean,0.001,2);
+   initialization(grid,d2q9,Rho_mean,0.001,4);
    printdata(d2q9,grid,0,u0);
    printMass(grid);
 
@@ -64,7 +66,7 @@ int main()
    std::cout<<"Simulation time "<< sim_time<<std::endl;
  
 
-   for(int t = 1; t <=100000;t++){
+   for(int t = 1; t <=50000;t++){
 
       Periodic(grid);
       
@@ -73,7 +75,7 @@ int main()
       Periodic(grid);
 
       advection_D2Q9(grid);
-      if(t%1500== 0){
+      if(t%1000== 0){
          std::cout<<t<<" ";
          printMass(grid);
          printdata(d2q9,grid,t,u0);
