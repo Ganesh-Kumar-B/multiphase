@@ -49,9 +49,9 @@ int main()
    std::cout<<"beta"<<beta<<std::endl;
 
 
-   double Rho_mean = 0.75;
+   double Rho_mean = 0.9;
 
-   double TbyTc = 0.88;
+   double TbyTc = 0.87;
    std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
 
