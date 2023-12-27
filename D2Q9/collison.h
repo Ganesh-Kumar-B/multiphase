@@ -93,22 +93,23 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
             double Rho = 0.0;
 
             //> CHEMICAL POTENTIAL FORMULATION 
-            // double grad_mux = 0.0, grad_muy = 0.0;
-            // double Fx = 0, Fy = 0;
-            // double del_t = 1.0;
-            // double Coeff_grad = (1.0/(del_t*lb.theta0));
+            double grad_mux = 0.0, grad_muy = 0.0;
+            double Fx = 0, Fy = 0;
+            double del_t = 1.0;
+            double Coeff_grad = (1.0/(del_t*lb.theta0));
 
-            // for(int dv = 0; dv< grid.d_v; dv++){
-            //     grad_mux += lb.W[dv]*lb.Cx[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
-            //     grad_muy += lb.W[dv]*lb.Cy[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
-            // }
+            for(int dv = 0; dv< grid.d_v; dv++){
+                grad_mux += lb.W[dv]*lb.Cx[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+                grad_muy += lb.W[dv]*lb.Cy[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+            }
 
 
-            // Fx = - Coeff_grad*(grad_mux);
-            // Fy = - Coeff_grad*(grad_muy);    
+            Fx = - Coeff_grad*(grad_mux);
+            Fy = - Coeff_grad*(grad_muy);    
 
 
             //> MECHANICAL FORMULATION
+            //!wrong formulation
             //> SECOND ORDER 
             // double Fx  = 0, Fy = 0;
             // double del_t = 1.0;
@@ -138,44 +139,40 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 
 
             // // > direct              
-            double Fx  = 0, Fy = 0;
-            double del_t = 1.0;
-            double Coeff_grad = (1.0/(del_t*lb.theta0));
+            // double Fx  = 0, Fy = 0;
+            // double del_t = 1.0;
+            // double Coeff_grad = (1.0/(del_t*lb.theta0));
 
 
-            for(int dv = 0; dv < grid.d_v; dv++){
+            // for(int dv = 0; dv < grid.d_v; dv++){
 
-                Fx += Coeff_grad*(               
-                                    lb.W[dv]*lb.Cx[dv]*( (pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))/ rho.Node( i+ lb.Cx[dv] ,j + lb.Cy[dv])  )
-                                    )
-                                    - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-                                    ;
+            //     Fx += Coeff_grad*(               
+            //                         lb.W[dv]*lb.Cx[dv]*( (pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))/ rho.Node( i+ lb.Cx[dv] ,j + lb.Cy[dv])  )
+            //                         )
+            //                         - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            //                         ;
 
-        
-                Fy += Coeff_grad*(               
-                                    lb.W[dv]*lb.Cy[dv]*( (pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))/ rho.Node( i+ lb.Cx[dv] ,j + lb.Cy[dv])  )
-                                    )
-                                    - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-                                    ;          
-                                
-                                
-            }
+            //     Fy += Coeff_grad*(               
+            //                         lb.W[dv]*lb.Cy[dv]*( (pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))/ rho.Node( i+ lb.Cx[dv] ,j + lb.Cy[dv])  )
+            //                         )
+            //                         - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            //                         ;
 
-            Fx = -1.0*Fx;
-            Fy = -1.0*Fy;
-            //>                         
-
+            // }
+            // Fx = -1.0*Fx;
+            // Fy = -1.0*Fy;
+            
+            
             get_moments(grid, lb,  ux, uy,Rho, i, j, Fx, Fy );            //for the node
             get_equi(feq_Node,lb, ux, uy, Rho);
 
-            for (int dv = 0; dv< 9; dv++){
-                 
-                grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
-                                    + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv]) ;
-         
-            } 
+            //> normal
+            // for (int dv = 0; dv< 9; dv++){
+            //     grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
+            //                         + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv]);
+            // }       
 
-            //> withe entropic
+            //> with entropic 
             double x_i[9];
             for(int dv = 0; dv< grid.d_v; dv++)
                 x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
@@ -184,12 +181,41 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
             for(int dv = 0; dv< grid.d_v; dv++){
                 alpha = 2.0;
                 if( std::fabs(x_i[dv]) > 0.0001){
-                    calculateAlpha(lb,x_i,f,beta,index,alpha);
+                    calculateAlpha(lb,x_i,&grid.Node(i,j,0),beta,alpha);
                     break;
                 }
-            
-            
             }
+
+            for (int dv = 0; dv< 9; dv++){
+                grid.Node(i,j,dv) =  grid.Node(i,j,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,dv))
+                                    + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv]);
+            }
+
+            //>entopic 3rd type 
+            // double feq_zeroforce[9] ={};
+
+            // double x_i[9];
+            // for(int dv = 0; dv< grid.d_v; dv++)
+            //     x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
+            
+            // double alpha = 0;
+            // for(int dv = 0; dv< grid.d_v; dv++){
+            //     alpha = 2.0;
+            //     if( std::fabs(x_i[dv]) > 0.0001){
+            //         calculateAlpha(lb,x_i,&grid.Node(i,j,0),beta,alpha);
+            //         break;
+            //     }
+            // }
+
+            // get_moments(grid, lb,  ux, uy,Rho, i, j, 0, 0 );            //for the node
+            // get_equi(feq_zeroforce,lb, ux, uy, Rho);
+
+            // for (int dv = 0; dv< 9; dv++){
+            //     grid.Node(i,j,dv) =  grid.Node(i,j,dv) + alpha* beta*(feq_zeroforce[dv] - grid.Node(i,j,dv))
+            //                         +feq_Node[dv] -  feq_zeroforce[dv] ;
+            // }
+
+
 
         }
     }
@@ -198,21 +224,21 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 
 
 template<typename T>
-void calculateAlpha(lbmD2Q9<T> &lbModel,T* x_i,T* f_i,T beta,int index,T& alpha)
+void calculateAlpha(lbmD2Q9<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
 {
   double a(0.0), b(0.0), c(0.0),oneBySix(1.0/6.0);
   double ximin(0.0), ximax(0.0);
 
-  alignas(32) T xSq[41];
-  alignas(32) T fxSq[41];
+  alignas(32) T xSq[9];
+  alignas(32) T fxSq[9];
 
-  for(int dv = 0;dv<41;dv++)
-  {
+  for(int dv = 0;dv<9;dv++)
+  { 
     ximin = std::min(ximin, x_i[dv])  ;
     ximax = std::max(ximax, x_i[dv])  ;
   }
 
-  for(int dv = 0;dv<41;dv++)
+  for(int dv = 0;dv<9;dv++)
   {
     xSq[dv]  = x_i[dv]*x_i[dv] ;
     fxSq[dv] = f_i[dv]*x_i[dv]*x_i[dv] ;
@@ -238,7 +264,7 @@ void calculateAlpha(lbmD2Q9<T> &lbModel,T* x_i,T* f_i,T beta,int index,T& alpha)
   T fourByK = 4.0/k;
   T hBeta = 0.0;
 
-  for(int dv = 0; dv < 41; dv++)
+  for(int dv = 0; dv < 9; dv++)
   {
     if(x_i[dv]<0.0)
     {
@@ -261,7 +287,7 @@ void calculateAlpha(lbmD2Q9<T> &lbModel,T* x_i,T* f_i,T beta,int index,T& alpha)
   a = 0.0;
   hBeta = h*beta;
 
-  for(int dv = 0; dv < 41; dv++)
+  for(int dv = 0; dv < 9; dv++)
   {
     if(x_i[dv]<0.0)
     {
