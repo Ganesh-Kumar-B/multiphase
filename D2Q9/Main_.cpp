@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =300;int Ny = 300;
+   int Nx =200;int Ny = 200;
 
    Grid_N_C_2D<double> grid            (Nx,Ny,1,9);
    Grid_N_C_2D<double> pnid            (Nx,Ny,1,1);
@@ -51,7 +51,7 @@ int main()
 
    double Rho_mean = 1.0;
 
-   double TbyTc = 0.90;
+   double TbyTc = 0.80;
    std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
 
