@@ -23,22 +23,21 @@ void advection(Grid_N_C_3D<T> &grid){
             for(int k = 0 + grid.noghost ; k < grid.n_z_node - (grid.noghost);k++){ 
 
             
-                grid.Node(i,j,  dV_M1_ZERO_ZERO   )     = grid.Node(i+1,j  ,k  , dV_M1_ZERO_ZERO ); 
-                grid.Node(i,j,  dV_ZERO_M1_ZERO   )     = grid.Node(i  ,j+1,k  , dV_ZERO_M1_ZERO ); 
-                grid.Node(i,j,  dV_ZERO_ZERO_M1   )     = grid.Node(i  ,j  ,k+1, dV_ZERO_ZERO_M1 ); 
-                grid.Node(i,j,  dV_M1_M1_ZERO  )        = grid.Node(i+1,j+1,k  , dV_M1_M1_ZERO   ); 
-                grid.Node(i,j,  dV_M1_P1_ZERO  )        = grid.Node(i+1,j-1,k  , dV_M1_P1_ZERO   ); 
-                grid.Node(i,j,  dV_ZERO_M1_M1  )        = grid.Node(i  ,j+1,k+1, dV_ZERO_M1_M1   ); 
-                grid.Node(i,j,  dV_ZERO_M1_P1  )        = grid.Node(i  ,j+1,k-1, dV_ZERO_M1_P1   ); 
-                grid.Node(i,j,  dV_M1_ZERO_M1  )        = grid.Node(i+1,j  ,k+1, dV_M1_ZERO_M1   ); 
-                grid.Node(i,j,  dV_M1_ZERO_P1  )        = grid.Node(i+1,j  ,k-1, dV_M1_ZERO_P1   ); 
+                grid.Node(i,j,k,  dV_M1_ZERO_ZERO   )     = grid.Node(i+1,j  ,k  , dV_M1_ZERO_ZERO ); 
+                grid.Node(i,j,k,  dV_ZERO_M1_ZERO   )     = grid.Node(i  ,j+1,k  , dV_ZERO_M1_ZERO ); 
+                grid.Node(i,j,k,  dV_ZERO_ZERO_M1   )     = grid.Node(i  ,j  ,k+1, dV_ZERO_ZERO_M1 ); 
+                grid.Node(i,j,k,  dV_M1_M1_ZERO  )        = grid.Node(i+1,j+1,k  , dV_M1_M1_ZERO   ); 
+                grid.Node(i,j,k,  dV_M1_P1_ZERO  )        = grid.Node(i+1,j-1,k  , dV_M1_P1_ZERO   ); 
+                grid.Node(i,j,k,  dV_ZERO_M1_M1  )        = grid.Node(i  ,j+1,k+1, dV_ZERO_M1_M1   ); 
+                grid.Node(i,j,k,  dV_ZERO_M1_P1  )        = grid.Node(i  ,j+1,k-1, dV_ZERO_M1_P1   ); 
+                grid.Node(i,j,k,  dV_M1_ZERO_M1  )        = grid.Node(i+1,j  ,k+1, dV_M1_ZERO_M1   ); 
+                grid.Node(i,j,k,  dV_M1_ZERO_P1  )        = grid.Node(i+1,j  ,k-1, dV_M1_ZERO_P1   ); 
 
             
                 
             }
         }
     }
-
 
 
 
@@ -78,9 +77,6 @@ void Periodic(Grid_N_C_3D<T> &grid){
             }
         }
 
-
-
-
     for(int i = 0 ; i < grid.n_x_node;i++ ){
         for(int k = 0 ; k < grid.n_z_node;k++ ){
             for(int dv = 0; dv<grid.d_v; dv++){
@@ -102,9 +98,6 @@ void Periodic(Grid_N_C_3D<T> &grid){
             }
         }
     }
-
-
-
 
 }
 

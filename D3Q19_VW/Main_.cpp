@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =100;int Ny = 100; int Nz = 100;
+   int Nx =20;int Ny = 20; int Nz = 20;
 
    Grid_N_C_3D<double> grid            (Nx,Ny,Nz,1,19);
    Grid_N_C_3D<double> pnid            (Nx,Ny,Nz,1,1);
@@ -56,6 +56,7 @@ int main()
    double kappa = 0.0625;
 
 
+
    //fixed ------------------------------Main code--------------------------//
    initialization(grid,d3q19,Rho_mean,0.001,2);
    printdata(d3q19,grid,0,u0);
@@ -68,13 +69,13 @@ int main()
 
    for(int t = 1; t <=25000;t++){
 
-      Periodic(grid);
       
       collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q19,beta,tau,TbyTc,kappa, t);
 
       Periodic(grid);
 
       advection(grid);
+
       if(t%1000== 0){
          std::cout<<t<<" ";
          printMass(grid);

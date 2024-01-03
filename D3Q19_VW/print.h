@@ -30,18 +30,19 @@ void printdata(lbmD3Q19<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, double
     char fileName[250];
     sprintf(fileName,"./Result/velocity_%d.txt",step) ;
     file.open(fileName) ;
-    file<<"x,y,ux,uy,rho"<<std::endl;
+    file<<"x,y,z,ux,uy,uz,rho"<<std::endl;
 
     for(int i = 0 + gridLB.noghost; i < gridLB.n_x_node - (gridLB.noghost); i++){ 
 	    for (int j = 0 + gridLB.noghost; j < gridLB.n_y_node - (gridLB.noghost); j++){
-            for(int i = 0 + gridLB.noghost; i < gridLB.n_x_node - (gridLB.noghost); i++){ 
+            for(int k = 0 + gridLB.noghost; k < gridLB.n_z_node - (gridLB.noghost); k++){ 
 
 
-                get_moments(gridLB,lbModel,u1, u2, rho1, i,j);
+                get_moments(gridLB,lbModel,u1, u2,u3, rho1, i,j,k);
                 
 
-                
-                file<<(double)(i-gridLB.noghost)*ny_inv  <<"," <<(double)(j-gridLB.noghost) *ny_inv   <<","<<u1*u_inv<<","<<u2*u_inv<<","<<rho1<<std::endl;
+
+                // file<<(double)(i-gridLB.noghost)*ny_inv  <<"," <<(double)(j-gridLB.noghost) *ny_inv   <<","<<u1*u_inv<<","<<u2*u_inv<<","<<rho1<<std::endl;
+                file<<i<<"," <<j  <<","<<k  <<","<<u1<<","<<u2<<","<<u3<<","<<rho1<<std::endl;
     
 
             }

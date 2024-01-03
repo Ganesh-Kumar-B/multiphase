@@ -96,8 +96,8 @@ Cx[dV_P1_M1_ZERO     ]    = c1;         Cy[dV_P1_M1_ZERO     ]    =-c1;         
 Cx[dV_M1_P1_ZERO     ]    =-c1;         Cy[dV_M1_P1_ZERO     ]    = c1;             Cz[dV_M1_P1_ZERO     ]    =0.0;
 Cx[dV_ZERO_P1_M1     ]    =0.0;         Cy[dV_ZERO_P1_M1     ]    = c1;             Cz[dV_ZERO_P1_M1     ]    =-c1;
 Cx[dV_ZERO_M1_P1     ]    =0.0;         Cy[dV_ZERO_M1_P1     ]    =-c1;             Cz[dV_ZERO_M1_P1     ]    = c1;
-Cx[dV_P1_ZERO_M1     ]    = c1;         Cy[dV_P1_ZERO_M1     ]    = c1;             Cz[dV_P1_ZERO_M1     ]    =0.0;
-Cx[dV_M1_ZERO_P1     ]    =-c1;         Cy[dV_M1_ZERO_P1     ]    =-c1;             Cz[dV_M1_ZERO_P1     ]    =0.0;
+Cx[dV_P1_ZERO_M1     ]    = c1;         Cy[dV_P1_ZERO_M1     ]    =0.0;             Cz[dV_P1_ZERO_M1     ]    =-c1;
+Cx[dV_M1_ZERO_P1     ]    =-c1;         Cy[dV_M1_ZERO_P1     ]    =0.0;             Cz[dV_M1_ZERO_P1     ]    = c1;
     
     
     
