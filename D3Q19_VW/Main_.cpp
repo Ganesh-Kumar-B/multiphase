@@ -14,7 +14,8 @@
 int main()
 {
 
-   int Nx =20;int Ny = 20; int Nz = 20;
+   int Nx =200;int Ny = 10; int Nz = 10;
+   std::cout<<"domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
    Grid_N_C_3D<double> grid            (Nx,Ny,Nz,1,19);
    Grid_N_C_3D<double> pnid            (Nx,Ny,Nz,1,1);
@@ -51,7 +52,7 @@ int main()
 
    double Rho_mean = 1.0;
 
-   double TbyTc = 0.84;
+   double TbyTc = 0.90;
    std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
 
@@ -69,7 +70,7 @@ int main()
 
    for(int t = 1; t <=25000;t++){
 
-      
+      Periodic(grid);
       collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q19,beta,tau,TbyTc,kappa, t);
 
       Periodic(grid);
