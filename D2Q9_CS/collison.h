@@ -31,9 +31,10 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
 
         }
     }
+    
     Periodic(rho);
-
-   for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
+ 
+    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
      
             //> laplacian of Rho  
@@ -66,17 +67,26 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
                             ;
             
             //> Fnid
-            fnid.Node(i,j) =   - a * rho.Node(i,j)*rho.Node(i,j)   -   rho.Node(i,j)*lb.theta0 *(3.0 * eta_EOS*eta_EOS - 4.0*eta_EOS) / pow(1 - eta_EOS,2)
-                                
-                                -kappa * 0.5*grad_rho*grad_rho
+            fnid.Node(i,j) =   -a * rho.Node(i,j)*rho.Node(i,j)   -   rho.Node(i,j)*lb.theta0 *(3.0 * eta_EOS*eta_EOS - 4.0*eta_EOS) / (pow((1 - eta_EOS),2))
+                                // -kappa * 0.5*grad_rho*grad_rho
                                 ;
             
             //> munid
-            munid.Node(i,j) = lb.theta0*(3.0*pow(eta_EOS,3) - 9.0 *eta_EOS*eta_EOS + 8.0 *eta_EOS )/(pow(1 - eta_EOS,3));
-          
-            munid.Node(i,j) -= 2.0*rho.Node(i,j)*a 
-                                -kappa*laplacian_rho.Node(i,j)
-                                ;
+            munid.Node(i,j) = lb.theta0*(3.0*pow(eta_EOS,3) - 9.0 *eta_EOS*eta_EOS + 8.0 *eta_EOS )/(pow((1 - eta_EOS),3));
+
+            munid.Node(i,j) -= 2.0*rho.Node(i,j)*a ;
+            munid.Node(i,j) -= kappa*laplacian_rho.Node(i,j);
+                                
+
+              // if(t>10000){
+              //   if(abs(pnid.Node(i,j)- munid.Node(i,j)*rho.Node(i,j) +  fnid.Node(i,j)) < 0.0000000001){
+              //     std::cout<<"yes"<<std::endl;
+              //   }else
+              //   {
+              //     std::cout<<"no"<<std::endl;
+              //   }
+
+              // }
         }    
     }
 
@@ -97,92 +107,174 @@ void collide(Grid_N_C_2D<T> &grid,Grid_N_C_2D<T> &rho,Grid_N_C_2D<T> &pnid,Grid_
             double Rho = 0.0;
 
             //> CHEMICAL POTENTIAL FORMULATION 
-            // double grad_mux = 0.0, grad_muy = 0.0;
-            // double Fx = 0, Fy = 0;
-            // double del_t = 1.0;
-            // double Coeff_grad = (1.0/(del_t*lb.theta0));
+            double grad_mux = 0.0, grad_muy = 0.0;
+            double Fx = 0, Fy = 0;
+            double del_t = 1.0;
+            double Coeff_grad = (1.0/(del_t*lb.theta0));
 
-            // for(int dv = 0; dv< grid.d_v; dv++){
-            //     grad_mux += lb.W[dv]*lb.Cx[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
-            //     grad_muy += lb.W[dv]*lb.Cy[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
-            // }
+            for(int dv = 0; dv< grid.d_v; dv++){
+                grad_mux += lb.W[dv]*lb.Cx[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+                grad_muy += lb.W[dv]*lb.Cy[dv]*munid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ;
+            }
 
 
-            // Fx = - Coeff_grad*(grad_mux);
-            // Fy = - Coeff_grad*(grad_muy);    
+            Fx = - Coeff_grad*(grad_mux);
+            Fy = - Coeff_grad*(grad_muy);    
 
 
             //> MECHANICAL FORMULATION
             //> SECOND ORDER 
+            // // > direct              
             // double Fx  = 0, Fy = 0;
             // double del_t = 1.0;
             // double Coeff_grad = (1.0/(del_t*lb.theta0));
 
+
             // for(int dv = 0; dv < grid.d_v; dv++){
 
-            //     Fx += Coeff_grad*(  (1.0/rho.Node(i,j))   
-            //                         *( lb.W[dv]*lb.Cx[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) )) 
-            //                          +
-            //                         (pnid.Node(i,j) + fnid.Node(i,j))
-            //                         *( lb.W[dv]*lb.Cx[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+            //     Fx += Coeff_grad*(               
+            //                         lb.W[dv]*lb.Cx[dv]*( (pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))/ rho.Node( i+ lb.Cx[dv] ,j + lb.Cy[dv])  )
             //                         )
             //                         - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
             //                         ;
 
-            //     Fy += Coeff_grad*(  (1.0/rho.Node(i,j))               *( lb.W[dv]*lb.Cy[dv]*( pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) ))  +
-            //                         (pnid.Node(i,j) + fnid.Node(i,j))*( lb.W[dv]*lb.Cy[dv]*(1.0/rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
+        
+            //     Fy += Coeff_grad*(               
+            //                         lb.W[dv]*lb.Cy[dv]*( (pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))/ rho.Node( i+ lb.Cx[dv] ,j + lb.Cy[dv])  )
             //                         )
             //                         - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-            //                         ;                
+            //                         ;          
+                                
                                 
             // }
 
             // Fx = -1.0*Fx;
             // Fy = -1.0*Fy;
 
-
-            // // > direct              
-            double Fx  = 0, Fy = 0;
-            double del_t = 1.0;
-            double Coeff_grad = (1.0/(del_t*lb.theta0));
-
-
-            for(int dv = 0; dv < grid.d_v; dv++){
-
-                Fx += Coeff_grad*(               
-                                    lb.W[dv]*lb.Cx[dv]*( (pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))/ rho.Node( i+ lb.Cx[dv] ,j + lb.Cy[dv])  )
-                                    )
-                                    - kappa*Coeff_grad*( lb.W[dv]*lb.Cx[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-                                    ;
-
-        
-                Fy += Coeff_grad*(               
-                                    lb.W[dv]*lb.Cy[dv]*( (pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]) + fnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv]))/ rho.Node( i+ lb.Cx[dv] ,j + lb.Cy[dv])  )
-                                    )
-                                    - kappa*Coeff_grad*( lb.W[dv]*lb.Cy[dv]*( laplacian_rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv])))
-                                    ;          
-                                
-                                
-            }
-
-            Fx = -1.0*Fx;
-            Fy = -1.0*Fy;
-            //>                         
-
+           //>           
             get_moments(grid, lb,  ux, uy,Rho, i, j, Fx, Fy );            //for the node
             get_equi(feq_Node,lb, ux, uy, Rho);
 
-            for (int dv = 0; dv< 9; dv++){
+
+            //>normal
+            // for (int dv = 0; dv< 9; dv++){
                  
-                grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
-                                    + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv]) ;
+            //     grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
+            //                         + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv]) ;
          
-            } 
+            // } 
+
+
+            //> with entropic 
+            //< properly working
+            double x_i[9];
+            for(int dv = 0; dv< grid.d_v; dv++)
+                x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
+            
+            double alpha = 0;
+            for(int dv = 0; dv< grid.d_v; dv++){
+                alpha = 2.0;
+                if( std::fabs(x_i[dv]) > 0.0001){
+                    calculateAlpha(lb,x_i,&grid.Node(i,j,0),beta,alpha);
+                    break;
+                }
+            }
+
+            for (int dv = 0; dv< 9; dv++){
+                grid.Node(i,j,dv) =  grid.Node(i,j,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,dv))
+                                    + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv]);
+            }
+
         }
     }
 }
     
 
+
+
+template<typename T>
+void calculateAlpha(lbmD2Q9<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
+{
+  double a(0.0), b(0.0), c(0.0),oneBySix(1.0/6.0);
+  double ximin(0.0), ximax(0.0);
+
+  alignas(32) T xSq[9];
+  alignas(32) T fxSq[9];
+
+  for(int dv = 0;dv<9;dv++)
+  { 
+    ximin = std::min(ximin, x_i[dv])  ;
+    ximax = std::max(ximax, x_i[dv])  ;
+  }
+
+  for(int dv = 0;dv<9;dv++)
+  {
+    xSq[dv]  = x_i[dv]*x_i[dv] ;
+    fxSq[dv] = f_i[dv]*x_i[dv]*x_i[dv] ;
+
+    if(x_i[dv]<0.0)
+      a += fxSq[dv]*x_i[dv]*0.5 ;
+
+    b += fxSq[dv]*0.5 ;
+    c += fxSq[dv]/(1.0 + 0.5*x_i[dv]) ;
+  }
+
+  T alphaMax = -1.0/(beta*ximin);
+
+  T k;
+  if(a<0 && b>0 && c>0)
+    k = (b-sqrt(b*b - 4.0*a*c))/(2.0*a);
+  else
+    k = 1.5;
+
+  a = 0.0;b=0.0;c=0.0;
+//   T kBeta   = k*beta;
+  T beta2   = beta*beta;
+  T fourByK = 4.0/k;
+  T hBeta = 0.0;
+
+  for(int dv = 0; dv < 9; dv++)
+  {
+    if(x_i[dv]<0.0)
+    {
+      a += fxSq[dv]*x_i[dv]*beta2*( 1.0/6.0 - hBeta*x_i[dv]/12.0 + hBeta*hBeta*x_i[dv]*x_i[dv]/20 - hBeta*hBeta*hBeta*x_i[dv]*x_i[dv]*x_i[dv]/5.0 );
+      b += fxSq[dv]*0.5;
+    }
+
+    if(x_i[dv]>0.0)
+      b += f_i[dv]*( (x_i[dv]*x_i[dv]*0.5) - beta2*(x_i[dv]*x_i[dv]*x_i[dv]/15.0)* ( (4.0/(fourByK+x_i[dv])) + (2.0/(fourByK+2.0*x_i[dv])) + (4.0/(fourByK+3.0*x_i[dv])) ));
+
+    c += f_i[dv]*(60.0*x_i[dv]*x_i[dv] + 60.0*x_i[dv]*x_i[dv]*x_i[dv] + 11.0*x_i[dv]*x_i[dv]*x_i[dv]*x_i[dv])/( 60.0 + 90.0*x_i[dv] + 36.0*x_i[dv]*x_i[dv] + 3.0*x_i[dv]*x_i[dv]*x_i[dv]);
+  }
+
+  T  h;
+  if(a<0 && b>0 && c>0)
+    h = (b-std::sqrt(b*b - 4.0*a*c))/(2.0*a);
+  else
+    h = 2.1;
+
+  a = 0.0;
+  hBeta = h*beta;
+
+  for(int dv = 0; dv < 9; dv++)
+  {
+    if(x_i[dv]<0.0)
+    {
+      a += f_i[dv]*x_i[dv]*x_i[dv]*x_i[dv]*beta2*( 1.0/6.0 - hBeta*x_i[dv]/12.0 + hBeta*hBeta*x_i[dv]*x_i[dv]/20 - hBeta*hBeta*hBeta*x_i[dv]*x_i[dv]*x_i[dv]/5.0 );
+    }
+  }
+
+  if(a<0 && b>0 && c>0)
+    alpha = 2.0*c/(b+sqrt(b*b - 4.0*a*c));
+
+  if(alpha > alphaMax)
+  {
+    if ( alphaMax > 1.0)
+      alpha = 0.5*(1.0+alphaMax) ;
+    else
+      alpha = 0.95*alphaMax;
+  }
+}
 
 
 

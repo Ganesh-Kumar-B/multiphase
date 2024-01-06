@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =200;int Ny = 200;
+   int Nx =100;int Ny = 100;
 
    Grid_N_C_2D<double> grid            (Nx,Ny,1,9);
    Grid_N_C_2D<double> pnid            (Nx,Ny,1,1);
@@ -51,13 +51,13 @@ int main()
 
    double Rho_mean = 1.0;
 
-   double TbyTc = 0.80;
+   double TbyTc = 0.90;
    std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
 
 
    //fixed ------------------------------Main code--------------------------//
-   initialization(grid,d2q9,Rho_mean,0.001,4);
+   initialization(grid,d2q9,Rho_mean,0.001,2);
    printdata(d2q9,grid,0,u0);
    printMass(grid);
 
@@ -66,7 +66,7 @@ int main()
    std::cout<<"Simulation time "<< sim_time<<std::endl;
  
 
-   for(int t = 1; t <=50000;t++){
+   for(int t = 1; t <=25000;t++){
 
       Periodic(grid);
       
