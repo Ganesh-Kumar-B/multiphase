@@ -25,11 +25,11 @@ int main()
    Grid_N_C_3D<double> laplacian_rho   (Nx,Ny,Nz,1,1);
 
    
-   lbmD3Q19<double> d3q19(1.0,0.33333333333333);
+   lbmD3Q35<double> d3q35(1.0,0.33333333333333);
 
 
-   double cs = sqrt(d3q19.theta0);
-   std::cout<<"theta= "<<d3q19.theta0<<std::endl;
+   double cs = sqrt(d3q35.theta0);
+   std::cout<<"theta= "<<d3q35.theta0<<std::endl;
 
 
    double Re = 1;
@@ -59,8 +59,8 @@ int main()
 
 
    //fixed ------------------------------Main code--------------------------//
-   initialization(grid,d3q19,Rho_mean,0.001,2);
-   printdata(d3q19,grid,0,u0);
+   initialization(grid,d3q35,Rho_mean,0.001,2);
+   printdata(d3q35,grid,0,u0);
    printMass(grid);
 
    int sim_time = 20*Nx/u0;
@@ -71,7 +71,7 @@ int main()
    for(int t = 1; t <=25000;t++){
 
       Periodic(grid);
-      collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q19,beta,tau,TbyTc,kappa, t);
+      collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q35,beta,tau,TbyTc,kappa, t);
 
       Periodic(grid);
 
@@ -80,7 +80,7 @@ int main()
       if(t%1000== 0){
          std::cout<<t<<" ";
          printMass(grid);
-         printdata(d3q19,grid,t,u0);
+         printdata(d3q35,grid,t,u0);
       }
    }
 

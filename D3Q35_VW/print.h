@@ -1,7 +1,6 @@
-#ifndef PRINT
-#define PRINT
+#pragma once
 
-#include "lbmD3Q19.h"
+#include "lbmD3Q35.h"
 #include "GRID_3D.h"
 #include <fstream>
 #include <iostream>
@@ -14,7 +13,7 @@
 
 
 template<typename T, typename T1>
-void printdata(lbmD3Q19<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, double u0)
+void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, double u0)
 {
 
     double u_inv,nx_inv, ny_inv;
@@ -51,4 +50,3 @@ void printdata(lbmD3Q19<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, double
 }
 
 
-#endif

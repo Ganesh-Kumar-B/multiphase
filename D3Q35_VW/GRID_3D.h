@@ -1,6 +1,4 @@
-#ifndef Grid_3D_D2Q19
-#define Grid_3D_D2Q19
-
+#pragma once
 
 
 #include<iostream>
@@ -61,5 +59,3 @@ T& Cell(const int i, const int j,const int k,const  int dv = 0)     {return data
 
 
 
-
-#endif

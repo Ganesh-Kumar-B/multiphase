@@ -8,7 +8,7 @@
 #include<algorithm>
 #include <sstream>
 #include<string>
-#include "lbmD3Q19.h"
+#include "lbmD3Q35.h"
 #include "GRID_3D.h"
 #define PI 3.14159265
 
@@ -16,11 +16,11 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_3D<T> &grid,Grid_N_C_3D<T> &rho,Grid_N_C_3D<T> &pnid,Grid_N_C_3D<T> &fnid,Grid_N_C_3D<T> &munid, Grid_N_C_3D<T> &laplacian_rho,
-            lbmD3Q19<T1> &lb,double beta,double tau, double TbyTc, double kappa, int t ){
+            lbmD3Q35<T1> &lb,double beta,double tau, double TbyTc, double kappa, int t ){
 
     Grid_N_C_3D<T>  laplacian_pnidplusfnidbyrho            (grid.n_x,grid.n_y,grid.n_z,1,1);
 
-    double feq_Node[19] = {0}, ux = 0, uy = 0, uz = 0;
+    double feq_Node[35] = {0}, ux = 0, uy = 0, uz = 0;
 
     double rho_critical = 1.0, T_critical = lb.theta0/TbyTc ; 
     double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;
@@ -244,21 +244,21 @@ void collide(Grid_N_C_3D<T> &grid,Grid_N_C_3D<T> &rho,Grid_N_C_3D<T> &pnid,Grid_
 
 
 template<typename T>
-void calculateAlpha(lbmD3Q19<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
+void calculateAlpha(lbmD3Q35<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
 {
   double a(0.0), b(0.0), c(0.0),oneBySix(1.0/6.0);
   double ximin(0.0), ximax(0.0);
 
-  alignas(32) T xSq [19];
-  alignas(32) T fxSq[19];
+  alignas(32) T xSq [35];
+  alignas(32) T fxSq[35];
 
-  for(int dv = 0;dv<19;dv++)
+  for(int dv = 0;dv<35;dv++)
   { 
     ximin = std::min(ximin, x_i[dv])  ;
     ximax = std::max(ximax, x_i[dv])  ;
   }
 
-  for(int dv = 0;dv<19;dv++)
+  for(int dv = 0;dv<35;dv++)
   {
     xSq[dv]  = x_i[dv]*x_i[dv] ;
     fxSq[dv] = f_i[dv]*x_i[dv]*x_i[dv] ;
@@ -284,7 +284,7 @@ void calculateAlpha(lbmD3Q19<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
   T fourByK = 4.0/k;
   T hBeta = 0.0;
 
-  for(int dv = 0; dv < 19; dv++)
+  for(int dv = 0; dv < 35; dv++)
   {
     if(x_i[dv]<0.0)
     {
@@ -307,7 +307,7 @@ void calculateAlpha(lbmD3Q19<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
   a = 0.0;
   hBeta = h*beta;
 
-  for(int dv = 0; dv < 19; dv++)
+  for(int dv = 0; dv < 35; dv++)
   {
     if(x_i[dv]<0.0)
     {
@@ -330,13 +330,13 @@ void calculateAlpha(lbmD3Q19<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
 
 
 template<typename T>
-void get_equi(double *feq , lbmD3Q19<T> &lb, double ux, double uy, double uz, double rho){
+void get_equi(double *feq , lbmD3Q35<T> &lb, double ux, double uy, double uz, double rho){
 
 
     double u2 = ux*ux + uy*uy + uz*uz;
     double a1=0;
     double first,second, third,feq0=0;
-    for (int dv = 0; dv< 19; dv++){
+    for (int dv = 0; dv< 35; dv++){
 
         feq0 = rho*lb.W[dv];
 
@@ -355,7 +355,7 @@ void get_equi(double *feq , lbmD3Q19<T> &lb, double ux, double uy, double uz, do
 
 
 template<typename T,typename T1>
-void get_moments(Grid_N_C_3D<T> &grid, lbmD3Q19<T1> &lb,double &Ux, double &Uy, double &Uz,double &Rho,  int X, int Y, int Z, double Fx = 0, double Fy = 0, double Fz = 0){ ///node or cell 0-Node 1- cell
+void get_moments(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double &Uy, double &Uz,double &Rho,  int X, int Y, int Z, double Fx = 0, double Fy = 0, double Fz = 0){ ///node or cell 0-Node 1- cell
    Ux  = 0.0;
    Uy  = 0.0;
    Uz  = 0.0;
@@ -377,10 +377,10 @@ void get_moments(Grid_N_C_3D<T> &grid, lbmD3Q19<T1> &lb,double &Ux, double &Uy, 
 
 //period no of waves
 template<typename T, typename T1>
-void initialization(Grid_N_C_3D<T> &grid,lbmD3Q19<T1> &lb,double Rho_mean ,double amplitude, double period){
+void initialization(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,double Rho_mean ,double amplitude, double period){
 
 
-    double Feq_node[19] = {0},Rho = 0.0;
+    double Feq_node[35] = {0},Rho = 0.0;
     double x,y,z
            ;    ///distance between nodes 
     
