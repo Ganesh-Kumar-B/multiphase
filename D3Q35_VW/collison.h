@@ -355,7 +355,7 @@ void get_equi(double *feq , lbmD3Q35<T> &lb, double ux, double uy, double uz, do
 
 
 template<typename T,typename T1>
-void get_moments(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double &Uy, double &Uz,double &Rho,  int X, int Y, int Z, double Fx = 0, double Fy = 0, double Fz = 0){ ///node or cell 0-Node 1- cell
+void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double &Uy, double &Uz,double &Rho,  int X, int Y, int Z, double Fx = 0, double Fy = 0, double Fz = 0){ ///node or cell 0-Node 1- cell
    Ux  = 0.0;
    Uy  = 0.0;
    Uz  = 0.0;
@@ -375,12 +375,35 @@ void get_moments(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double &Uy, 
 
 }
 
+template<typename T,typename T1>
+void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double &Uy, double &Uz,double &Rho,  int X, int Y, int Z, double Fx = 0, double Fy = 0, double Fz = 0){ ///node or cell 0-Cell 1- cell
+   Ux  = 0.0;
+   Uy  = 0.0;
+   Uz  = 0.0;
+   Rho = 0.0;
+
+
+    for(int dv = 0; dv <grid.d_v; dv++){
+        Ux  += grid.Cell(X,Y,Z,dv)*lb.Cx[dv];
+        Uy  += grid.Cell(X,Y,Z,dv)*lb.Cy[dv];
+        Uz  += grid.Cell(X,Y,Z,dv)*lb.Cz[dv];
+        Rho += grid.Cell(X,Y,Z,dv);
+    }  
+
+    Ux = Ux/Rho + 0.5*Fx;
+    Uy = Uy/Rho + 0.5*Fy;
+    Uz = Uz/Rho + 0.5*Fz;  
+
+}
+
+
+
 //period no of waves
 template<typename T, typename T1>
 void initialization(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,double Rho_mean ,double amplitude, double period){
 
 
-    double Feq_node[35] = {0},Rho = 0.0;
+    double Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
     double x,y,z
            ;    ///distance between nodes 
     
@@ -401,10 +424,29 @@ void initialization(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,double Rho_mean ,doubl
                 get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
 
                 for (int dv = 0; dv<grid.d_v; dv++){
-                    grid.Node(i,j,k,dv) = Feq_node[dv]
                    
+                    grid.Node(i,j,k,dv) = Feq_node[dv]
                     ;
                 }
+                
+                x = ((double)i + 0.5)/ grid.n_x;
+                y = ((double)j + 0.5)/ grid.n_y;
+                z = ((double)k + 0.5)/ grid.n_z;
+
+                Rho = Rho_mean + amplitude * sin(k_w* x)* sin(k_w*y)*sin(k_w*z);
+
+                get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+                for (int dv = 0; dv<grid.d_v; dv++){
+                    
+                    grid.Cell(i,j,k,dv) = Feq_node[dv]
+
+                    ;
+
+                }
+
+
+
             }
         }
     }
@@ -425,6 +467,7 @@ void printMass(Grid_N_C_3D<T> &grid){
 
                 for (int dv = 0; dv< grid.d_v; dv++){
                     a += grid.Node(i,j,k,dv) ;
+                    a += grid.Cell(i,j,k,dv) ;
                 }
             }
         }

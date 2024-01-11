@@ -65,7 +65,7 @@ lbmD3Q35<T>::lbmD3Q35(T c1,T cs2)
         thetaInverse = 1.0/theta0;
 
 
-W[dV_ZERO_ZERO_ZERO ]    =1.0/3.0;
+W[dV_ZERO_ZERO_ZERO ]    =(7138753.0 - 71825.0*sqrt(7009.0) )/(4572288.0);
 
 W[dV_P2_ZERO_ZERO   ]    =(26947.0 + 1357.0*sqrt(7009.0)) / (18289152.0);	            	
 W[dV_M2_ZERO_ZERO   ]    =(26947.0 + 1357.0*sqrt(7009.0)) / (18289152.0);	            	
@@ -134,24 +134,24 @@ Cx[dV_M1_ZERO_P1     ]    =-1.0*c1;             Cy[dV_M1_ZERO_P1     ]    = 0.0*
     
     
 
-Cx[dV_PH1_PH1_PH1   ]    = 0.5*c1;              Cy[dV_PH1_PH1_PH1   ]    = 0.5*c1;              Cz[dV_PH1_PH1_PH1   ]    = 0.5*c1;
-Cx[dV_PH1_MH1_PH1   ]    = 0.5*c1;              Cy[dV_PH1_MH1_PH1   ]    =-0.5*c1;              Cz[dV_PH1_MH1_PH1   ]    = 0.5*c1;
-Cx[dV_MH1_MH1_PH1   ]    =-0.5*c1;              Cy[dV_MH1_MH1_PH1   ]    =-0.5*c1;              Cz[dV_MH1_MH1_PH1   ]    = 0.5*c1;
-Cx[dV_MH1_PH1_PH1   ]    =-0.5*c1;              Cy[dV_MH1_PH1_PH1   ]    = 0.5*c1;              Cz[dV_MH1_PH1_PH1   ]    = 0.5*c1;
-Cx[dV_PH1_PH1_MH1   ]    = 0.5*c1;              Cy[dV_PH1_PH1_MH1   ]    = 0.5*c1;              Cz[dV_PH1_PH1_MH1   ]    =-0.5*c1;
-Cx[dV_PH1_MH1_MH1   ]    = 0.5*c1;              Cy[dV_PH1_MH1_MH1   ]    =-0.5*c1;              Cz[dV_PH1_MH1_MH1   ]    =-0.5*c1;
-Cx[dV_MH1_MH1_MH1   ]    =-0.5*c1;              Cy[dV_MH1_MH1_MH1   ]    =-0.5*c1;              Cz[dV_MH1_MH1_MH1   ]    =-0.5*c1;
-Cx[dV_MH1_PH1_MH1   ]    =-0.5*c1;              Cy[dV_MH1_PH1_MH1   ]    = 0.5*c1;              Cz[dV_MH1_PH1_MH1   ]    =-0.5*c1;
+Cx[dV_PH1_PH1_PH1   ]    = 0.5*c1;              Cy[dV_PH1_PH1_PH1    ]    = 0.5*c1;             Cz[dV_PH1_PH1_PH1   ]    = 0.5*c1;
+Cx[dV_PH1_MH1_PH1   ]    = 0.5*c1;              Cy[dV_PH1_MH1_PH1    ]    =-0.5*c1;             Cz[dV_PH1_MH1_PH1   ]    = 0.5*c1;
+Cx[dV_MH1_MH1_PH1   ]    =-0.5*c1;              Cy[dV_MH1_MH1_PH1    ]    =-0.5*c1;             Cz[dV_MH1_MH1_PH1   ]    = 0.5*c1;
+Cx[dV_MH1_PH1_PH1   ]    =-0.5*c1;              Cy[dV_MH1_PH1_PH1    ]    = 0.5*c1;             Cz[dV_MH1_PH1_PH1   ]    = 0.5*c1;
+Cx[dV_PH1_PH1_MH1   ]    = 0.5*c1;              Cy[dV_PH1_PH1_MH1    ]    = 0.5*c1;             Cz[dV_PH1_PH1_MH1   ]    =-0.5*c1;
+Cx[dV_PH1_MH1_MH1   ]    = 0.5*c1;              Cy[dV_PH1_MH1_MH1    ]    =-0.5*c1;             Cz[dV_PH1_MH1_MH1   ]    =-0.5*c1;
+Cx[dV_MH1_MH1_MH1   ]    =-0.5*c1;              Cy[dV_MH1_MH1_MH1    ]    =-0.5*c1;             Cz[dV_MH1_MH1_MH1   ]    =-0.5*c1;
+Cx[dV_MH1_PH1_MH1   ]    =-0.5*c1;              Cy[dV_MH1_PH1_MH1    ]    = 0.5*c1;             Cz[dV_MH1_PH1_MH1   ]    =-0.5*c1;
     
     
-Cx[dV_P2_P2_P2      ]    = 2.0*c1;              Cy[dV_P2_P2_P2      ]    = 2.0*c1;              Cz[dV_P2_P2_P2      ]    = 2.0*c1;
-Cx[dV_P2_M2_P2      ]    = 2.0*c1;              Cy[dV_P2_M2_P2      ]    =-2.0*c1;              Cz[dV_P2_M2_P2      ]    = 2.0*c1;
-Cx[dV_M2_M2_P2      ]    =-2.0*c1;              Cy[dV_M2_M2_P2      ]    =-2.0*c1;              Cz[dV_M2_M2_P2      ]    = 2.0*c1;
-Cx[dV_M2_P2_P2      ]    =-2.0*c1;              Cy[dV_M2_P2_P2      ]    = 2.0*c1;              Cz[dV_M2_P2_P2      ]    = 2.0*c1;
-Cx[dV_P2_P2_M2      ]    = 2.0*c1;              Cy[dV_P2_P2_M2      ]    = 2.0*c1;              Cz[dV_P2_P2_M2      ]    =-2.0*c1;
-Cx[dV_P2_M2_M2      ]    = 2.0*c1;              Cy[dV_P2_M2_M2      ]    =-2.0*c1;              Cz[dV_P2_M2_M2      ]    =-2.0*c1;
-Cx[dV_M2_M2_M2      ]    =-2.0*c1;              Cy[dV_M2_M2_M2      ]    =-2.0*c1;              Cz[dV_M2_M2_M2      ]    =-2.0*c1;
-Cx[dV_M2_P2_M2      ]    =-2.0*c1;              Cy[dV_M2_P2_M2      ]    = 2.0*c1;              Cz[dV_M2_P2_M2      ]    =-2.0*c1;    
+Cx[dV_P2_P2_P2      ]    = 2.0*c1;              Cy[dV_P2_P2_P2       ]    = 2.0*c1;             Cz[dV_P2_P2_P2      ]    = 2.0*c1;
+Cx[dV_P2_M2_P2      ]    = 2.0*c1;              Cy[dV_P2_M2_P2       ]    =-2.0*c1;             Cz[dV_P2_M2_P2      ]    = 2.0*c1;
+Cx[dV_M2_M2_P2      ]    =-2.0*c1;              Cy[dV_M2_M2_P2       ]    =-2.0*c1;             Cz[dV_M2_M2_P2      ]    = 2.0*c1;
+Cx[dV_M2_P2_P2      ]    =-2.0*c1;              Cy[dV_M2_P2_P2       ]    = 2.0*c1;             Cz[dV_M2_P2_P2      ]    = 2.0*c1;
+Cx[dV_P2_P2_M2      ]    = 2.0*c1;              Cy[dV_P2_P2_M2       ]    = 2.0*c1;             Cz[dV_P2_P2_M2      ]    =-2.0*c1;
+Cx[dV_P2_M2_M2      ]    = 2.0*c1;              Cy[dV_P2_M2_M2       ]    =-2.0*c1;             Cz[dV_P2_M2_M2      ]    =-2.0*c1;
+Cx[dV_M2_M2_M2      ]    =-2.0*c1;              Cy[dV_M2_M2_M2       ]    =-2.0*c1;             Cz[dV_M2_M2_M2      ]    =-2.0*c1;
+Cx[dV_M2_P2_M2      ]    =-2.0*c1;              Cy[dV_M2_P2_M2       ]    = 2.0*c1;             Cz[dV_M2_P2_M2      ]    =-2.0*c1;    
 
     
     

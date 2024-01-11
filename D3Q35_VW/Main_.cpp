@@ -14,15 +14,15 @@
 int main()
 {
 
-   int Nx =200;int Ny = 10; int Nz = 10;
+   int Nx =30;int Ny = 30; int Nz = 30;
    std::cout<<"domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
-   Grid_N_C_3D<double> grid            (Nx,Ny,Nz,1,19);
-   Grid_N_C_3D<double> pnid            (Nx,Ny,Nz,1,1);
-   Grid_N_C_3D<double> munid           (Nx,Ny,Nz,1,1);
-   Grid_N_C_3D<double> fnid            (Nx,Ny,Nz,1,1);
-   Grid_N_C_3D<double> rho             (Nx,Ny,Nz,1,1);
-   Grid_N_C_3D<double> laplacian_rho   (Nx,Ny,Nz,1,1);
+   Grid_N_C_3D<double> grid            (Nx,Ny,Nz,2,35);
+   Grid_N_C_3D<double> pnid            (Nx,Ny,Nz,2,1);
+   Grid_N_C_3D<double> munid           (Nx,Ny,Nz,2,1);
+   Grid_N_C_3D<double> fnid            (Nx,Ny,Nz,2,1);
+   Grid_N_C_3D<double> rho             (Nx,Ny,Nz,2,1);
+   Grid_N_C_3D<double> laplacian_rho   (Nx,Ny,Nz,2,1);
 
    
    lbmD3Q35<double> d3q35(1.0,0.33333333333333);
@@ -58,7 +58,12 @@ int main()
 
 
 
-   //fixed ------------------------------Main code--------------------------//
+   //:fixed ------------------------------Main code--------------------------//
+   double check = 0;
+   for(int dv = 0; dv<grid.d_v; dv++){
+      check += d3q35.W[dv]; 
+   }
+   std::cout<<check<<std::endl;
    initialization(grid,d3q35,Rho_mean,0.001,2);
    printdata(d3q35,grid,0,u0);
    printMass(grid);
@@ -70,8 +75,8 @@ int main()
 
    for(int t = 1; t <=25000;t++){
 
-      Periodic(grid);
-      collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q35,beta,tau,TbyTc,kappa, t);
+      // Periodic(grid);
+      // collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q35,beta,tau,TbyTc,kappa, t);
 
       Periodic(grid);
 

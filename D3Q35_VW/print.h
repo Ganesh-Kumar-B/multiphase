@@ -36,13 +36,14 @@ void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, double
             for(int k = 0 + gridLB.noghost; k < gridLB.n_z_node - (gridLB.noghost); k++){ 
 
 
-                get_moments(gridLB,lbModel,u1, u2,u3, rho1, i,j,k);
+                get_moments_Node(gridLB,lbModel,u1, u2,u3, rho1, i,j,k);
                 
-
-
-                // file<<(double)(i-gridLB.noghost)*ny_inv  <<"," <<(double)(j-gridLB.noghost) *ny_inv   <<","<<u1*u_inv<<","<<u2*u_inv<<","<<rho1<<std::endl;
                 file<<i<<"," <<j  <<","<<k  <<","<<u1<<","<<u2<<","<<u3<<","<<rho1<<std::endl;
-    
+                
+                get_moments_Cell(gridLB,lbModel,u1, u2,u3, rho1, i,j,k);
+                
+                file<<i+0.5<<"," <<j+0.5  <<","<<k+0.5<<","<<u1<<","<<u2<<","<<u3<<","<<rho1<<std::endl;
+                
 
             }
         }
