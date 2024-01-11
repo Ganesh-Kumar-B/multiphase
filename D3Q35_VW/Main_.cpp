@@ -76,7 +76,7 @@ int main()
    for(int t = 1; t <=25000;t++){
 
       // Periodic(grid);
-      // collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q35,beta,tau,TbyTc,kappa, t);
+      collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q35,beta,tau,TbyTc,kappa, t);
 
       Periodic(grid);
 
