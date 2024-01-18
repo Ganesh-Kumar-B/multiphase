@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =30;int Ny = 30; int Nz = 30;
+   int Nx =120;int Ny = 10; int Nz = 10;
    std::cout<<"domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
    Grid_N_C_3D<double> grid            (Nx,Ny,Nz,2,35);
@@ -52,18 +52,14 @@ int main()
 
    double Rho_mean = 1.0;
 
-   double TbyTc = 0.90;
+   double TbyTc = 0.98;
    std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
 
 
 
    //:fixed ------------------------------Main code--------------------------//
-   double check = 0;
-   for(int dv = 0; dv<grid.d_v; dv++){
-      check += d3q35.W[dv]; 
-   }
-   std::cout<<check<<std::endl;
+   
    initialization(grid,d3q35,Rho_mean,0.001,2);
    printdata(d3q35,grid,0,u0);
    printMass(grid);
@@ -73,16 +69,16 @@ int main()
    std::cout<<"Simulation time "<< sim_time<<std::endl;
  
 
-   for(int t = 1; t <=25000;t++){
+   for(int t = 1; t <=100;t++){
 
-      // Periodic(grid);
+    // Periodic(grid);
       collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q35,beta,tau,TbyTc,kappa, t);
 
       Periodic(grid);
 
       advection(grid);
 
-      if(t%1000== 0){
+      if(t%1== 0){
          std::cout<<t<<" ";
          printMass(grid);
          printdata(d3q35,grid,t,u0);

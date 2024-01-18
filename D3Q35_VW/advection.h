@@ -135,10 +135,10 @@ void advection(Grid_N_C_3D<T> &grid){
         for(int j = grid.n_y_node - (grid.noghost +1); j> grid.noghost-1; j--){
             for(int k = grid.n_z_node - (grid.noghost +1); k> grid.noghost-1; k--){
 
-                grid.Node(i ,j ,k , dV_PH1_PH1_PH1)  = grid.Cell(i -1  , j -1  ,  k -1 , dV_PH1_PH1_PH1)                                                ;
-                grid.Node(i ,j ,k , dV_PH1_MH1_PH1)  = grid.Cell(i -1  , j +0  ,  k -1  , dV_PH1_MH1_PH1)                                                ;
-                grid.Node(i ,j ,k , dV_PH1_PH1_MH1)  = grid.Cell(i -1  , j -1  ,  k +0  , dV_PH1_PH1_MH1)                                                ;
-                grid.Node(i ,j ,k , dV_PH1_MH1_MH1)  = grid.Cell(i -1  , j +0  ,  k +0  , dV_PH1_MH1_MH1)                                                ;
+                grid.Node(i ,j ,k , dV_PH1_PH1_PH1)  = grid.Cell(i -1  , j -1  ,  k -1  , dV_PH1_PH1_PH1)   ;
+                grid.Node(i ,j ,k , dV_PH1_MH1_PH1)  = grid.Cell(i -1  , j +0  ,  k -1  , dV_PH1_MH1_PH1)   ;
+                grid.Node(i ,j ,k , dV_PH1_PH1_MH1)  = grid.Cell(i -1  , j -1  ,  k +0  , dV_PH1_PH1_MH1)   ;
+                grid.Node(i ,j ,k , dV_PH1_MH1_MH1)  = grid.Cell(i -1  , j +0  ,  k +0  , dV_PH1_MH1_MH1)   ;
 
 
             }
@@ -161,14 +161,14 @@ void Periodic(Grid_N_C_3D<T> &grid){
                 grid.Node(i ,j  ,0                              , dv)   = grid.Node(i,j,grid.n_z_node-grid.noghost -2   ,dv);
                 grid.Node(i ,j  ,1                              , dv)   = grid.Node(i,j,grid.n_z_node-grid.noghost -1   ,dv);
 
-                grid.Node(i ,j  ,grid.n_z_node - grid.noghost   , dv)   = grid.Node(i,j,0                               ,dv);
-                grid.Node(i ,j  ,grid.n_z_node - grid.noghost +1, dv)   = grid.Node(i,j,1                               ,dv);
+                grid.Node(i ,j  ,grid.n_z_node - grid.noghost   , dv)   = grid.Node(i,j,2                               ,dv);
+                grid.Node(i ,j  ,grid.n_z_node - grid.noghost +1, dv)   = grid.Node(i,j,3                               ,dv);
 
                 grid.Cell(i ,j  ,0                              , dv)   = grid.Cell(i,j,grid.n_z_node-grid.noghost -2   ,dv);
                 grid.Cell(i ,j  ,1                              , dv)   = grid.Cell(i,j,grid.n_z_node-grid.noghost -1   ,dv);
 
-                grid.Cell(i ,j  ,grid.n_z_node - grid.noghost   , dv)   = grid.Cell(i,j,0                               ,dv);
-                grid.Cell(i ,j  ,grid.n_z_node - grid.noghost +1, dv)   = grid.Cell(i,j,1                               ,dv);
+                grid.Cell(i ,j  ,grid.n_z_node - grid.noghost   , dv)   = grid.Cell(i,j,2                               ,dv);
+                grid.Cell(i ,j  ,grid.n_z_node - grid.noghost +1, dv)   = grid.Cell(i,j,3                               ,dv);
 
 
 
@@ -182,16 +182,14 @@ void Periodic(Grid_N_C_3D<T> &grid){
                 grid.Node(i , 0                                ,k, dv)   = grid.Node(i,grid.n_y_node-grid.noghost -2 ,k   ,dv);
                 grid.Node(i , 1                                ,k, dv)   = grid.Node(i,grid.n_y_node-grid.noghost -1 ,k   ,dv);
 
-                grid.Node(i , grid.n_y_node - grid.noghost     ,k, dv)   = grid.Node(i,0                             ,k   ,dv);
-                grid.Node(i , grid.n_y_node - grid.noghost +1  ,k, dv)   = grid.Node(i,1                             ,k   ,dv);
+                grid.Node(i , grid.n_y_node - grid.noghost     ,k, dv)   = grid.Node(i,2                            ,k   ,dv);
+                grid.Node(i , grid.n_y_node - grid.noghost +1  ,k, dv)   = grid.Node(i,3                            ,k   ,dv);
 
                 grid.Cell(i , 0                                ,k, dv)   = grid.Cell(i,grid.n_y_node-grid.noghost -2 ,k   ,dv);
                 grid.Cell(i , 1                                ,k, dv)   = grid.Cell(i,grid.n_y_node-grid.noghost -1 ,k   ,dv);
 
-                grid.Cell(i , grid.n_y_node - grid.noghost     ,k, dv)   = grid.Cell(i,0                             ,k   ,dv);
-                grid.Cell(i , grid.n_y_node - grid.noghost +1  ,k, dv)   = grid.Cell(i,1                             ,k   ,dv);
-
-
+                grid.Cell(i , grid.n_y_node - grid.noghost     ,k, dv)   = grid.Cell(i,2                            ,k   ,dv);
+                grid.Cell(i , grid.n_y_node - grid.noghost +1  ,k, dv)   = grid.Cell(i,3                            ,k   ,dv);
 
             }
         }
@@ -204,14 +202,14 @@ void Periodic(Grid_N_C_3D<T> &grid){
                 grid.Node( 0                               ,j ,k, dv)   = grid.Node(grid.n_x_node-grid.noghost -2 ,j ,k   ,dv);
                 grid.Node( 1                               ,j ,k, dv)   = grid.Node(grid.n_x_node-grid.noghost -1 ,j ,k   ,dv);
 
-                grid.Node( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Node(0                             ,j ,k   ,dv);
-                grid.Node( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Node(1                             ,j ,k   ,dv);
+                grid.Node( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Node(2                             ,j ,k   ,dv);
+                grid.Node( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Node(3                             ,j ,k   ,dv);
 
                 grid.Cell( 0                               ,j ,k, dv)   = grid.Cell(grid.n_x_node-grid.noghost -2 ,j ,k   ,dv);
                 grid.Cell( 1                               ,j ,k, dv)   = grid.Cell(grid.n_x_node-grid.noghost -1 ,j ,k   ,dv);
 
-                grid.Cell( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Cell(0                             ,j ,k   ,dv);
-                grid.Cell( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Cell(1                             ,j ,k   ,dv);
+                grid.Cell( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Cell(2                             ,j ,k   ,dv);
+                grid.Cell( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Cell(3                             ,j ,k   ,dv);
             }
         }
     }
