@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =120;int Ny = 10; int Nz = 10;
+   int Nx =50;int Ny = 50; int Nz = 50;
    std::cout<<"domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
    Grid_N_C_3D<double> grid            (Nx,Ny,Nz,2,35);
@@ -27,7 +27,7 @@ int main()
    
    lbmD3Q35<double> d3q35(1.0,0.33333333333333);
 
-
+    
    double cs = sqrt(d3q35.theta0);
    std::cout<<"theta= "<<d3q35.theta0<<std::endl;
 
@@ -52,9 +52,12 @@ int main()
 
    double Rho_mean = 1.0;
 
-   double TbyTc = 0.98;
+
+
+   double TbyTc = 0.95;
    std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
+
 
 
 
@@ -69,7 +72,7 @@ int main()
    std::cout<<"Simulation time "<< sim_time<<std::endl;
  
 
-   for(int t = 1; t <=100;t++){
+   for(int t = 1; t <=20000;t++){
 
     // Periodic(grid);
       collide(grid,rho,pnid,fnid,munid,laplacian_rho,d3q35,beta,tau,TbyTc,kappa, t);
@@ -78,7 +81,7 @@ int main()
 
       advection(grid);
 
-      if(t%1== 0){
+      if(t%1000== 0){
          std::cout<<t<<" ";
          printMass(grid);
          printdata(d3q35,grid,t,u0);

@@ -34,10 +34,10 @@ void advection(Grid_N_C_3D<T> &grid){
                 grid.Node(i,j,k,  dV_M1_ZERO_M1  )        = grid.Node(i+1,j  ,k+1, dV_M1_ZERO_M1   ); // CHECKED
                 grid.Node(i,j,k,  dV_M1_ZERO_P1  )        = grid.Node(i+1,j  ,k-1, dV_M1_ZERO_P1   ); // CHECKED
 
-                grid.Node(i,j,k,  dV_M2_M2_M2   )         = grid.Node(i +1,j +1,k +1,  dV_M2_M2_M2   ) ;
-                grid.Node(i,j,k,  dV_M2_P2_M2   )         = grid.Node(i +1,j -1,k +1,  dV_M2_P2_M2   ) ;
-                grid.Node(i,j,k,  dV_M2_M2_P2   )         = grid.Node(i +1,j +1,k -1,  dV_M2_M2_P2   ) ;
-                grid.Node(i,j,k,  dV_M2_P2_P2   )         = grid.Node(i +1,j -1,k -1,  dV_M2_P2_P2   ) ;
+                grid.Node(i,j,k,  dV_M2_M2_M2   )         = grid.Node(i +2,j +2,k +2,  dV_M2_M2_M2   ) ;
+                grid.Node(i,j,k,  dV_M2_P2_M2   )         = grid.Node(i +2,j -2,k +2,  dV_M2_P2_M2   ) ;
+                grid.Node(i,j,k,  dV_M2_M2_P2   )         = grid.Node(i +2,j +2,k -2,  dV_M2_M2_P2   ) ;
+                grid.Node(i,j,k,  dV_M2_P2_P2   )         = grid.Node(i +2,j -2,k -2,  dV_M2_P2_P2   ) ;
 
                 grid.Node(i,j,k,  dV_MH1_MH1_MH1   )     =    grid.Cell(i   ,j   ,k    ,  dV_MH1_MH1_MH1   )    ;
                 grid.Node(i,j,k,  dV_MH1_PH1_MH1   )     =    grid.Cell(i   ,j -1,k    ,  dV_MH1_PH1_MH1   )    ;
@@ -57,10 +57,10 @@ void advection(Grid_N_C_3D<T> &grid){
                 grid.Cell(i,j,k,  dV_M1_ZERO_M1  )        = grid.Cell(i+1,j  ,k+1, dV_M1_ZERO_M1   ); 
                 grid.Cell(i,j,k,  dV_M1_ZERO_P1  )        = grid.Cell(i+1,j  ,k-1, dV_M1_ZERO_P1   ); 
 
-                grid.Cell(i,j,k,  dV_M2_M2_M2   )         = grid.Cell(i +1,j +1,k +1,  dV_M2_M2_M2   )      ;
-                grid.Cell(i,j,k,  dV_M2_P2_M2   )         = grid.Cell(i +1,j -1,k +1,  dV_M2_P2_M2   )      ;
-                grid.Cell(i,j,k,  dV_M2_M2_P2   )         = grid.Cell(i +1,j +1,k -1,  dV_M2_M2_P2   )      ;
-                grid.Cell(i,j,k,  dV_M2_P2_P2   )         = grid.Cell(i +1,j -1,k -1,  dV_M2_P2_P2   )      ;
+                grid.Cell(i,j,k,  dV_M2_M2_M2   )         = grid.Cell(i +2,j +2,k +2,  dV_M2_M2_M2   )      ;
+                grid.Cell(i,j,k,  dV_M2_P2_M2   )         = grid.Cell(i +2,j -2,k +2,  dV_M2_P2_M2   )      ;
+                grid.Cell(i,j,k,  dV_M2_M2_P2   )         = grid.Cell(i +2,j +2,k -2,  dV_M2_M2_P2   )      ;
+                grid.Cell(i,j,k,  dV_M2_P2_P2   )         = grid.Cell(i +2,j -2,k -2,  dV_M2_P2_P2   )      ;
                 
             }
         }
@@ -100,10 +100,10 @@ void advection(Grid_N_C_3D<T> &grid){
                 grid.Node(i,j,k,dV_P1_ZERO_P1   )   = grid.Node(i-1,j  ,k-1, dV_P1_ZERO_P1   );    
                 grid.Node(i,j,k,dV_P1_ZERO_M1   )   = grid.Node(i-1,j  ,k+1, dV_P1_ZERO_M1   );
 
-                grid.Node(i,j,k,dV_P2_P2_P2  ) = grid.Node(i -1,j -1,k -1,dV_P2_P2_P2  ) ;
-                grid.Node(i,j,k,dV_P2_M2_P2  ) = grid.Node(i -1,j +1,k -1,dV_P2_M2_P2  ) ;
-                grid.Node(i,j,k,dV_P2_P2_M2  ) = grid.Node(i -1,j -1,k +1,dV_P2_P2_M2  ) ;
-                grid.Node(i,j,k,dV_P2_M2_M2  ) = grid.Node(i -1,j +1,k +1,dV_P2_M2_M2  ) ;
+                grid.Node(i,j,k,dV_P2_P2_P2  )      = grid.Node(i -2,j -2,k -2,dV_P2_P2_P2  ) ;
+                grid.Node(i,j,k,dV_P2_M2_P2  )      = grid.Node(i -2,j +2,k -2,dV_P2_M2_P2  ) ;
+                grid.Node(i,j,k,dV_P2_P2_M2  )      = grid.Node(i -2,j -2,k +2,dV_P2_P2_M2  ) ;
+                grid.Node(i,j,k,dV_P2_M2_M2  )      = grid.Node(i -2,j +2,k +2,dV_P2_M2_M2  ) ;
         
 
 
@@ -119,10 +119,10 @@ void advection(Grid_N_C_3D<T> &grid){
                 grid.Cell(i,j,k,dV_P1_ZERO_P1   )   = grid.Cell(i-1,j  ,k-1, dV_P1_ZERO_P1   );    
                 grid.Cell(i,j,k,dV_P1_ZERO_M1   )   = grid.Cell(i-1,j  ,k+1, dV_P1_ZERO_M1   );
 
-                grid.Cell(i,j,k,dV_P2_P2_P2  ) = grid.Cell(i -1,j -1,k -1,dV_P2_P2_P2  ) ;
-                grid.Cell(i,j,k,dV_P2_M2_P2  ) = grid.Cell(i -1,j +1,k -1,dV_P2_M2_P2  ) ;
-                grid.Cell(i,j,k,dV_P2_P2_M2  ) = grid.Cell(i -1,j -1,k +1,dV_P2_P2_M2  ) ;
-                grid.Cell(i,j,k,dV_P2_M2_M2  ) = grid.Cell(i -1,j +1,k +1,dV_P2_M2_M2  ) ;
+                grid.Cell(i,j,k,dV_P2_P2_P2  ) = grid.Cell(i -2,j -2,k -2,dV_P2_P2_P2  ) ;
+                grid.Cell(i,j,k,dV_P2_M2_P2  ) = grid.Cell(i -2,j +2,k -2,dV_P2_M2_P2  ) ;
+                grid.Cell(i,j,k,dV_P2_P2_M2  ) = grid.Cell(i -2,j -2,k +2,dV_P2_P2_M2  ) ;
+                grid.Cell(i,j,k,dV_P2_M2_M2  ) = grid.Cell(i -2,j +2,k +2,dV_P2_M2_M2  ) ;
 
                 grid.Cell(i,j,k,dV_PH1_PH1_PH1  ) =    grid.Node(i +0, j +0, k +0 ,dV_PH1_PH1_PH1    ); 
                 grid.Cell(i,j,k,dV_PH1_MH1_PH1  ) =    grid.Node(i +0, j +1, k +0 ,dV_PH1_MH1_PH1    ); 
@@ -210,9 +210,32 @@ void Periodic(Grid_N_C_3D<T> &grid){
 
                 grid.Cell( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Cell(2                             ,j ,k   ,dv);
                 grid.Cell( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Cell(3                             ,j ,k   ,dv);
+
+
+                //for the shock
+
+                // grid.Node( 0                               ,j ,k, dv)   = grid.Node(2                             ,j ,k   ,dv);
+                // grid.Node( 1                               ,j ,k, dv)   = grid.Node(3                             ,j ,k   ,dv);
+
+                // grid.Node( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Node(grid.n_x_node-grid.noghost -2 ,j ,k   ,dv);
+                // grid.Node( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Node(grid.n_x_node-grid.noghost -1 ,j ,k   ,dv);
+
+                // grid.Cell( 0                               ,j ,k, dv)   = grid.Cell(2                             ,j ,k   ,dv);
+                // grid.Cell( 1                               ,j ,k, dv)   = grid.Cell(3                             ,j ,k   ,dv);
+
+                // grid.Cell( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Cell(grid.n_x_node-grid.noghost -2 ,j ,k   ,dv);
+                // grid.Cell( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Cell(grid.n_x_node-grid.noghost -1 ,j ,k   ,dv);
+
+
+
+
             }
         }
     }
+
+
+
+
 
 }
 
