@@ -54,7 +54,7 @@ int main()
 
 
 
-   double TbyTc = 0.95;
+   double TbyTc = 0.9;
    std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
 
@@ -64,9 +64,9 @@ int main()
    //:fixed ------------------------------Main code--------------------------//
    
    initialization(grid,d3q35,Rho_mean,0.001,2);
-   printdata(d3q35,grid,0,u0);
+   print_vtk(d3q35,grid,0,u0);
    printMass(grid);
-
+   exit(0);
    int sim_time = 20*Nx/u0;
 
    std::cout<<"Simulation time "<< sim_time<<std::endl;
