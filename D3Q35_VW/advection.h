@@ -23,26 +23,26 @@ void advection(Grid_N_C_3D<T> &grid){
             for(int k = 0 + grid.noghost ; k < grid.n_z_node - (grid.noghost);k++){ 
 
                 //>for the nodes
-                grid.Node(i,j,k,  dV_M2_ZERO_ZERO   )     = grid.Node(i+2,j  ,k  , dV_M2_ZERO_ZERO ); 
-                grid.Node(i,j,k,  dV_ZERO_M2_ZERO   )     = grid.Node(i  ,j+2,k  , dV_ZERO_M2_ZERO ); 
-                grid.Node(i,j,k,  dV_ZERO_ZERO_M2   )     = grid.Node(i  ,j  ,k+2, dV_ZERO_ZERO_M2 );
+                grid.Node(i,j,k,  dV_M2_ZERO_ZERO   )       = grid.Node(i+2,j  ,k  , dV_M2_ZERO_ZERO ); 
+                grid.Node(i,j,k,  dV_ZERO_M2_ZERO   )       = grid.Node(i  ,j+2,k  , dV_ZERO_M2_ZERO ); 
+                grid.Node(i,j,k,  dV_ZERO_ZERO_M2   )       = grid.Node(i  ,j  ,k+2, dV_ZERO_ZERO_M2 );
 
-                grid.Node(i,j,k,  dV_M1_M1_ZERO  )        = grid.Node(i+1,j+1,k  , dV_M1_M1_ZERO   ); // CHECKED
-                grid.Node(i,j,k,  dV_M1_P1_ZERO  )        = grid.Node(i+1,j-1,k  , dV_M1_P1_ZERO   ); // CHECKED
-                grid.Node(i,j,k,  dV_ZERO_M1_M1  )        = grid.Node(i  ,j+1,k+1, dV_ZERO_M1_M1   ); // CHECKED
-                grid.Node(i,j,k,  dV_ZERO_M1_P1  )        = grid.Node(i  ,j+1,k-1, dV_ZERO_M1_P1   ); // CHECKED
-                grid.Node(i,j,k,  dV_M1_ZERO_M1  )        = grid.Node(i+1,j  ,k+1, dV_M1_ZERO_M1   ); // CHECKED
-                grid.Node(i,j,k,  dV_M1_ZERO_P1  )        = grid.Node(i+1,j  ,k-1, dV_M1_ZERO_P1   ); // CHECKED
+                grid.Node(i,j,k,  dV_M1_M1_ZERO  )          = grid.Node(i+1,j+1,k  , dV_M1_M1_ZERO   ); // CHECKED
+                grid.Node(i,j,k,  dV_M1_P1_ZERO  )          = grid.Node(i+1,j-1,k  , dV_M1_P1_ZERO   ); // CHECKED
+                grid.Node(i,j,k,  dV_ZERO_M1_M1  )          = grid.Node(i  ,j+1,k+1, dV_ZERO_M1_M1   ); // CHECKED
+                grid.Node(i,j,k,  dV_ZERO_M1_P1  )          = grid.Node(i  ,j+1,k-1, dV_ZERO_M1_P1   ); // CHECKED
+                grid.Node(i,j,k,  dV_M1_ZERO_M1  )          = grid.Node(i+1,j  ,k+1, dV_M1_ZERO_M1   ); // CHECKED
+                grid.Node(i,j,k,  dV_M1_ZERO_P1  )          = grid.Node(i+1,j  ,k-1, dV_M1_ZERO_P1   ); // CHECKED
 
-                grid.Node(i,j,k,  dV_M2_M2_M2   )         = grid.Node(i +2,j +2,k +2,  dV_M2_M2_M2   ) ;
-                grid.Node(i,j,k,  dV_M2_P2_M2   )         = grid.Node(i +2,j -2,k +2,  dV_M2_P2_M2   ) ;
-                grid.Node(i,j,k,  dV_M2_M2_P2   )         = grid.Node(i +2,j +2,k -2,  dV_M2_M2_P2   ) ;
-                grid.Node(i,j,k,  dV_M2_P2_P2   )         = grid.Node(i +2,j -2,k -2,  dV_M2_P2_P2   ) ;
+                grid.Node(i,j,k,  dV_M2_M2_M2   )           = grid.Node(i +2,j +2,k +2,  dV_M2_M2_M2   ) ;
+                grid.Node(i,j,k,  dV_M2_P2_M2   )           = grid.Node(i +2,j -2,k +2,  dV_M2_P2_M2   ) ;
+                grid.Node(i,j,k,  dV_M2_M2_P2   )           = grid.Node(i +2,j +2,k -2,  dV_M2_M2_P2   ) ;
+                grid.Node(i,j,k,  dV_M2_P2_P2   )           = grid.Node(i +2,j -2,k -2,  dV_M2_P2_P2   ) ;
 
-                grid.Node(i,j,k,  dV_MH1_MH1_MH1   )     =    grid.Cell(i   ,j   ,k    ,  dV_MH1_MH1_MH1   )    ;
-                grid.Node(i,j,k,  dV_MH1_PH1_MH1   )     =    grid.Cell(i   ,j -1,k    ,  dV_MH1_PH1_MH1   )    ;
-                grid.Node(i,j,k,  dV_MH1_MH1_PH1   )     =    grid.Cell(i   ,j   ,k -1 ,  dV_MH1_MH1_PH1   )    ;
-                grid.Node(i,j,k,  dV_MH1_PH1_PH1   )     =    grid.Cell(i   ,j -1,k -1 ,  dV_MH1_PH1_PH1   )    ;
+                grid.Node(i,j,k,  dV_MH1_MH1_MH1   )        =    grid.Cell(i   ,j   ,k    ,  dV_MH1_MH1_MH1   )    ;
+                grid.Node(i,j,k,  dV_MH1_PH1_MH1   )        =    grid.Cell(i   ,j -1,k    ,  dV_MH1_PH1_MH1   )    ;
+                grid.Node(i,j,k,  dV_MH1_MH1_PH1   )        =    grid.Cell(i   ,j   ,k -1 ,  dV_MH1_MH1_PH1   )    ;
+                grid.Node(i,j,k,  dV_MH1_PH1_PH1   )        =    grid.Cell(i   ,j -1,k -1 ,  dV_MH1_PH1_PH1   )    ;
 
 
                 //>for the cells
