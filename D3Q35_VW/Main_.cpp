@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =30;int Ny = 30; int Nz = 30;
+   int Nx =50;int Ny = 50; int Nz = 50;
    std::cout<<"domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
    Grid_N_C_3D<double> grid            (Nx,Ny,Nz,2,35);
@@ -50,7 +50,7 @@ int main()
 
 
 
-   double TbyTc = 0.86;
+   double TbyTc = 0.90;
    std::cout<<"T/T0 = "<<TbyTc<<std::endl;
    double kappa = 0.0625;
 
@@ -60,7 +60,7 @@ int main()
 
    //:fixed ------------------------------Main code--------------------------//
    
-   initialization(grid,d3q35,Rho_mean,0.001,2);
+   initialization(grid,d3q35,Rho_mean,0.001,1);
    print_vtk(d3q35,grid,0,u0);
    printMass(grid);
    int sim_time = 20*Nx/u0;

@@ -25,12 +25,13 @@ void collide(Grid_N_C_3D<T> &grid,
     Grid_N_C_3D<T>  fnid                            (grid.n_x,grid.n_y,grid.n_z,2,1);       
     Grid_N_C_3D<T>  munid                           (grid.n_x,grid.n_y,grid.n_z,2,1);   
     Grid_N_C_3D<T>  laplacian_rho                   (grid.n_x,grid.n_y,grid.n_z,2,1);   
+    Grid_N_C_3D<T>  gradient_rho                    (grid.n_x,grid.n_y,grid.n_z,2,3);   //3 components
 
     double feq_Node[35] = {0},feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
 
 
 
-    Multiphase_terms(grid,rho,pnid, fnid, munid,laplacian_rho,lb,TbyTc,kappa );
+    Multiphase_terms(grid,rho,pnid, fnid, munid,laplacian_rho,gradient_rho,lb,TbyTc,kappa );
 
 
 
@@ -51,31 +52,31 @@ void collide(Grid_N_C_3D<T> &grid,
 
 
                 // //> normal
-                for (int dv = 0; dv< grid.d_v; dv++){
-                    grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                                        + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv])
-                                        ;
-                }
+                // for (int dv = 0; dv< grid.d_v; dv++){
+                //     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
+                //                         + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv])
+                //                         ;
+                // }
                 //> with entropic 
                 //<this works properly
                 //$for node
-                // double x_i[35];
-                // for(int dv = 0; dv< grid.d_v; dv++)
-                //     x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
+                double x_i[35];
+                for(int dv = 0; dv< grid.d_v; dv++)
+                    x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
                 
-                // double alpha = 0;
-                // for(int dv = 0; dv< grid.d_v; dv++){
-                //     alpha = 2.0;
-                //     if( std::fabs(x_i[dv]) > 0.0001){
-                //         calculateAlpha(lb,x_i,&grid.Node(i,j,0),beta,alpha);
-                //         break;
-                //     }
-                // }
+                double alpha = 0;
+                for(int dv = 0; dv< grid.d_v; dv++){
+                    alpha = 2.0;
+                    if( std::fabs(x_i[dv]) > 0.0001){
+                        calculateAlpha(lb,x_i,&grid.Node(i,j,0),beta,alpha);
+                        break;
+                    }
+                }
 
-                // for (int dv = 0; dv< 35; dv++){
-                //     grid.Node(i,j,dv) =  grid.Node(i,j,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,dv))
-                //                         + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv] );
-                // }       
+                for (int dv = 0; dv< 35; dv++){
+                    grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
+                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv] );
+                }       
 
 
 
@@ -86,38 +87,37 @@ void collide(Grid_N_C_3D<T> &grid,
                 
                 Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Fx,Fy,Fz,i,j,k );
 
-
                 get_moments_Cell(grid, lb,  ux, uy, uz,Rho, i, j, k, Fx, Fy , Fz);            //for the node
                 get_equi(feq_Cell,lb, ux, uy,uz, Rho);
 
 
                 //> normal
-                for (int dv = 0; dv< grid.d_v; dv++){
-                    grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + 2.0* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                                        + 2.0 *beta * tau*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv])
-                                        ;
-                }       
+                // for (int dv = 0; dv< grid.d_v; dv++){
+                //     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + 2.0* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
+                //                         + 2.0 *beta * tau*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv])
+                //                         ;
+                // }       
 
 
 
                 //$ for Cell
-                // double x_i[35];
-                // for(int dv = 0; dv< grid.d_v; dv++)
-                //     x_i[dv] = feq_Cell[dv]/grid.Cell(i,j,dv) - 1.0;
                 
-                // double alpha = 0;
-                // for(int dv = 0; dv< grid.d_v; dv++){
-                //     alpha = 2.0;
-                //     if( std::fabs(x_i[dv]) > 0.0001){
-                //         calculateAlpha(lb,x_i,&grid.Cell(i,j,0),beta,alpha);
-                //         break;
-                //     }
-                // }
+                for(int dv = 0; dv< grid.d_v; dv++)
+                    x_i[dv] = feq_Cell[dv]/grid.Cell(i,j,dv) - 1.0;
+                
+                alpha = 0;
+                for(int dv = 0; dv< grid.d_v; dv++){
+                    alpha = 2.0;
+                    if( std::fabs(x_i[dv]) > 0.0001){
+                        calculateAlpha(lb,x_i,&grid.Cell(i,j,0),beta,alpha);
+                        break;
+                    }
+                }
 
-                // for (int dv = 0; dv< 35; dv++){
-                //     grid.Cell(i,j,dv) =  grid.Cell(i,j,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,dv))
-                //                         + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Cell(i,j)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv] );
-                // }
+                for (int dv = 0; dv< 35; dv++){
+                    grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
+                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv] );
+                }
 
 
 
@@ -402,51 +402,9 @@ std::cout<<"Total mass =  "<<a<<std::endl;
 
 
 
-                //> gradient of Rho 
-                //! was used in the free energy butnot needed
-                // double grad_rhox = 0.0,grad_rhoy = 0.0,grad_rhoz = 0.0;
-                // del_t = 1.0;
-                // Coeff = (1.0/(del_t*lb.theta0));
-
-                // for(int dv = 0; dv< grid.d_v; dv++){
-                //     grad_rhox += lb.W[dv]*lb.Cx[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv]) ;
-                //     grad_rhoy += lb.W[dv]*lb.Cy[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv]) ;
-                //     grad_rhoz += lb.W[dv]*lb.Cz[dv]*rho.Node( i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv]) ;
-                // }
-                // double grad_rho = Coeff* (grad_rhox + grad_rhoy + grad_rhoz);
-
-
-
-
-
-//>laplacian of rho
-    // for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
-    //     for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
-    //         for(int k = 0 + grid.noghost;k < grid.n_z_node - (grid.noghost) ; k++){
-
-    //             //>node
-    //             laplacian_pnidplusfnidbyrho.Node(i,j,k)  = 0.0;
-    //             double del_t = 1.0;
-    //             double Coeff = (2.0/(del_t*del_t*lb.theta0));
-
-    //             for(int dv = 0; dv< grid.d_v; dv++)
-    //                 laplacian_pnidplusfnidbyrho.Node(i,j,k) += lb.W[dv]*((pnid.Node( i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv]) + fnid.Node(i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv])) / rho.Node(i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv])) ;
-
-    //             laplacian_pnidplusfnidbyrho.Node(i,j,k) = Coeff * ( laplacian_pnidplusfnidbyrho.Node(i,j,k) - ((pnid.Node(i,j,k) + fnid.Node(i,j,k)) / rho.Node(i,j,k)));
-
-    //             //>cell
-    //             laplacian_pnidplusfnidbyrho.Cell(i,j,k)  = 0.0;
-                
-    //             for(int dv = 0; dv< grid.d_v; dv++)
-    //                 laplacian_pnidplusfnidbyrho.Cell(i,j,k) += lb.W[dv]*((pnid.Cell( i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv]) + fnid.Cell(i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv])) / rho.Cell(i+ lb.Cx[dv] , j + lb.Cy[dv], k + lb.Cz[dv])) ;
-
-    //             laplacian_pnidplusfnidbyrho.Cell(i,j,k) = Coeff * ( laplacian_pnidplusfnidbyrho.Cell(i,j,k) - ((pnid.Cell(i,j,k) + fnid.Cell(i,j,k)) / rho.Cell(i,j,k)));
-
-
-
-    //         }
-    //     }
-    // }
-
-    // Periodic(laplacian_pnidplusfnidbyrho);
+               
     
+
+
+
+

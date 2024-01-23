@@ -62,6 +62,7 @@ void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, double u0)
     sprintf(fileName,"./Result/velocity_%d.vtk",step) ;
     file.open(fileName) ;
     file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_GRID"<<std::endl;
+    // file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_POINTS"<<std::endl;
     
     file<<"DIMENSIONS "<<2*grid.n_x<<" "<<1*grid.n_y<<" "<<1*grid.n_z<<std::endl;
     
