@@ -40,11 +40,12 @@ void collide(Grid_N_C_3D<T> &grid,
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
             for(int k = 0 + grid.noghost;k < grid.n_z_node - (grid.noghost) ; k++){
                 
-
-
                 double Rho = 0.0;
                 double Fx = 0, Fy = 0, Fz = 0;
-                Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Fx,Fy,Fz,i,j,k );
+
+                // Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Fx,Fy,Fz,i,j,k );
+                Multiphase_Force_eta_Node(grid,rho,pnid, fnid, munid,laplacian_rho,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa );
+                
 
 
                 get_moments_Node(grid, lb,  ux, uy, uz,Rho, i, j, k, Fx, Fy , Fz);            //for the node
@@ -85,7 +86,8 @@ void collide(Grid_N_C_3D<T> &grid,
                 Rho = 0.0;
 
                 
-                Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Fx,Fy,Fz,i,j,k );
+                // Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Fx,Fy,Fz,i,j,k );
+                Multiphase_Force_eta_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa );
 
                 get_moments_Cell(grid, lb,  ux, uy, uz,Rho, i, j, k, Fx, Fy , Fz);            //for the node
                 get_equi(feq_Cell,lb, ux, uy,uz, Rho);
