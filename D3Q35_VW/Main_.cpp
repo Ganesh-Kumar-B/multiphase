@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =20;int Ny = 20; int Nz = 20;
+   int Nx =50;int Ny = 50; int Nz = 50;
    std::cout<<"domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
    Grid_N_C_3D<double> grid            (Nx,Ny,Nz,2,35);
@@ -83,10 +83,5 @@ int main()
          print_vtk(d3q35,grid,t,u0);
       }
    }
-
-    
 }
-   
-
-
 ;

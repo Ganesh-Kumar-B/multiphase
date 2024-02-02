@@ -25,13 +25,14 @@ void collide(Grid_N_C_3D<T> &grid,
     Grid_N_C_3D<T>  fnid                            (grid.n_x,grid.n_y,grid.n_z,2,1);       
     Grid_N_C_3D<T>  munid                           (grid.n_x,grid.n_y,grid.n_z,2,1);   
     Grid_N_C_3D<T>  laplacian_rho                   (grid.n_x,grid.n_y,grid.n_z,2,1);   
+    Grid_N_C_3D<T>  laplacian_fnid                  (grid.n_x,grid.n_y,grid.n_z,2,1);   
     Grid_N_C_3D<T>  gradient_rho                    (grid.n_x,grid.n_y,grid.n_z,2,3);   //3 components
 
     double feq_Node[35] = {0},feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
 
 
 
-    Multiphase_terms(grid,rho,pnid, fnid, munid,laplacian_rho,gradient_rho,lb,TbyTc,kappa );
+    Multiphase_terms(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,TbyTc,kappa );
 
 
 
