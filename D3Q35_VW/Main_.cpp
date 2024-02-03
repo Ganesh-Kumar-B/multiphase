@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =50;int Ny = 50; int Nz = 50;
+   int Nx =30;int Ny = 30; int Nz = 30;
    std::cout<<"domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
    Grid_N_C_3D<double> grid            (Nx,Ny,Nz,2,35);
@@ -66,8 +66,7 @@ int main()
    int sim_time = 20*Nx/u0;
 
    std::cout<<"simulation started and Simulation time "<< sim_time<<std::endl;
- 
-
+   
    for(int t = 1; t <=20000;t++){
 
       // Periodic(grid);

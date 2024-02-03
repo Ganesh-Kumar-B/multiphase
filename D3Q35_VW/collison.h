@@ -28,8 +28,9 @@ void collide(Grid_N_C_3D<T> &grid,
     Grid_N_C_3D<T>  laplacian_fnid                  (grid.n_x,grid.n_y,grid.n_z,2,1);   
     Grid_N_C_3D<T>  gradient_rho                    (grid.n_x,grid.n_y,grid.n_z,2,3);   //3 components
 
-    double feq_Node[35] = {0},feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
+    double feq_Node[35] = {0}, feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
 
+    double eta =0;   //   0 ----> fourth order   1-----> second order 
 
 
     Multiphase_terms(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,TbyTc,kappa );
@@ -45,7 +46,7 @@ void collide(Grid_N_C_3D<T> &grid,
                 double Fx = 0, Fy = 0, Fz = 0;
 
                 // Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Fx,Fy,Fz,i,j,k );
-                Multiphase_Force_eta_Node(grid,rho,pnid, fnid, munid,laplacian_rho,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa );
+                Multiphase_Force_eta_Node(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa, eta );
                 
 
 
@@ -88,7 +89,7 @@ void collide(Grid_N_C_3D<T> &grid,
 
                 
                 // Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Fx,Fy,Fz,i,j,k );
-                Multiphase_Force_eta_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa );
+                Multiphase_Force_eta_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa,eta );
 
                 get_moments_Cell(grid, lb,  ux, uy, uz,Rho, i, j, k, Fx, Fy , Fz);            //for the node
                 get_equi(feq_Cell,lb, ux, uy,uz, Rho);
