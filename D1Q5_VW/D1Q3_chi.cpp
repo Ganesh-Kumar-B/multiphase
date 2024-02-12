@@ -72,12 +72,13 @@ typedef  struct nonIdealParam
     double alpha1;
     double kappa;
     double rho0;
-} nonIdealParam ;
+}nonIdealParam;
+
+
 
 void getLatticeD1Q3(double c, latticeD1Q3 *myD1Q3);
 void printRho(latticeArr lattice, latticeD1Q3 myD1Q3, nonIdealParam myVDW,int nX, double beta,int iX_begin, int iX_end, int time,double c);
 void getFeqPQuad(double fEq[N_DV], latticeD1Q3 myD1Q3,  double rho,  double vel);
-
 void createBoundaryPeriodic(latticeArr lattice, int nX );
 void collideWorking (latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVDW, int nX, double beta,double tau, int time,double c);
 void advect(latticeArr lattice, int nX);
@@ -101,7 +102,7 @@ main()
 
     nX = 100;
 	beta = 0.6;
-	TbyTc = 0.90;
+	TbyTc = 0.80;
 	rho0byrhoc = 0.95;
 	kappabar = 0.0625;//0.0625;
 	dX = 1.0/(nX-1.0);
@@ -395,8 +396,16 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
     for( iX = nX+2; iX >=3 ; iX--)
     {
         mass += myLattice[iX].rho;
-		
-        myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
+        // // a = 1 represents 2nd order a = 4/3 represents 4th order 
+        double a = 4/3; double b = 1.0 - a;
+
+        
+        myLattice[iX].Force =   myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0) *a + 
+                                myLattice[iX].rho*(myLattice[iX+2].muA -myLattice[iX-2].muA)/(dx*4.0) *b 
+        ;
+        
+
+
         // myLattice[iX].Force = (myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dx*2.0);
         
 
@@ -413,8 +422,6 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         
 
 //   //#fourth order to second order 
-   ////// a = 1 represents 2nd order a = 4/3 represents 4th order 
-        // double a = 1.0; double b = 1.0 - a;
         // double del_muA_fourth_order =   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid)*
         //                                 (   (a/(2.0*dx)) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
         //                                     (b/(4.0*dx)) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
