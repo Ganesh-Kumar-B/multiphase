@@ -5,7 +5,8 @@
 #include <fstream>
 #include <iostream>
 #include<stdio.h>
-
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 
@@ -13,14 +14,14 @@
 
 
 template<typename T, typename T1>
-void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, double u0)
+void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, real u0)
 {
 
-    double u_inv,nx_inv, ny_inv;
+    real u_inv,nx_inv, ny_inv;
     u_inv = 1/ u0;
     
-    nx_inv = 1/(double)gridLB.n_x;
-    ny_inv = 1/(double)gridLB.n_y;
+    nx_inv = 1/(real)gridLB.n_x;
+    ny_inv = 1/(real)gridLB.n_y;
 
 
     std::vector<int> line;bool isPresent;
@@ -51,16 +52,17 @@ void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, double
 }
 
 template<typename T, typename T1>
-void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, double u0)
+void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real theta)
 {
-
-
     T u1,u2,u3,u4,um, rho1,rho2,del=0.05;
 
     std::ofstream file;
     char fileName[250];
-    sprintf(fileName,"./Result/velocity_%d.vtk",step) ;
-    file.open(fileName) ;
+    char foldername[250];
+    sprintf(foldername,"Result%.2f",theta);
+    mkdir(foldername,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    sprintf(fileName,"./Result%.2f/velocity_%d.vtk", theta,step) ;
+    file.open(fileName);
     file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_GRID"<<std::endl;
     // file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_POINTS"<<std::endl;
     

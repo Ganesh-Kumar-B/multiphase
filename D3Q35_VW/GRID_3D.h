@@ -3,6 +3,8 @@
 
 #include<iostream>
 
+typedef float real;
+
 
 template<typename T>
 class Grid_N_C_3D{

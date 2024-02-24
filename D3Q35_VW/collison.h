@@ -17,7 +17,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_3D<T> &grid,
-            lbmD3Q35<T1> &lb,double beta,double tau, double TbyTc, double kappa, int t ){
+            lbmD3Q35<T1> &lb,real beta,real tau, real TbyTc, real kappa, int t ){
 
     Grid_N_C_3D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,grid.n_z,2,1);
     Grid_N_C_3D<T>  rho                             (grid.n_x,grid.n_y,grid.n_z,2,1);   
@@ -28,11 +28,11 @@ void collide(Grid_N_C_3D<T> &grid,
     Grid_N_C_3D<T>  laplacian_fnid                  (grid.n_x,grid.n_y,grid.n_z,2,1);   
     Grid_N_C_3D<T>  gradient_rho                    (grid.n_x,grid.n_y,grid.n_z,2,3);   //3 components
 
-    double feq_Node[35] = {0}, feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
+    real feq_Node[35] = {0}, feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
 
-    double eta =0;   //   0 ----> fourth order   1-----> second order 
-
-
+    real eta =0;   //   0 ----> fourth order   1-----> second order 
+ 
+ 
     Multiphase_terms(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,TbyTc,kappa );
 
 
@@ -42,8 +42,8 @@ void collide(Grid_N_C_3D<T> &grid,
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
             for(int k = 0 + grid.noghost;k < grid.n_z_node - (grid.noghost) ; k++){
                 
-                double Rho = 0.0;
-                double Fx = 0, Fy = 0, Fz = 0;
+                real Rho = 0.0;
+                real Fx = 0, Fy = 0, Fz = 0;
 
                 // Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Fx,Fy,Fz,i,j,k );
                 Multiphase_Force_eta_Node(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa, eta );
@@ -63,11 +63,11 @@ void collide(Grid_N_C_3D<T> &grid,
                 //> with entropic 
                 //<this works properly
                 //$for node
-                double x_i[35];
+                real x_i[35];
                 for(int dv = 0; dv< grid.d_v; dv++)
                     x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
                 
-                double alpha = 0;
+                real alpha = 0;
                 for(int dv = 0; dv< grid.d_v; dv++){
                     alpha = 2.0;
                     if( std::fabs(x_i[dv]) > 0.0001){
@@ -93,7 +93,6 @@ void collide(Grid_N_C_3D<T> &grid,
 
                 get_moments_Cell(grid, lb,  ux, uy, uz,Rho, i, j, k, Fx, Fy , Fz);            //for the node
                 get_equi(feq_Cell,lb, ux, uy,uz, Rho);
-
 
                 //> normal
                 // for (int dv = 0; dv< grid.d_v; dv++){
@@ -135,8 +134,8 @@ void collide(Grid_N_C_3D<T> &grid,
 template<typename T>
 void calculateAlpha(lbmD3Q35<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
 {
-  double a(0.0), b(0.0), c(0.0),oneBySix(1.0/6.0);
-  double ximin(0.0), ximax(0.0);
+  real a(0.0), b(0.0), c(0.0),oneBySix(1.0/6.0);
+  real ximin(0.0), ximax(0.0);
 
   alignas(32) T xSq [35];
   alignas(32) T fxSq[35];
@@ -219,12 +218,12 @@ void calculateAlpha(lbmD3Q35<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
 
 
 template<typename T>
-void get_equi(double *feq , lbmD3Q35<T> &lb, double ux, double uy, double uz, double rho){
+void get_equi(real *feq , lbmD3Q35<T> &lb, real ux, real uy, real uz, real rho){
 
 
-    double u2 = ux*ux + uy*uy + uz*uz;
-    double a1=0;
-    double first,second, third,feq0=0;
+    real u2 = ux*ux + uy*uy + uz*uz;
+    real a1=0;
+    real first,second, third,feq0=0;
     for (int dv = 0; dv< 35; dv++){
 
         feq0 = rho*lb.W[dv];
@@ -244,7 +243,7 @@ void get_equi(double *feq , lbmD3Q35<T> &lb, double ux, double uy, double uz, do
 
 
 template<typename T,typename T1>
-void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double &Uy, double &Uz,double &Rho,  int X, int Y, int Z, double Fx = 0, double Fy = 0, double Fz = 0){ ///node or cell 0-Node 1- cell
+void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z, real Fx = 0, real Fy = 0, real Fz = 0){ ///node or cell 0-Node 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Uz  = 0.0;
@@ -265,7 +264,7 @@ void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double 
 }
 
 template<typename T,typename T1>
-void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double &Uy, double &Uz,double &Rho,  int X, int Y, int Z, double Fx = 0, double Fy = 0, double Fz = 0){ ///node or cell 0-Cell 1- cell
+void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z, real Fx = 0, real Fy = 0, real Fz = 0){ ///node or cell 0-Cell 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Uz  = 0.0;
@@ -290,92 +289,191 @@ void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,double &Ux, double 
 
 //period no of waves
 template<typename T, typename T1>
-void initialization(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,double Rho_mean ,double amplitude, double period){
+void initialization(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_mean ,real amplitude, real period){
 
 
-    double Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
-    double x,y,z
+    real Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
+    real x,y,z
            ;    ///distance between nodes 
     
-    double ux_node =0, uy_node = 0, uz_node = 0;
+    real  x_0 = 0.5;
+    real  y_0 = 0.5;
+    real  z_0 = 0.5;
+
+    real ux_node = 0., uy_node = 0, uz_node = 0;
     
-    double k_w = 2*M_PI* period;
+    real k_w = 2*M_PI* period;
     
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
         for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
             for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
 
-                x = ((double)i)/ grid.n_x;
-                y = ((double)j)/ grid.n_y;
-                z = ((double)k)/ grid.n_z;
+                x = ((real)i)/ grid.n_x;
+                y = ((real)j)/ grid.n_y;
+                z = ((real)k)/ grid.n_z;
 
-                Rho = Rho_mean + amplitude * sin(k_w* x)* sin(k_w*y)*sin(k_w*z);
+                // Rho = Rho_mean + amplitude * sin(k_w* x)* sin(k_w*y)*sin(k_w*z);
 
-                get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+                // get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
 
-                for (int dv = 0; dv<grid.d_v; dv++){
+                // for (int dv = 0; dv<grid.d_v; dv++){
                    
-                    grid.Node(i,j,k,dv) = Feq_node[dv];
+                //     grid.Node(i,j,k,dv) = Feq_node[dv];
                     
+                // }
+
+                if( (x - x_0)*(x - x_0) +(y - y_0)*(y - y_0)+ (z - z_0)*(z - z_0) < 0.25*0.25){
+
+                    Rho = 0.422301;
+                    get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+                    for (int dv = 0; dv<grid.d_v; dv++)
+                        grid.Node(i,j,k,dv) = Feq_node[dv];
+                    
+                }
+                else{
+                    Rho = 1.6571;
+                    get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+                    
+                    for (int dv = 0; dv<grid.d_v; dv++)
+                        grid.Node(i,j,k,dv) = Feq_node[dv];
                 }
                 
-                x = (((double)i) + 0.5)/ grid.n_x;
-                y = (((double)j) + 0.5)/ grid.n_y;
-                z = (((double)k) + 0.5)/ grid.n_z;
 
-                Rho = Rho_mean + amplitude * sin(k_w* x)* sin(k_w*y)*sin(k_w*z);
+                
+                x = (((real)i) + 0.5)/ grid.n_x;
+                y = (((real)j) + 0.5)/ grid.n_y;
+                z = (((real)k) + 0.5)/ grid.n_z;
 
-                get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+                // Rho = Rho_mean + amplitude * sin(k_w* x)* sin(k_w*y)*sin(k_w*z);
 
-                for (int dv = 0; dv<grid.d_v; dv++){
+                // get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+                // for (int dv = 0; dv<grid.d_v; dv++){
                     
-                    grid.Cell(i,j,k,dv) = Feq_node[dv];
+                //     grid.Cell(i,j,k,dv) = Feq_node[dv];
 
+                // }
+
+                if( (x - x_0)*(x - x_0) +(y - y_0)*(y - y_0)+ (z - z_0)*(z - z_0) < 0.25*0.25){
+
+                    Rho = 0.422301;
+                    get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+                    for (int dv = 0; dv<grid.d_v; dv++)
+                        grid.Cell(i,j,k,dv) = Feq_node[dv];
                     
-
                 }
-
-
-                //>shock initialization
-                // if(i < grid.n_x/2){
-                //     Rho = 1.2;
-
-                //     get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
-
-                //     for (int dv = 0; dv<grid.d_v; dv++){
-                        
-                //         grid.Node(i,j,k,dv) = Feq_node[dv];
-                //         grid.Cell(i,j,k,dv) = Feq_node[dv];
-                        
-                        
-                //     }
+                else{
+                    Rho = 1.6571;
+                    get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
                     
-                // }
-                // else{
+                    for (int dv = 0; dv<grid.d_v; dv++)
+                        grid.Cell(i,j,k,dv) = Feq_node[dv];
+                }
+            }
+        }
+    }
+}
 
-                //     Rho = 0.8;
 
-                //     get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
 
-                //     for (int dv = 0; dv<grid.d_v; dv++){
-                        
-                //         grid.Node(i,j,k,dv) = Feq_node[dv];
-                //         grid.Cell(i,j,k,dv) = Feq_node[dv];
+template<typename T, typename T1>
+void initialization_equilibrium_profile(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_mean ){
 
-                //     }
+	real Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
+    real x,y,z
+           ;    ///distance between nodes 
+    
+    real  x_0 = 0.5;
+    real  y_0 = 0.5;
+    real  z_0 = 0.5;
 
-                // }
+    real ux_node = 0., uy_node = 0, uz_node = 0;
+    
+    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
+        for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+            for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
 
-                //>single initialization
-                // grid.Node(10,10,10,26) = 1.0;
+                x = ((real)i)/ grid.n_x - x_0;
+                y = ((real)j)/ grid.n_y - y_0;
+                z = ((real)k)/ grid.n_z - z_0;
+
+				double rho_gas = 0.4227;
+				double rho_liq = 1.6572;
+
+				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(x);
+
+				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+				for (int dv = 0; dv<grid.d_v; dv++)
+					grid.Node(i,j,k,dv) = Feq_node[dv];
+
+				x = ((real)i+0.5)/ grid.n_x - x_0;
+                y = ((real)j+0.5)/ grid.n_y - y_0;
+                z = ((real)k+0.5)/ grid.n_z - z_0;
+
+				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(x);
+
+				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+				for (int dv = 0; dv<grid.d_v; dv++)
+					grid.Cell(i,j,k,dv) = Feq_node[dv];
 
 
             }
         }
     }
-    
-    
+}
         
+
+
+template<typename T, typename T1>
+void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_mean ){
+
+	real Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
+    real x,y,z
+           ;    ///distance between nodes 
+    
+    real  x_0 = 0.5;
+    real  y_0 = 0.5;
+    real  z_0 = 0.5;
+
+    real ux_node = 0., uy_node = 0, uz_node = 0;
+    
+    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
+        for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+            for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
+
+                x = ((real)i)/ grid.n_x - x_0;
+                y = ((real)j)/ grid.n_y - y_0;
+                z = ((real)k)/ grid.n_z - z_0;
+
+				double rho_gas = 0.4227;
+				double rho_liq = 1.6572;
+
+				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
+
+				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+				for (int dv = 0; dv<grid.d_v; dv++)
+					grid.Node(i,j,k,dv) = Feq_node[dv];
+
+				x = ((real)i+0.5)/ grid.n_x - x_0;
+                y = ((real)j+0.5)/ grid.n_y - y_0;
+                z = ((real)k+0.5)/ grid.n_z - z_0;
+
+				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
+
+				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+				for (int dv = 0; dv<grid.d_v; dv++)
+					grid.Cell(i,j,k,dv) = Feq_node[dv];
+
+
+            }
+        }
+    }
 }
         
 
@@ -383,7 +481,7 @@ void initialization(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,double Rho_mean ,doubl
 
 template<typename T>
 void printMass(Grid_N_C_3D<T> &grid){    
-    double a = 0;
+    real a = 0;
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
         for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
             for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
