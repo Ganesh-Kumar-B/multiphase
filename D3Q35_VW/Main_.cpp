@@ -14,7 +14,7 @@
 int main()
 {
 
-   int Nx =50;int Ny = 50; int Nz = 5;
+   int Nx =200;int Ny = 200; int Nz = 5;
    std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
    Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);

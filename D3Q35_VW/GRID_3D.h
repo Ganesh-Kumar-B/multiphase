@@ -13,6 +13,8 @@ int nNodes ,dv,total_mem_node, noghost;
 
 int n_x_node,n_y_node,n_z_node,
     n_x     ,n_y     ,n_z     ,
+    nbx,nby,nbz, 
+    nex,ney,nez,
     d_v ;
 
 T *data_node, *data_cell;
@@ -33,7 +35,14 @@ Grid_N_C_3D(int nx, int ny, int nz,int no_ghost, int dv){
 
     d_v = dv;                      //No of population
     
+    nbx = no_ghost;
+    nby = no_ghost;
+    nbz = no_ghost;
 
+
+    nex = n_x_node - no_ghost -1;
+    ney = n_y_node - no_ghost -1;
+    nez = n_z_node - no_ghost -1;
 
 
     nNodes = n_x_node*n_y_node*n_z_node; 
