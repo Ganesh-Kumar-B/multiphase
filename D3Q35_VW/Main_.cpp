@@ -1,20 +1,20 @@
 #include<iostream>
 #include<fstream>
 #include<cmath>
-#include"collison.h"
-#include"advection.h"
-#include"print.h"
 #include<iomanip>
 #include<sstream>
 
-
+#include"collison.h"
+#include"advection.h"
+#include"print.h"
+#include"boundary.h"
 
 
 
 int main()
 {
 
-   int Nx =200;int Ny = 200; int Nz = 5;
+   int Nx =50;int Ny = 50; int Nz = 5;
    std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
    Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
@@ -27,8 +27,8 @@ int main()
    real cs = sqrt(d3q35.theta0);
    std::cout<<"theta= "<<d3q35.theta0<<std::endl;
 
-   real Re = 1;
-   real L = Ny;
+   real Re = 10;
+   real L  = Ny;
    real Kn =0.002;
    real Ma = Kn * Re;
    real u0 = Ma * cs;
@@ -54,14 +54,25 @@ int main()
    real kappa = 0.000125;
 
 
+    real feq_Node[35] = {0};
+    get_equi(feq_Node,d3q35, 0.012, 0.009, 0.013, 0.96);
+
+    real sum = 0.0;
+    for(int l = 0; l < 35; l++)
+        sum += feq_Node[l];
+
+    std::cout<<" sum "<<sum<<std::endl;
+
 
 
 
    //:fixed ------------------------------Main code--------------------------//
    
+   initialization(grid,d3q35,Rho_mean,0.0,0.0);
 
    // initialization_equilibrium_profile(grid,d3q35,Rho_mean);
-   initialization_2D_droplet(grid,d3q35,Rho_mean);
+   // initialization_2D_droplet(grid,d3q35,Rho_mean);
+
    // exit(0);
 
    print_vtk(d3q35,grid,0,u0,TbyTc);
@@ -70,14 +81,19 @@ int main()
 
    std::cout<<"simulation started and Simulation time "<< sim_time<<std::endl;
    
-   for(int t = 1; t <=10000;t++){
+   for(int t = 1; t <=20000;t++){
 
       // Periodic(grid);
       collide(grid,d3q35,beta,tau,TbyTc,kappa, t);
 
       Periodic(grid);
 
+      Diffuse_35(grid,d3q35,u0,0.0);
+      BB_wall(grid,d3q35,u0,0.0);
+
       advection(grid);
+      stationary_correction(grid);
+
 
       if(t%500== 0){
          std::cout<<t<<" ";

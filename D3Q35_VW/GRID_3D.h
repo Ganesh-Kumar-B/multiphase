@@ -3,7 +3,7 @@
 
 #include<iostream>
 
-typedef float real;
+typedef double real;
 
 
 template<typename T>
@@ -29,18 +29,17 @@ Grid_N_C_3D(int nx, int ny, int nz,int no_ghost, int dv){
   
 
 
-    n_x_node = nx + 2*no_ghost;    //2 ghost nodes in each direction
+    n_x_node = nx + 2*no_ghost;         //2 ghost nodes in each direction
     n_y_node = ny + 2*no_ghost;
     n_z_node = nz + 2*no_ghost;
 
-    d_v = dv;                      //No of population
+    d_v = dv;                           //No of population
     
-    nbx = no_ghost;
+    nbx = no_ghost;                     //physical domain starting
     nby = no_ghost;
     nbz = no_ghost;
 
-
-    nex = n_x_node - no_ghost -1;
+    nex = n_x_node - no_ghost -1;       //physical domain ending
     ney = n_y_node - no_ghost -1;
     nez = n_z_node - no_ghost -1;
 
