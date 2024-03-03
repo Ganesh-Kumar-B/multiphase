@@ -275,8 +275,6 @@ void stationary_correction(Grid_N_C_3D<T> &grid){
     
     //refactor ---------TOP -----------------//
 
-
-
     for(int i = 0 + grid.nbx ; i <= grid.nex;i++){
         for(int k = 0 + grid.nbz;k <= grid.nez; k++){ 
             for(int j = grid.ney - 1; j <= grid.ney; j++){

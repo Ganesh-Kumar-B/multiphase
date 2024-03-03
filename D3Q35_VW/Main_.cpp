@@ -89,7 +89,7 @@ int main()
       Periodic(grid);
 
       Diffuse_35(grid,d3q35,u0,0.0);
-      BB_wall(grid,d3q35,u0,0.0);
+    //   BB_wall(grid,d3q35,u0,0.0);
 
       advection(grid);
       stationary_correction(grid);
