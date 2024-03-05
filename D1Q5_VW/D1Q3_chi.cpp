@@ -27,12 +27,7 @@ typedef  struct nodeD1Q3
     double pNid;
     double FNid;
     double chi;
-    double chiPredictor;
-    double chiCorrector;
-    double muR;
     double muA;
-    double dmuA;
-    double dmuR;
     double tauM;
     double beta2;
     double betaM;
@@ -97,14 +92,14 @@ main()
 	int iX,nX,time, finalTime;
 	c = 1;
 	getLatticeD1Q3(c, &myD1Q3);
- 
 
 
-    nX = 100;
-	beta = 0.6;
-	TbyTc = 0.80;
+
+    nX = 300;
+	beta = 0.7;
+	TbyTc = 0.96;
 	rho0byrhoc = 0.95;
-	kappabar = 0.0625;//0.0625;
+	kappabar = 0.0001;//0.0625;
 	dX = 1.0/(nX-1.0);
 	dt =  dX/c;
 	
@@ -196,6 +191,7 @@ void   getLatticeD1Q3(double c, latticeD1Q3 *myD1Q3)
 		return;
 }
 		
+
 		
 		                    /*                 Periodic boundary conditions                      */
 /*
@@ -255,7 +251,7 @@ void initializePerturbPeriodic(latticeArr myLattice, latticeD1Q3 myD1Q3,  int nX
     for(iX =3; iX<=nX+2;iX++)
     {
         coord= (iX-2.5)/nX;
-	    rhoIn =rhoMean + ampDisturb*sin(kx*coord);
+        rhoIn =rhoMean + ampDisturb*sin(kx*coord);
         myLattice[iX].rho =rhoIn;
         /*Inititalise f using equilibrium*/
         getFeqPQuad(myLattice[iX].f,myD1Q3, rhoIn, vel);
@@ -293,6 +289,7 @@ void printRho(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVDW, int
         P += -myVDW.a*myLattice[iX].rho*myLattice[iX].rho;
         P += -myVDW.kappa*myLattice[iX].rho*(myLattice[iX+1].rho+myLattice[iX-1].rho-2.0*myLattice[iX].rho)/(dx*dx);
         P += -0.5*myVDW.kappa*(myLattice[iX+1].rho - myLattice[iX-1].rho)*(myLattice[iX+1].rho - myLattice[iX-1].rho)/(4.0*dx*dx);
+
         //correction
         //P += -(0.5/beta - 0.25)*temp*temp/myLattice[iX].rho; //term hurts
         //P += 0.25*myVDW.kappa*(myLattice[iX+1].P+myLattice[iX-1].P-2.0*myLattice[iX].P)/(dx*dx); //term may be fine
@@ -304,7 +301,7 @@ void printRho(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVDW, int
         mu += myLattice[iX].rho*myD1Q3.T0*myVDW.b/(1.0-myLattice[iX].rho*myVDW.b);
         mu += - myVDW.kappa*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx);
 
-        fprintf(fpt,  "%d %.7lf  %.7lf %.7lf  %.7lf  %.7lf \n",iX, myLattice[iX].rho, myLattice[iX].vel, P, mu,myLattice[iX].chi);
+        fprintf(fpt,  "%d,%.7lf,%.7lf,%.7lf,%.7lf,%.7lf\n",iX, myLattice[iX].rho, myLattice[iX].vel, P, mu,myLattice[iX].chi);
     }
     fclose(fpt);
 }
@@ -328,6 +325,8 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
 //         //surface energy
 //     } 
 
+
+
     //$pressure from VW EOS
         for( iX = nX+2 ; iX >=3 ; iX--)
     {
@@ -336,13 +335,17 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
                   // pnid =  (rho**2 b theta) / (1 - rho * b) - a rho**2 
     }
 
+
+
     //$ F_nid  free energy
     for( iX = nX+2 ; iX >=3 ; iX--)
     {   
         myLattice[iX].FNid =  - myVDW.a * myLattice[iX].rho*myLattice[iX].rho   -   myLattice[iX].rho*myD1Q3.T0 *log(1.0 - myLattice[iX].rho*myVDW.b)
-                                // - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(dx*2.0),2) //: this will not come 
+                            // - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(dx*2.0),2) //: this will not come 
         ;
     }
+
+
 
     myLattice[0     ].FNid = myLattice[nX       ].FNid ;
     myLattice[1     ].FNid = myLattice[nX + 1   ].FNid ;
@@ -351,35 +354,86 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
     myLattice[nX + 4].FNid = myLattice[4        ].FNid ;
     myLattice[nX + 5].FNid = myLattice[5        ].FNid ;    
     
-    myLattice[0].pNid = myLattice[nX].pNid ;
-    myLattice[1].pNid = myLattice[nX + 1 ].pNid ;
-    myLattice[2].pNid = myLattice[nX + 2 ].pNid ;
-    myLattice[nX + 3].pNid = myLattice[3].pNid ;
-    myLattice[nX + 4].pNid = myLattice[4].pNid ;
-    myLattice[nX + 5].pNid = myLattice[5].pNid ;    
+
+
+    
+    myLattice[0     ].pNid = myLattice[nX       ].pNid ;
+    myLattice[1     ].pNid = myLattice[nX + 1   ].pNid ;
+    myLattice[2     ].pNid = myLattice[nX + 2   ].pNid ;
+    myLattice[nX + 3].pNid = myLattice[3        ].pNid ;
+    myLattice[nX + 4].pNid = myLattice[4        ].pNid ;
+    myLattice[nX + 5].pNid = myLattice[5        ].pNid ;    
 
    	//calculate chemical potential
    	for( iX = nX+2; iX >=3; iX--)
     {
         //from continuous derivative
-         myLattice[iX].muA = -myD1Q3.T0*log(1.0 - myLattice[iX].rho*myVDW.b) ;
+        myLattice[iX].muA  = -myD1Q3.T0*log(1.0 - myLattice[iX].rho*myVDW.b) ;
         myLattice[iX].muA += myLattice[iX].rho*myVDW.b*myD1Q3.T0/(1.0 - myLattice[iX].rho*myVDW.b);
         myLattice[iX].muA -= 2.0*myLattice[iX].rho*myVDW.a ;
 
-        myLattice[iX].muA -= myVDW.kappa*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
+        
 
     }
-	myLattice[0].muA = myLattice[nX].muA    ;
-    myLattice[1].muA = myLattice[nX + 1 ].muA ;
-    myLattice[2].muA = myLattice[nX + 2 ].muA ;
-    myLattice[nX + 3].muA = myLattice[3].muA ;
-    myLattice[nX + 4].muA = myLattice[4].muA ;
-    myLattice[nX + 5].muA = myLattice[5].muA ;
+
+	myLattice[0     ].muA = myLattice[nX    ].muA    ;
+    myLattice[1     ].muA = myLattice[nX + 1].muA ;
+    myLattice[2     ].muA = myLattice[nX + 2].muA ;
+    myLattice[nX + 3].muA = myLattice[3     ].muA ;
+    myLattice[nX + 4].muA = myLattice[4     ].muA ;
+    myLattice[nX + 5].muA = myLattice[5     ].muA ;
+
+    for( iX = nX+2; iX >=3; iX--)
+    {
+
+        myLattice[iX].muA = myLattice[iX].muA
+                            + (dx*dx/6.0)*(myLattice[iX -1].muA + myLattice[iX +1].muA - 2.0*myLattice[iX].muA)/(dx*dx)                               
+                        ;    
+
+
+        double kappa1 = myVDW.kappa; 
+
+        // // # correction from chemical potential
+        // kappa1 =   myVDW.kappa 
+        //             -   (dx*dx/6.0)    *(   
+        //                                 (myLattice[iX].rho * myVDW.b * myVDW.b * myD1Q3.T0)/(pow(1.0 - myLattice[iX].rho * myVDW.b ,2)) 
+        //                             +   (myVDW.b*myD1Q3.T0)/( 1.0 - myLattice[iX].rho * myVDW.b  )   - 2.0*myVDW.a
+        //                                 )
+        //  ;
+
+        myLattice[iX].muA -= kappa1*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
+
+    }
+
+    myLattice[0     ].muA = myLattice[nX    ].muA    ;
+    myLattice[1     ].muA = myLattice[nX + 1].muA ;
+    myLattice[2     ].muA = myLattice[nX + 2].muA ;
+    myLattice[nX + 3].muA = myLattice[3     ].muA ;
+    myLattice[nX + 4].muA = myLattice[4     ].muA ;
+    myLattice[nX + 5].muA = myLattice[5     ].muA ;
+
+
 
     //  calcualte the surface terms contribution from kappa
     for( iX = nX+2; iX >=3; iX--)
-    {
-        myLattice[iX].surface = (myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
+    {   
+
+        // std::cout<<"before "<<myVDW.kappa<<std::endl;
+
+        double kappa1 = myVDW.kappa ;
+
+        // #correction from pressure
+        // double kappa1 =   myVDW.kappa 
+        //             -   (dx*dx/6.0)    *(   
+        //                                 (myLattice[iX].rho*myLattice[iX].rho * myVDW.b * myVDW.b * myD1Q3.T0)/(pow(1.0 - myLattice[iX].rho * myVDW.b ,2)) 
+        //                                 +   (2.0*myVDW.b*myLattice[iX].rho*myD1Q3.T0)/( 1.0 - myLattice[iX].rho * myVDW.b  )   - 2.0*myVDW.a*myLattice[iX].rho
+        //                                 )
+        // ;
+
+        
+        //  std::cout<<"after  "<<kappa1<<std::endl;
+
+        myLattice[iX].surface = kappa1*  (myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
     }
 
     myLattice[0].surface = myLattice[nX].surface ;
@@ -390,24 +444,27 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
     myLattice[nX + 5].surface = myLattice[5].surface ;
     
     
-   
+    
 
     //calculate force
     for( iX = nX+2; iX >=3 ; iX--)
     {
         mass += myLattice[iX].rho;
         // // a = 1 represents 2nd order a = 4/3 represents 4th order 
-        double a = 4/3; double b = 1.0 - a;
+        double a = 1.0; double b = 1.0 - a;
 
-        
+
         myLattice[iX].Force =   myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0) *a + 
                                 myLattice[iX].rho*(myLattice[iX+2].muA -myLattice[iX-2].muA)/(dx*4.0) *b 
         ;
-        
 
 
-        // myLattice[iX].Force = (myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dx*2.0);
-        
+
+        //#presure formulation
+
+        // myLattice[iX].Force = (myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dx*2.0) - ((myLattice[iX + 1 ].surface - myLattice[iX -1 ].surface) )  / (dx*2.0)
+        // ;
+
 
 
         //#second order verification of pnid fnid with the this is just to check whether the pnid and fnid are entered correctly since munid = (pnid + fnid)/(rho)
@@ -419,9 +476,10 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         // myLattice[iX].Force = myLattice[iX].rho*(del_muA_second_order);
 
 
+
         
 
-//   //#fourth order to second order 
+        //  //#fourth order to second order 
         // double del_muA_fourth_order =   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid)*
         //                                 (   (a/(2.0*dx)) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
         //                                     (b/(4.0*dx)) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
@@ -468,6 +526,9 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
       
     if(time % 9900 == 0)
     printf("\nAt time =%d mass = %.16lf ", time, mass);
+
+
+
 }
 
 void getFeqPQuad(double fEq[N_DV], latticeD1Q3 myD1Q3,  double rho,  double vel)
