@@ -372,8 +372,6 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         myLattice[iX].muA += myLattice[iX].rho*myVDW.b*myD1Q3.T0/(1.0 - myLattice[iX].rho*myVDW.b);
         myLattice[iX].muA -= 2.0*myLattice[iX].rho*myVDW.a ;
 
-        
-
     }
 
 	myLattice[0     ].muA = myLattice[nX    ].muA    ;
