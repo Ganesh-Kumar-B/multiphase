@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx =100;int Ny = 100; int Nz = 5;
+    int Nx =20;int Ny = 20; int Nz = 5;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
@@ -45,11 +45,11 @@ int main()
     std::cout<<"beta"<<beta<<std::endl;
 
 
-    real Rho_mean = 0.4798;
+    real Rho_mean =1.0;
 
 
 
-    real TbyTc = 0.90;
+    real TbyTc = 0.84;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
     real kappa = 0.001;
 
@@ -59,7 +59,7 @@ int main()
 
     //:fixed ------------------------------Main code--------------------------//
     
-    //      initialization(grid,d3q35,Rho_mean,0.0,0.0);
+    //  initialization(grid,d3q35,Rho_mean,0.0,0.0);
 
     //      initialization_equilibrium_profile(grid,d3q35,Rho_mean);
 
@@ -68,7 +68,6 @@ int main()
 
 
     // exit(0);
-
 
 
     print_vtk(d3q35,grid,0,u0,TbyTc);
@@ -96,9 +95,6 @@ int main()
             printMass(grid);
             print_vtk(d3q35,grid,t,u0,TbyTc);
         }
-    }
-
-
-
+    } 
 }
 ;

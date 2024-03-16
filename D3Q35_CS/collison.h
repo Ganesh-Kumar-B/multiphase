@@ -54,35 +54,35 @@ void collide(Grid_N_C_3D<T> &grid,
                 get_equi(feq_Node,lb, ux, uy,uz, Rho);
 
 
-                // //> normal
-                for (int dv = 0; dv< grid.d_v; dv++){
-                    grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                                        + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv])
-                                        ;
-                }
+                // // //> normal
+                // for (int dv = 0; dv< grid.d_v; dv++){
+                //     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
+                //                         + 2.0 *beta * tau*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv])
+                //                         ;
+                // }
 
 
 
                 //> with entropic 
                 //<this works properly
                 //$for node
-                // real x_i[35];
-                // for(int dv = 0; dv< grid.d_v; dv++)
-                //     x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
+                real x_i[35];
+                for(int dv = 0; dv< grid.d_v; dv++)
+                    x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
                 
-                // real alpha = 0;
-                // for(int dv = 0; dv< grid.d_v; dv++){
-                //     alpha = 2.0;
-                //     if( std::fabs(x_i[dv]) > 0.0001){
-                //         calculateAlpha(lb,x_i,&grid.Node(i,j,0),beta,alpha);
-                //         break;
-                //     }
-                // }
+                real alpha = 0;
+                for(int dv = 0; dv< grid.d_v; dv++){
+                    alpha = 2.0;
+                    if( std::fabs(x_i[dv]) > 0.0001){
+                        calculateAlpha(lb,x_i,&grid.Node(i,j,0),beta,alpha);
+                        break;
+                    }
+                }
 
-                // for (int dv = 0; dv< 35; dv++){
-                //     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                //                         + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv] );
-                // }       
+                for (int dv = 0; dv< 35; dv++){
+                    grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
+                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv] );
+                }       
 
 
 
@@ -98,34 +98,34 @@ void collide(Grid_N_C_3D<T> &grid,
                 get_equi(feq_Cell,lb, ux, uy,uz, Rho);
 
                 //> normal
-                for (int dv = 0; dv< grid.d_v; dv++){
-                    grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + 2.0* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                                        + 2.0 *beta * tau*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv])
-                                        ;
-                }       
+                // for (int dv = 0; dv< grid.d_v; dv++){
+                //     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + 2.0* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
+                //                         + 2.0 *beta * tau*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv])
+                //                         ;
+                // }       
 
 
 
                 //$ for Cell
                 
-                // for(int dv = 0; dv< grid.d_v; dv++)
-                //     x_i[dv] = feq_Cell[dv]/grid.Cell(i,j,dv) - 1.0;
+                for(int dv = 0; dv< grid.d_v; dv++)
+                    x_i[dv] = feq_Cell[dv]/grid.Cell(i,j,dv) - 1.0;
                 
-                // alpha = 0;
-                // for(int dv = 0; dv< grid.d_v; dv++){
-                //     alpha = 2.0;
-                //     if( std::fabs(x_i[dv]) > 0.0001){
-                //         calculateAlpha(lb,x_i,&grid.Cell(i,j,0),beta,alpha);
-                //         break;
-                //     }
-                // }
+                alpha = 0;
+                for(int dv = 0; dv< grid.d_v; dv++){
+                    alpha = 2.0;
+                    if( std::fabs(x_i[dv]) > 0.0001){
+                        calculateAlpha(lb,x_i,&grid.Cell(i,j,0),beta,alpha);
+                        break;
+                    }
+                }
 
 
 
-                // for (int dv = 0; dv< 35; dv++){
-                //     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                //                         + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv] );
-                // }
+                for (int dv = 0; dv< 35; dv++){
+                    grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
+                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Fx * lb.Cx[dv] + Fy * lb.Cy[dv] + Fz * lb.Cz[dv] );
+                }
 
 
 
