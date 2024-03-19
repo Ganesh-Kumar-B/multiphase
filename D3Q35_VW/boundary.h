@@ -11,6 +11,7 @@ template<typename T, typename T1>
 void Diffuse_35(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubottom){
 
         real feq[35] ={0};
+        real rho_wall_top = 0.4798, rho_wall_bottom = 0.4798;
 
         // #  ------------------------------------------------------------------------------=--top wall
 
@@ -39,7 +40,7 @@ void Diffuse_35(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubottom
                                     ;
 
 
-    get_equi(feq,lb,utop,0.0,0.0,1.0);
+    get_equi(feq,lb,utop,0.0,0.0,rho_wall_top);
 
 
     for(int i = 0 + grid.nbx ; i <= grid.nex;i++){
@@ -100,7 +101,7 @@ void Diffuse_35(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubottom
     }    
 
 
-//#--bottom wall
+        //#--bottom wall
 
         int botomC_last[]         =   { 
 
@@ -131,7 +132,7 @@ void Diffuse_35(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubottom
                                     ;
 
 
-    get_equi(feq,lb,ubottom,0.0,0.0,1.0);
+    get_equi(feq,lb,ubottom,0.0,0.0,rho_wall_bottom);
 
 
     for(int i = 0 + grid.nbx ; i <= grid.nex;i++){
@@ -190,8 +191,6 @@ void Diffuse_35(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubottom
 
         }
     }    
-
-
 }   
 
 
