@@ -21,18 +21,19 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,
 
     Grid_N_C_3D<T>  rho                             (gridf.n_x,gridf.n_y,gridf.n_z,2,1);
     Grid_N_C_3D<T>  phi                             (gridf.n_x,gridf.n_y,gridf.n_z,2,1);   
-    Grid_N_C_3D<T>  munid                           (gridf.n_x,gridf.n_y,gridf.n_z,2,1);   
+    Grid_N_C_3D<T>  mu                         (gridf.n_x,gridf.n_y,gridf.n_z,2,1);   
     Grid_N_C_3D<T>  laplacian_phi                   (gridf.n_x,gridf.n_y,gridf.n_z,2,1);   
 
     real feq_Node[35] = {0}, feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
 
     real eta =0;   //   0 ----> fourth order   1-----> second order 
     
-    
-    real kappa = ;
-    real A = ;
 
-    Multiphase_terms(gridf, gridg,lb,rho,phi , munid,laplacian_phi,kappa, A );
+    real kappa =    ;
+    real A =        ;
+    real gamma =    ;
+
+    Multiphase_terms(gridf, gridg,lb,rho,phi , mu,laplacian_phi,kappa, A );
 
     //< Collision
     for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost) ; i++){
@@ -41,10 +42,10 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,
                 
                 real Rho = 0.0;
 
-                Multiphase_Force_Node(gridf,phi , munid,lb,Force,i,j,k );             										
+                Multiphase_Force_Node(gridf,phi , mu,lb,Force,i,j,k );             										
                 
                 get_moments_Node_f(gridf, lb,  ux, uy, uz,Rho, i, j, k,Force);            //for the node
-                get_equi_f(feq_Node,lb, ux, uy,uz, Rho);
+                get_equi_f(feq_Node,lb, ux, uy,uz, Rho,phi.Node(i,j,k),mu.Node(i,j,k));
 
                 // // //> normal
                 for (int dv = 0; dv< gridf.d_v; dv++){
@@ -56,10 +57,10 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,
                 //< CELLS    
                 Rho = 0.0;
 
-                Multiphase_Force_Cell(gridf,rho, munid,lb,Force,i,j,k );                                               
+                Multiphase_Force_Cell(gridf,rho, mu,lb,Force,i,j,k );                                               
 
                 get_moments_Cell_f(gridf, lb,  ux, uy, uz,Rho, i, j, k,Force);            //for the node
-                get_equi_f(feq_Cell,lb, ux, uy,uz, Rho);
+                get_equi_f(feq_Cell,lb, ux, uy,uz, Rho,phi.Cell(i,j,k),mu.Node(i,j,k));
 
                 //> normal
                 for (int dv = 0; dv< gridf.d_v; dv++){
@@ -82,8 +83,7 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,
                 
                 get_moments_Node_f(gridf, lb,  ux, uy, uz,Rho, i, j, k,Force);  
 
-                get_moments_Node_g(gridg, lb ,phi, i, j, k);            //for the node
-                get_equi_g(feq_Node,lb, ux, uy,uz, phi);
+                get_equi_g(feq_Node,lb, ux, uy,uz, phi.Node(i,j,k),gamma,mu.Node(i,j,k));
 
                 // // //> normal
                 for (int dv = 0; dv< gridg.d_v; dv++){
@@ -97,8 +97,7 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,
 
                 get_moments_Cell_f(gridf, lb,  ux, uy, uz,Rho, i, j, k,Force); 
 
-                get_moments_Cell_g(gridg, lb, phi, i, j, k);            //for the node
-                get_equi_g(feq_Cell,lb, ux, uy,uz, phi);
+                get_equi_g(feq_Cell,lb, ux, uy,uz, phi.Cell(i,j,k),gamma,mu.Cell(i,j,k));
 
                 //> normal
                 for (int dv = 0; dv< gridg.d_v; dv++){
