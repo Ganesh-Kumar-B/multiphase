@@ -68,7 +68,6 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,
                                         + (1.0 - (1.0 / (2.0* tau)  ) )*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Force.Cell(i,j,k,0) * lb.Cx[dv] + Force.Cell(i,j,k,1) * lb.Cy[dv] + Force.Cell(i,j,k,1) * lb.Cz[dv])
                                         ;
                 }       
-
             }
         }
     }
@@ -87,7 +86,7 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,
 
                 // // //> normal
                 for (int dv = 0; dv< gridg.d_v; dv++){
-                    gridg.Node(i,j,k,dv) =  gridg.Node(i,j,k,dv) + (1.0/tauphi)*(feq_Node[dv] - gridg.Node(i,j,k,dv))
+                    gridg.Node(i,j,k,dv) =  gridg.Node(i,j,k,dv) + (1.0/tauphi)*(feq_Node[dv] - gridg.Node(i,j, k,dv))
 
                                         ;
                 }
@@ -461,16 +460,9 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,lbmD3
         for(int j = 0 + gridf.noghost; j < gridf.n_y_node - (gridf.noghost); j++){
             for(int k = 0 + gridf.noghost; k < gridf.n_z_node - (gridf.noghost); k++){
 
-                x = ((real)i)/ gridf.n_x - x_0;
-                y = ((real)j)/ gridf.n_y - y_0;
-                z = ((real)k)/ gridf.n_z - z_0;
 
-				double rho_gas = 0.72564;
-				double rho_liq = 1.29016;
-
-				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
-
-				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+				
+				get_equi_f(Feq_node,lb,ux_node,uy_node,uz_node,Rho,);
 
 				for (int dv = 0; dv<gridf.d_v; dv++)
 					gridf.Node(i,j,k,dv) = Feq_node[dv];
@@ -479,7 +471,6 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,lbmD3
                 y = ((real)j+0.5)/ gridf.n_y - y_0;
                 z = ((real)k+0.5)/ gridf.n_z - z_0;
 
-				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
 
 				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
 
@@ -491,41 +482,6 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,lbmD3
     }
 
 
-    // $initializing G
-
-
-    for(int i = 0 + gridg.noghost; i < gridg.n_x_node - (gridg.noghost); i++){
-        for(int j = 0 + gridg.noghost; j < gridg.n_y_node - (gridg.noghost); j++){
-            for(int k = 0 + gridg.noghost; k < gridg.n_z_node - (gridg.noghost); k++){
-
-                x = ((real)i)/ gridg.n_x - x_0;
-                y = ((real)j)/ gridg.n_y - y_0;
-                z = ((real)k)/ gridg.n_z - z_0;
-
-				double rho_gas = 0.72564;
-				double rho_liq = 1.29016;
-
-				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
-
-				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
-
-				for (int dv = 0; dv<gridg.d_v; dv++)
-					gridg.Node(i,j,k,dv) = Feq_node[dv];
-
-				x = ((real)i+0.5)/ gridg.n_x - x_0;
-                y = ((real)j+0.5)/ gridg.n_y - y_0;
-                z = ((real)k+0.5)/ gridg.n_z - z_0;
-
-				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
-
-				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
-
-				for (int dv = 0; dv<gridg.d_v; dv++)
-					gridg.Cell(i,j,k,dv) = Feq_node[dv];
-
-            }
-        }
-    }
 
 
 }
