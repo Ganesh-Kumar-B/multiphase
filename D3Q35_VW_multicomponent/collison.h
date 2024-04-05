@@ -21,7 +21,7 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,
 
     Grid_N_C_3D<T>  rho                             (gridf.n_x,gridf.n_y,gridf.n_z,2,1);
     Grid_N_C_3D<T>  phi                             (gridf.n_x,gridf.n_y,gridf.n_z,2,1);   
-    Grid_N_C_3D<T>  mu                         (gridf.n_x,gridf.n_y,gridf.n_z,2,1);   
+    Grid_N_C_3D<T>  mu                              (gridf.n_x,gridf.n_y,gridf.n_z,2,1);   
     Grid_N_C_3D<T>  laplacian_phi                   (gridf.n_x,gridf.n_y,gridf.n_z,2,1);   
 
     real feq_Node[35] = {0}, feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
@@ -452,7 +452,7 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,lbmD3
     real  y_0 = 0.5;
     real  z_0 = 0.5;
 
-    real ux_node = 0., uy_node = 0, uz_node = 0;
+    real ux_node = 0.0, uy_node = 0.0, uz_node = 0.0;
     
 
     //$ initializing F
@@ -461,21 +461,39 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,lbmD3
             for(int k = 0 + gridf.noghost; k < gridf.n_z_node - (gridf.noghost); k++){
 
 
-				
+                x = ((real)i)/ grid.n_x - x_0;
+                y = ((real)j)/ grid.n_y - y_0;
+                z = ((real)k)/ grid.n_z - z_0;
+                
+                real phi = -1.0;
+
+                if((x - x_0)*(x - x_0)  + (y - y_0)*(y - y_0) < 0.3*0.3   ){ 
+                    phi = 1.0 ;
+                }
+
+                //> munid
+                munid.Node(i,j,k) = - A * phi.Node(i,j,k) +  A * phi.Node(i,j,k) *  phi.Node(i,j,k) * phi.Node(i,j,k)   ;
+                munid.Node(i,j,k) -= kappa*laplacian_phi.Node(i,j,k);
+
 				get_equi_f(Feq_node,lb,ux_node,uy_node,uz_node,Rho,);
 
 				for (int dv = 0; dv<gridf.d_v; dv++)
 					gridf.Node(i,j,k,dv) = Feq_node[dv];
 
-				x = ((real)i+0.5)/ gridf.n_x - x_0;
-                y = ((real)j+0.5)/ gridf.n_y - y_0;
-                z = ((real)k+0.5)/ gridf.n_z - z_0;
-
-
-				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+				get_equi_g(Feq_node,lb,ux_node,uy_node,uz_node,Rho,);
 
 				for (int dv = 0; dv<gridf.d_v; dv++)
-					gridf.Cell(i,j,k,dv) = Feq_node[dv];
+					gridf.Node(i,j,k,dv) = Feq_node[dv];
+                
+                
+                
+                
+                
+                
+
+
+
+
 
             }
         }
