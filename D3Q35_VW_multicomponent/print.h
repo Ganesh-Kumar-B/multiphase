@@ -52,78 +52,71 @@ void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, real u
 }
 
 template<typename T, typename T1>
-void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real theta, Grid_N_C_3D<T> &Force)
+void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &gridf ,Grid_N_C_3D<T> &gridg,  int step, real u0, real theta, Grid_N_C_3D<T> &Force)
 {
+   
     T u1,u2,u3,u4,um, rho1,rho2,del=0.05;
 
     std::ofstream file;
     char fileName[250];
     char foldername[250];
-    sprintf(foldername,"Result_wc%.2f",theta);
+    sprintf(foldername,"Result_%.2f",theta);
     mkdir(foldername,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    sprintf(fileName,"./Result_wc%.2f/velocity_%d.vtk", theta,step) ;
+    sprintf(fileName,"./Result_%.2f/velocity_%d.vtk", theta,step) ;
     file.open(fileName);
-    file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_GRID"<<std::endl;
-    // file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_POINTS"<<std::endl;
+
+    file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_POINTS"<<std::endl;
     
-    file<<"DIMENSIONS "<<2*grid.n_x<<" "<<1*grid.n_y<<" "<<1*grid.n_z<<std::endl;
+    file<<"DIMENSIONS "<<1*gridf.n_x<<" "<<1*gridf.n_y<<" "<<1*gridf.n_z<<std::endl;
     
-    // file<<"ORIGIN "<<0<<" "<<0<<" "<<0<<std::endl;
-    // file<<"SPACING "<<1<<" "<<1<<" "<<1<<std::endl;
+    file<<"ORIGIN "<<0<<" "<<0<<" "<<0<<std::endl;
+    file<<"SPACING "<<1<<" "<<1<<" "<<1<<std::endl;
 
+    file<<"POINT_DATA "<<1*gridf.n_x*1*gridf.n_y*1*gridf.n_z<<std::endl;
+    file<<"SCALARS density double\nLOOKUP_TABLE default"<<std::endl;
 
-    file<<"POINTS "<<2*grid.n_x*1*grid.n_y*1*grid.n_z<<" double"<<std::endl;
+    for(int k = 0 + gridf.noghost; k < gridf.n_z_node - (gridf.noghost); k++){
+	    for (int j = 0 + gridf.noghost; j < gridf.n_y_node - (gridf.noghost); j++){
+            for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost); i++){ 
 
-    
-    for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
-	    for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
-            for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){ 
-
-                file<<i<<" "<<j     <<" "<<k     <<std::endl;
-                file<<i +0.5<<" "<<j +0.5<<" "<<k +0.5<<std::endl;
+                get_moments_Node_f(gridf,lb,u1, u2,u3, rho1, i,j,k,Force);
+                file<<rho1<<std::endl;
 
             }
         }
     }
-        
 
-    file<<"POINT_DATA "<<2*grid.n_x*1*grid.n_y*1*grid.n_z<<std::endl;
-    file<<"SCALARS density double 1\nLOOKUP_TABLE default"<<1<<std::endl;
+    file<<"SCALARS phi double\nLOOKUP_TABLE default"<<std::endl;
 
-    for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
-	    for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
-            for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){ 
 
-                get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force);
-                file<<rho1<<std::endl;
+    for(int k = 0 + gridf.noghost; k < gridf.n_z_node - (gridf.noghost); k++){
+	    for (int j = 0 + gridf.noghost; j < gridf.n_y_node - (gridf.noghost); j++){
+            for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost); i++){ 
+                
+                real phi = 0;
 
-                get_moments_Cell(grid,lb,u1, u2,u3, rho1, i,j,k,Force);
+                get_moments_Node_g(gridg,lb,phi,i,j,k);
 
-                file<<rho1<<std::endl;
+                file<< phi <<std::endl;
+
             }
         }
     }
+
 
     file<<"VECTORS velocity double"<<std::endl;
 
-    for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
-	    for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
-            for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){ 
+    for(int k = 0 + gridf.noghost; k < gridf.n_z_node - (gridf.noghost); k++){
+	    for (int j = 0 + gridf.noghost; j < gridf.n_y_node - (gridf.noghost); j++){
+            for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost); i++){ 
 
-                get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force);
-
-                file<<u1<<" "<<u2<<" "<<u3<<std::endl;
-
-                get_moments_Cell(grid,lb,u1, u2,u3, rho1, i,j,k,Force);
+                get_moments_Node_f(gridf,lb,u1, u2,u3, rho1, i,j,k,Force);
 
                 file<<u1<<" "<<u2<<" "<<u3<<std::endl;
                 
-
-
             }
         }
     }
-
 
 
 }

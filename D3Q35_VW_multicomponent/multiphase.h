@@ -20,9 +20,9 @@ void Multiphase_terms(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg, lbmD3Q35<T1> 
             ){
 
 
-    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
-        for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
-            for(int k = 0 + grid.noghost;k < grid.n_z_node - (grid.noghost) ; k++){
+    for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost) ; i++){
+        for(int j = 0 + gridf.noghost;j < gridf.n_y_node - (gridf.noghost) ; j++){
+            for(int k = 0 + gridf.noghost;k < gridf.n_z_node - (gridf.noghost) ; k++){
             
                 get_moments_Node_g(gridg, lb, phi.Node(i,j,k), i, j ,k); 
 
@@ -37,9 +37,9 @@ void Multiphase_terms(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg, lbmD3Q35<T1> 
 
 
 
-    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
-        for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
-            for(int k = 0 + grid.noghost;k < grid.n_z_node - (grid.noghost) ; k++){
+    for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost) ; i++){
+        for(int j = 0 + gridf.noghost;j < gridf.n_y_node - (gridf.noghost) ; j++){
+            for(int k = 0 + gridf.noghost;k < gridf.n_z_node - (gridf.noghost) ; k++){
 
 
                 //> laplacian of phi  
@@ -74,7 +74,7 @@ void Multiphase_terms(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg, lbmD3Q35<T1> 
 
 
                 //> munid
-                munid.Node(i,j,k) = - A * phi.Node(i,j,k) +  A * phi.Node(i,j,k) *  phi.Node(i,j,k) * phi.Node(i,j,k)   ;
+                munid.Node(i,j,k)   = - A * phi.Node(i,j,k) +  A * phi.Node(i,j,k) *  phi.Node(i,j,k) * phi.Node(i,j,k)   ;
                 
                 munid.Node(i,j,k) -= kappa*laplacian_phi.Node(i,j,k);
 

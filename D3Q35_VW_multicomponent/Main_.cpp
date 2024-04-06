@@ -17,11 +17,14 @@ int main()
     int Nx =100;int Ny = 100; int Nz = 5;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
-    Grid_N_C_3D<real> gridf            (Nx,Ny,Nz,2,35);
-    Grid_N_C_3D<real> gridg            (Nx,Ny,Nz,2,35);
-    Grid_N_C_3D<real> Force             (Nx,Ny,Nz,2,3);
+    Grid_N_C_3D<real> gridf                             (Nx,Ny,Nz,2,35);
+    Grid_N_C_3D<real> gridg                             (Nx,Ny,Nz,2,35);
+    Grid_N_C_3D<real> Force                             (Nx,Ny,Nz,2,3);
 
-    
+    Grid_N_C_3D<real>  rho                              (Nx,Ny,Nz,2,1);
+    Grid_N_C_3D<real>  phi                              (Nx,Ny,Nz,2,1);   
+    Grid_N_C_3D<real>  mu                               (Nx,Ny,Nz,2,1);   
+    Grid_N_C_3D<real>  laplacian_phi                    (Nx,Ny,Nz,2,1);   
     
     lbmD3Q35<real> d3q35(1.0,0.33333333333333);
 
@@ -42,7 +45,8 @@ int main()
 
 
     real tau = Kin_Vis/(cs*cs);
-    real tauphi = 0.1; 
+
+    real tauphi = 1.0; 
     std::cout<<"tau "<<tau<<std::endl;
 
 
@@ -56,8 +60,10 @@ int main()
 
     real TbyTc = 0.82      ;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
-    real kappa = 0.00625;
 
+    real kappa = 0.00318246;
+    real gamma_s = 0.1 ;
+    real A = 0.003535;
 
 
 
@@ -67,13 +73,9 @@ int main()
 
     //  initialization_equilibrium_profile(gridf,d3q35,Rho_mean);
 
-    initialization_2D_droplet(gridf,gridg,d3q35,Rho_mean);
+    initialization_2D_droplet(gridf,gridg,rho,phi,mu,laplacian_phi,d3q35,Rho_mean,kappa, gamma_s, A);
 
-
-
-
-
-    print_vtk(d3q35,gridf,0,u0,TbyTc,Force);
+    print_vtk(d3q35,gridf,gridg,0,u0,TbyTc,Force);
     printMass(gridf);
     int sim_time = 20*Nx/u0;
 
@@ -82,7 +84,7 @@ int main()
     for(int t = 1; t <=10000;t++){
 
         // Periodic(gridf);
-        collide (gridf,gridg,d3q35,beta,tau,tauphi,TbyTc,kappa, t,Force);
+        collide (gridf,gridg,rho,phi,mu,laplacian_phi,d3q35,beta,tau,tauphi,TbyTc, t,Force, kappa ,gamma_s,A);
 
         Periodic(gridf);
         Periodic(gridg);
@@ -97,7 +99,7 @@ int main()
         if(t%500== 0){
             std::cout<<t<<" ";
             printMass(gridf);
-            print_vtk(d3q35,gridf,t,u0,TbyTc,Force);
+            print_vtk(d3q35,gridf,gridg,t,u0,TbyTc,Force);
         }
     }
 
