@@ -435,8 +435,8 @@ void initialization_equilibrium_profile(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,re
 
 
 template<typename T, typename T1>
-void initialization_2D_droplet(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &rho,
-Grid_N_C_3D<T> &phi,Grid_N_C_3D<T> &mu,Grid_N_C_3D<T> &laplacian_phi,Grid_N_C_3D<T> &gridg,lbmD3Q35<T1> &lb,real Rho_mean, real kappa, real gamma_s, real A ){
+void initialization_2D_droplet(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,Grid_N_C_3D<T> &rho,
+Grid_N_C_3D<T> &phi,Grid_N_C_3D<T> &mu,Grid_N_C_3D<T> &laplacian_phi,lbmD3Q35<T1> &lb,real Rho_mean, real kappa, real gamma_s, real A ){
 
 	real Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
     real x,y,z;     ///distance between nodes 
@@ -528,7 +528,7 @@ Grid_N_C_3D<T> &phi,Grid_N_C_3D<T> &mu,Grid_N_C_3D<T> &laplacian_phi,Grid_N_C_3D
 				for (int dv = 0; dv<gridf.d_v; dv++)
 					gridf.Node(i,j,k,dv) = Feq_node[dv];
 
-				// get_equi_g(Feq_node,lb,ux_node,uy_node,uz_node  ,phi.Node(i,j,k), gamma_s, mu);
+				get_equi_g(Feq_node,lb,ux_node,uy_node,uz_node  ,phi.Node(i,j,k), gamma_s, mu);
 
 				for (int dv = 0; dv<gridf.d_v; dv++)
 					gridg.Node(i,j,k,dv) = Feq_node[dv];
