@@ -66,6 +66,8 @@ int main()
     real A = 0.003535;
 
 
+    
+
 
     //:fixed ------------------------------Main code--------------------------//
     
@@ -96,7 +98,7 @@ int main()
         advection(gridg);
         // stationary_correction(gridf);
 
-        if(t%500== 0){
+        if(t%1== 0){
             std::cout<<t<<" ";
             printMass(gridf);
             print_vtk(d3q35,gridf,gridg,t,u0,TbyTc,Force);

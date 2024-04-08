@@ -37,8 +37,6 @@ void collide(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,Grid_N_C_3D<T> &rho, Gr
 
                 Multiphase_Force_Node(gridf,phi , mu,lb,Force,i,j,k );             										
                 
-
-
                 get_moments_Node_f(gridf, lb,  ux, uy, uz,Rho, i, j, k,Force);            //for the node
                 get_equi_f(feq_Node,lb, ux, uy,uz, Rho, phi.Node(i,j,k),mu.Node(i,j,k));
 
@@ -203,7 +201,7 @@ void calculateAlpha(lbmD3Q35<T> &lbModel,T* x_i,T* f_i,T beta,T& alpha)
 template<typename T>
 void get_equi_f(real *feq , lbmD3Q35<T> &lb, real ux, real uy, real uz, real &rho, real &phi, real &mu){
 
-  real u2 = ux*ux + uy*uy + uz*uz;
+    real u2 = ux*ux + uy*uy + uz*uz;
     real a1=0;
     real first,second, third, chem_pot ,feq0=0;
     real sum = 0;
@@ -212,13 +210,14 @@ void get_equi_f(real *feq , lbmD3Q35<T> &lb, real ux, real uy, real uz, real &rh
         feq0 = rho*lb.W[dv];
 
         chem_pot = (phi* mu) / (rho* lb.theta0) ;
+        chem_pot = 0;
 
         first  = (ux*lb.Cx[dv] + uy*lb.Cy[dv] + uz*lb.Cz[dv])*lb.thetaInverse;
         second = 0.5*(first * first);
         third = -0.5*u2*lb.thetaInverse;
         feq[dv] = feq0*(1+ chem_pot +first + second + third);    
 
-        sum = feq[dv];
+        sum += feq[dv];
     }
 
     feq[0] = rho - sum;
@@ -244,7 +243,7 @@ void get_equi_g(real *feq , lbmD3Q35<T> &lb, real ux, real uy, real uz, real &ph
         third = - 0.5*u2*lb.thetaInverse;
         feq[dv] = feq0*( chem_pot + phi*  first +phi * second + phi * third);    
 
-        sum = feq[dv];
+        sum += feq[dv];
     }
     
     
@@ -438,7 +437,7 @@ template<typename T, typename T1>
 void initialization_2D_droplet(Grid_N_C_3D<T> &gridf,Grid_N_C_3D<T> &gridg,Grid_N_C_3D<T> &rho,
 Grid_N_C_3D<T> &phi,Grid_N_C_3D<T> &mu,Grid_N_C_3D<T> &laplacian_phi,lbmD3Q35<T1> &lb,real Rho_mean, real kappa, real gamma_s, real A ){
 
-	real Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
+	real Feq_node[35] = {0},Feq_cell[35] = {0};
     real x,y,z;     ///distance between nodes 
     
 
@@ -523,7 +522,7 @@ Grid_N_C_3D<T> &phi,Grid_N_C_3D<T> &mu,Grid_N_C_3D<T> &laplacian_phi,lbmD3Q35<T1
                         mu -= kappa*laplacian_phi.Node(i,j,k);
 
 
-				get_equi_f(Feq_node,lb,ux_node,uy_node,uz_node  ,Rho, phi.Node(i,j,k),mu);
+				get_equi_f(Feq_node,lb,ux_node,uy_node,uz_node  ,Rho_mean, phi.Node(i,j,k),mu);
 
 				for (int dv = 0; dv<gridf.d_v; dv++)
 					gridf.Node(i,j,k,dv) = Feq_node[dv];
@@ -538,7 +537,7 @@ Grid_N_C_3D<T> &phi,Grid_N_C_3D<T> &mu,Grid_N_C_3D<T> &laplacian_phi,lbmD3Q35<T1
                 mu = - A * phi.Cell(i,j,k) +  A * phi.Cell(i,j,k) *  phi.Cell(i,j,k) * phi.Cell(i,j,k)   ;
                 mu -= kappa*laplacian_phi.Cell(i,j,k);
 
-				get_equi_f(Feq_node,lb,ux_node,uy_node,uz_node  ,Rho, phi.Cell(i,j,k),mu);
+				get_equi_f(Feq_node,lb,ux_node,uy_node,uz_node  ,Rho_mean, phi.Cell(i,j,k),mu);
 
 				for (int dv = 0; dv<gridf.d_v; dv++)
 					gridf.Cell(i,j,k,dv) = Feq_node[dv];
