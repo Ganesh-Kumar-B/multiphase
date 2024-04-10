@@ -14,18 +14,20 @@
 int main()
 {
 
-    int Nx =20;int Ny = 20; int Nz = 5;
+    int Nx =100;int Ny = 100; int Nz = 5;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
-    
+    Grid_N_C_3D<real> grid2           (Nx,Ny,Nz,2,35);
+    Grid_N_C_3D<real> Force           (Nx,Ny,Nz,2,3);
+
     
     
     lbmD3Q35<real> d3q35(1.0,0.33333333333333);
 
-        
     real cs = sqrt(d3q35.theta0);
     std::cout<<"theta= "<<d3q35.theta0<<std::endl;
+
 
     real Re = 10;
     real L  = Ny;
@@ -45,32 +47,30 @@ int main()
     std::cout<<"beta"<<beta<<std::endl;
 
 
-    real Rho_mean =1.0;
+    real Rho_mean = 1.0;
 
 
 
-    real TbyTc = 0.84;
+    real TbyTc = 0.85      ;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
-    real kappa = 0.001;
-
+    real kappa = 0.00625;
 
 
 
 
     //:fixed ------------------------------Main code--------------------------//
     
-    //  initialization(grid,d3q35,Rho_mean,0.0,0.0);
+    //      initialization(grid,d3q35,Rho_mean,0.0,0.0);
 
-    //      initialization_equilibrium_profile(grid,d3q35,Rho_mean);
+         initialization_equilibrium_profile(grid,d3q35,Rho_mean);
 
-    initialization_2D_droplet(grid,d3q35,Rho_mean);
-
-
-
-    // exit(0);
+    // initialization_2D_droplet(grid,d3q35,Rho_mean);
 
 
-    print_vtk(d3q35,grid,0,u0,TbyTc);
+
+
+
+    print_vtk(d3q35,grid,0,u0,TbyTc,Force);
     printMass(grid);
     int sim_time = 20*Nx/u0;
 
@@ -79,22 +79,46 @@ int main()
     for(int t = 1; t <=10000;t++){
 
         // Periodic(grid);
-        collide (grid,d3q35,beta,tau,TbyTc,kappa, t);
+        collide (grid,d3q35,beta,tau,TbyTc,kappa, t,Force);
 
         Periodic(grid);
 
-        // Diffuse_35(grid,d3q35,u0,0.0);
-        //   BB_wall(grid,d3q35,u0,0.0);
+        //  Diffuse_35(grid,d3q35,u0,0.0);
+        //  BB_wall(grid,d3q35,u0,0.0);
 
         advection(grid);
         // stationary_correction(grid);
 
-
         if(t%500== 0){
             std::cout<<t<<" ";
             printMass(grid);
-            print_vtk(d3q35,grid,t,u0,TbyTc);
+            print_vtk(d3q35,grid,t,u0,TbyTc,Force);
         }
-    } 
+    }
+
+
+    // for(int t = 5001; t <=40000;t++){
+
+    //     // Periodic(grid);
+    //     collide(grid,d3q35,beta,tau,TbyTc,kappa, t);
+
+    //     Periodic(grid);
+
+    //     Diffuse_35(grid,d3q35,u0,0.0);
+    //     //   BB_wall(grid,d3q35,u0,0.0);
+
+    //     advection(grid);
+    //     // stationary_correction(grid);
+
+
+    //     if(t%500== 0){
+    //         std::cout<<t<<" ";
+    //         printMass(grid);
+    //         print_vtk(d3q35,grid,t,u0,TbyTc);
+    //     }
+    // }
+
+
+
 }
 ;
