@@ -424,59 +424,8 @@ void collideWorking(latticeArr myLattice, latticeD1Q3 myD1Q3, nonIdealParam myVD
         mass += myLattice[iX].rho;
 		
         myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
-        // myLattice[iX].Force = (myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dx*2.0);
+        //  myLattice[iX].Force = (myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dx*2.0);
         
-        // // //# second order
-        // double del_muA_second_order =  (1.0/ (2.0 *dx))* ( 
-        //                 (eta)*
-        //                 (
-        //                 (myLattice[iX+1].pNid  + myLattice[iX+1].FNid)* (1.0 /myLattice[iX].rho ) + (1.0/myLattice[iX +1].rho )* (myLattice[iX].pNid  + myLattice[iX].FNid)
-        //                 -(myLattice[iX].pNid  + myLattice[iX].FNid) * (1.0 /myLattice[iX - 1].rho ) - (1.0 /myLattice[iX].rho )* (myLattice[iX-1].pNid  + myLattice[iX-1].FNid)
-        //                 )
-        
-        
-        //                 -(myVDW.kappa* (myLattice[iX + 1 ].surface - myLattice[iX -1 ].surface) )
-        
-        //                 );
-
-        // // // //#fourth order
-        // double del_muA_fourth_order = (1.0/ (12.0 *dx))*( 
-                        
-        //                 (1.0 - eta)*  
-        //                 (
-        //                 8*(myLattice[iX+1].pNid  + myLattice[iX+1].FNid) * (1.0 /myLattice[iX   ].rho ) +
-        //                 8*(myLattice[iX  ].pNid  + myLattice[iX  ].FNid) * (1.0 /myLattice[iX +1].rho ) +
-        //                   (myLattice[iX-2].pNid  + myLattice[iX-2].FNid) * (1.0 /myLattice[iX   ].rho ) +
-        //                   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid) * (1.0 /myLattice[iX -2].rho ) - 
-                          
-        //                   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid) * (1.0 /myLattice[iX +2].rho ) - 
-        //                   (myLattice[iX+2].pNid  + myLattice[iX+2].FNid) * (1.0 /myLattice[iX   ].rho ) - 
-        //                 8*(myLattice[iX  ].pNid  + myLattice[iX  ].FNid) * (1.0 /myLattice[iX -1].rho ) - 
-        //                 8*(myLattice[iX-1].pNid  + myLattice[iX-1].FNid) * (1.0 /myLattice[iX   ].rho )
-        //                 )
-        //                 )
-
-        //                 // - (1.0/ (2.0 *dx))* myVDW.kappa* (myLattice[iX + 2].surface + 8 * myLattice[iX +1].surface - 8 *myLattice[iX - 1 ].surface + myLattice[iX -2 ].surface)
-
-        //                 ;
-        // myLattice[iX].Force = myLattice[iX].rho*(del_muA_second_order + del_muA_fourth_order); //total force
-
-//   //#fourth order to second order 
-    // // a = 1 represents 2nd order a = 4/3 represents 4th order
-        double a = 3.0/3.0; double b = 1.0 - a;
-        double del_muA_fourth_order =   (myLattice[iX  ].pNid  + myLattice[iX  ].FNid)*
-                                        (   (a/(2.0*dx)) *( (1.0 /myLattice[iX +1].rho ) - (1.0 /myLattice[iX -1].rho )) +   
-                                            (b/(4.0*dx)) *( (1.0 /myLattice[iX +2].rho ) - (1.0 /myLattice[iX -2].rho ))  ) +
-                                       
-                                        (1.0 /myLattice[iX   ].rho )*
-                                        (   (a/(2.0*dx)) *( ( myLattice[iX+1].pNid  + myLattice[iX+1].FNid ) - (myLattice[iX-1].pNid  + myLattice[iX-1].FNid)) +   
-                                            (b/(4.0*dx)) *( ( myLattice[iX+2].pNid  + myLattice[iX+2].FNid ) - (myLattice[iX-2].pNid  + myLattice[iX-2].FNid))  ) 
-
-                        - (1.0/ (2.0 *dx))*(myVDW.kappa* (myLattice[iX + 1 ].surface - myLattice[iX -1 ].surface) )
-                        ;
-
-        myLattice[iX].Force = myLattice[iX].rho*(del_muA_fourth_order); //total force
-
 
         // # from direct continuous derivative
         // myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
