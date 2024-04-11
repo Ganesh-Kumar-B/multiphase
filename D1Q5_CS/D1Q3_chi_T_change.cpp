@@ -129,6 +129,7 @@ main()
 
 
 	myVDW.kappa = kappabar*myVDW.a*dX*dX;
+
 	myVDW.rho0 = rho0byrhoc*rho_critical;	
 
     finalTime = 10000    ;
@@ -265,7 +266,7 @@ void initializePerturbPeriodic(latticeArr myLattice, latticeD1Q3 myD1Q3,  int nX
     {   
         coord= (iX-2.5)/nX;
 	    rhoIn =rhoMean + ampDisturb*sin(kx*coord);
-        myLattice[iX].rho =rhoIn;
+        myLattice[iX].rho = rhoIn;
         /*Inititalise f using equilibrium*/
         getFeqPQuad(myLattice[iX].f,myD1Q3, rhoIn, vel);
         fprintf(fpt,"%.10lf  %.10lf \n", coord, rhoIn);
