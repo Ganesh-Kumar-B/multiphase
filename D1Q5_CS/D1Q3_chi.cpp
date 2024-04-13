@@ -101,7 +101,7 @@ main()
  
     nX = 3000;
 	beta = 0.6;
-	TbyTc = 0.85;
+	TbyTc = 0.88;
 	rho0byrhoc = 1.0;
 	kappabar = 0.0625;//0.0625;
 	dX = 1.0/(nX-1.0);
@@ -110,6 +110,9 @@ main()
 	tau = (1.0-beta)/beta *dt*0.5;   
 	printf("\n beta=%lf kn =%lf \n",beta, tau);
 	
+    std::cout<<"tau:  "<<tau<<std::endl;
+
+
     T_critical = myD1Q5.T0/TbyTc ;
     rho_critical = 1.0;
 

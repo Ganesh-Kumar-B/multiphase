@@ -87,7 +87,7 @@ void initializePerturbPeriodic(latticeArr lattice, latticeD1Q5 myD1Q5,  int nX, 
 
 main()
 {
-  
+    
     latticeArr myLattice;
 	latticeD1Q5 myD1Q5;
 	double kappabar, TbyTc,rho0byrhoc;
@@ -120,7 +120,9 @@ main()
 	
 	tau = (1.0-beta)/beta *dt*0.5;   
 	printf("\n beta=%lf kn =%lf \n",beta, tau);
-	
+    
+    std::cout<<"tau:  "<<tau<<std::endl;
+
     T_critical = myD1Q5.T0/TbyTc ;
     rho_critical = 0.521772/4.0 ;
 
