@@ -51,7 +51,7 @@ struct lbmD3Q35
      T Cz[35];  T CzC[35]; T CzF[35]; 
 
     T theta0, thetaInverse ;
-    lbmD3Q35(T c,T cs2); //constructor
+    lbmD3Q35(T c); //constructor
     
 };
 
@@ -61,10 +61,13 @@ struct lbmD3Q35
 
 //constructor
 template<typename T>
-lbmD3Q35<T>::lbmD3Q35(T c1,T cs2)
+lbmD3Q35<T>::lbmD3Q35(T c1)
     {   
         dvN = 35;
-        theta0 = (31.0 + sqrt(7009))/252.0;
+
+
+        theta0 =(c1*c1)* (31.0 + sqrt(7009))/252.0;
+        
         thetaInverse = 1.0/theta0;
 
 

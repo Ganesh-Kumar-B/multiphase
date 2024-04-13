@@ -21,9 +21,17 @@ int main()
     Grid_N_C_3D<real> grid2           (Nx,Ny,Nz,2,35);
     Grid_N_C_3D<real> Force           (Nx,Ny,Nz,2,3);
 
+    real T_critical = 0.377332/4.0;
+
+	real TbyTc = 0.80;
+
+    real T_actual = TbyTc* T_critical;
+
+
+
+    real c = sqrt( T_actual *  ((5.0/3.0) + (sqrt(10) /3.0)));
     
-    
-    lbmD3Q35<real> d3q35(1.0,0.33333333333333);
+    lbmD3Q35<real> d3q35(c);
 
     real cs = sqrt(d3q35.theta0);
     std::cout<<"theta= "<<d3q35.theta0<<std::endl;
@@ -36,14 +44,17 @@ int main()
     real u0 = Ma * cs;
     std::cout<<"u0 = "<<u0<<std::endl;
 
+    real dx = 1.0;
 
+    real dt = dx/c;
 
     real Kin_Vis = u0*(L)/Re;
     real tau = Kin_Vis/(cs*cs);
     std::cout<<"tau "<<tau<<std::endl;
 
 
-    real beta = 1.0/(2.0*tau + 1);
+    real tauNdim = tau /dt;
+    real beta = 1.0/(2.0*tauNdim + 1);
     std::cout<<"beta"<<beta<<std::endl;
 
 
@@ -53,7 +64,7 @@ int main()
 
     real TbyTc = 0.85      ;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
-    real kappa = 0.00625;
+    real kappa = 0.0625;
 
 
 
@@ -70,7 +81,7 @@ int main()
 
 
 
-    print_vtk(d3q35,grid,0,u0,TbyTc,Force);
+    print_vtk(d3q35,grid,0,u0,TbyTc,Force,dt);
     printMass(grid);
     int sim_time = 20*Nx/u0;
 
@@ -79,7 +90,7 @@ int main()
     for(int t = 1; t <=10000;t++){
 
         // Periodic(grid);
-        collide (grid,d3q35,beta,tau,TbyTc,kappa, t,Force);
+        collide (grid,d3q35,beta,tau,TbyTc,kappa, t,Force, dt);
 
         Periodic(grid);
 
@@ -92,7 +103,7 @@ int main()
         if(t%500== 0){
             std::cout<<t<<" ";
             printMass(grid);
-            print_vtk(d3q35,grid,t,u0,TbyTc,Force);
+            print_vtk(d3q35,grid,t,u0,TbyTc,Force,dt);
         }
     }
 

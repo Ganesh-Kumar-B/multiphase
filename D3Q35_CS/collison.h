@@ -17,7 +17,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_3D<T> &grid,
-            lbmD3Q35<T1> &lb,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force ){
+            lbmD3Q35<T1> &lb,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force ,real dt){
 
     Grid_N_C_3D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,grid.n_z,2,1);
     Grid_N_C_3D<T>  rho                             (grid.n_x,grid.n_y,grid.n_z,2,1);   
@@ -49,7 +49,7 @@ void collide(Grid_N_C_3D<T> &grid,
                 
 
 
-                get_moments_Node(grid, lb,  ux, uy, uz,Rho, i, j, k,Force);            //for the node
+                get_moments_Node(grid, lb,  ux, uy, uz,Rho, i, j, k,Force,dt);            //for the node
                 get_equi(feq_Node,lb, ux, uy,uz, Rho);
 
 
@@ -80,7 +80,7 @@ void collide(Grid_N_C_3D<T> &grid,
 
                 for (int dv = 0; dv< 35; dv++){
                     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Force.Node(i,j,k,0) * lb.Cx[dv] + Force.Node(i,j,k,1) * lb.Cy[dv] + Force.Node(i,j,k,2) * lb.Cz[dv] );
+                                        + (1 - 0.5*alpha*beta)*dt*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Force.Node(i,j,k,0) * lb.Cx[dv] + Force.Node(i,j,k,1) * lb.Cy[dv] + Force.Node(i,j,k,2) * lb.Cz[dv] );
                 }       
 
 
@@ -93,7 +93,7 @@ void collide(Grid_N_C_3D<T> &grid,
                 Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Force,i,j,k );                                               // $ chemical potential
                 // Multiphase_Force_eta_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa,eta );  // $ 41 paper
 
-                get_moments_Cell(grid, lb,  ux, uy, uz,Rho, i, j, k,Force);            //for the node
+                get_moments_Cell(grid, lb,  ux, uy, uz,Rho, i, j, k,Force,dt);            //for the node
                 get_equi(feq_Cell,lb, ux, uy,uz, Rho);
 
                 //> normal
@@ -123,7 +123,7 @@ void collide(Grid_N_C_3D<T> &grid,
 
                 for (int dv = 0; dv< 35; dv++){
                     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Force.Cell(i,j,k,0) * lb.Cx[dv] +Force.Cell(i,j,k,1)* lb.Cy[dv] + Force.Cell(i,j,k,2) * lb.Cz[dv] );
+                                        + (1 - 0.5*alpha*beta)*dt*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Force.Cell(i,j,k,0) * lb.Cx[dv] +Force.Cell(i,j,k,1)* lb.Cy[dv] + Force.Cell(i,j,k,2) * lb.Cz[dv] );
                 }
 
 
@@ -247,7 +247,7 @@ void get_equi(real *feq , lbmD3Q35<T> &lb, real ux, real uy, real uz, real rho){
 
 
 template<typename T,typename T1>
-void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z, Grid_N_C_3D<T> &Force){ ///node or cell 0-Node 1- cell
+void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z, Grid_N_C_3D<T> &Force, real dt){ ///node or cell 0-Node 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Uz  = 0.0;
@@ -261,14 +261,14 @@ void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy,
         Rho += grid.Node(X,Y,Z,dv);
     }  
 
-    Ux = Ux/Rho + 0.5*Force.Node(X,Y,Z,0);
-    Uy = Uy/Rho + 0.5*Force.Node(X,Y,Z,1);
-    Uz = Uz/Rho + 0.5*Force.Node(X,Y,Z,2);  
+    Ux = Ux/Rho + 0.5*dt*Force.Node(X,Y,Z,0);
+    Uy = Uy/Rho + 0.5*dt*Force.Node(X,Y,Z,1);
+    Uz = Uz/Rho + 0.5*dt*Force.Node(X,Y,Z,2);  
 
 }
 
 template<typename T,typename T1>
-void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z,Grid_N_C_3D<T> &Force){ ///node or cell 0-Cell 1- cell
+void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z,Grid_N_C_3D<T> &Force, real dt){ ///node or cell 0-Cell 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Uz  = 0.0;
@@ -283,9 +283,9 @@ void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy,
         Rho += grid.Cell(X,Y,Z,dv);
     }  
 
-    Ux = Ux/Rho + 0.5*Force.Cell(X,Y,Z,0);
-    Uy = Uy/Rho + 0.5*Force.Cell(X,Y,Z,1);
-    Uz = Uz/Rho + 0.5*Force.Cell(X,Y,Z,2);  
+    Ux = Ux/Rho + 0.5*dt*Force.Cell(X,Y,Z,0);
+    Uy = Uy/Rho + 0.5*dt*Force.Cell(X,Y,Z,1);
+    Uz = Uz/Rho + 0.5*dt*Force.Cell(X,Y,Z,2);  
 
 }
 

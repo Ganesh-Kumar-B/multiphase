@@ -52,7 +52,7 @@ void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, real u
 }
 
 template<typename T, typename T1>
-void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real theta, Grid_N_C_3D<T> &Force)
+void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real theta, Grid_N_C_3D<T> &Force, real dt)
 {
     T u1,u2,u3,u4,um, rho1,rho2,del=0.05;
 
@@ -95,10 +95,10 @@ void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real
 	    for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
             for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){ 
 
-                get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force);
+                get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force,dt);
                 file<<rho1<<std::endl;
 
-                get_moments_Cell(grid,lb,u1, u2,u3, rho1, i,j,k,Force);
+                get_moments_Cell(grid,lb,u1, u2,u3, rho1, i,j,k,Force,dt);
 
                 file<<rho1<<std::endl;
             }
@@ -111,11 +111,11 @@ void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real
 	    for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
             for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){ 
 
-                get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force);
+                get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force,dt);
 
                 file<<u1<<" "<<u2<<" "<<u3<<std::endl;
 
-                get_moments_Cell(grid,lb,u1, u2,u3, rho1, i,j,k,Force);
+                get_moments_Cell(grid,lb,u1, u2,u3, rho1, i,j,k,Force,dt);
 
                 file<<u1<<" "<<u2<<" "<<u3<<std::endl;
                 
