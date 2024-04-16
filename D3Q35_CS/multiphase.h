@@ -15,26 +15,20 @@
 enum coodinates{X,Y,Z};
 
 template<typename T, typename T1>
-void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T> &rho, Grid_N_C_3D<T> &pnid, Grid_N_C_3D<T> &fnid, Grid_N_C_3D<T> &munid, Grid_N_C_3D<T> &laplacian_rho,  Grid_N_C_3D<T> &laplacian_fnid, Grid_N_C_3D<T> &gradient_rho, 
-            lbmD3Q35<T1> &lb, real TbyTc, real kappa ){
+void Multiphase_terms(  Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T> &rho, Grid_N_C_3D<T> &pnid, Grid_N_C_3D<T> &fnid, Grid_N_C_3D<T> &munid,
+                        Grid_N_C_3D<T> &laplacian_rho,  Grid_N_C_3D<T> &laplacian_fnid, Grid_N_C_3D<T> &gradient_rho, 
+                        lbmD3Q35<T1> &lb, real TbyTc, real kappa, real dt , real dx, real a , real b ){
 
     real ux = 0, uy = 0, uz = 0;
-
-    real rho_critical = 1.0, T_critical = lb.theta0/TbyTc ; 
-    real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;
-
-
-    kappa = kappa*a;
-
 
 
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
             for(int k = 0 + grid.noghost;k < grid.n_z_node - (grid.noghost) ; k++){
             
-                get_moments_Node(grid, lb,  ux, uy, uz, rho.Node(i,j,k), i, j ,k, Force); 
+                get_moments_Node(grid, lb,  ux, uy, uz, rho.Node(i,j,k), i, j ,k, Force,dt); 
 
-                get_moments_Cell(grid, lb,  ux, uy, uz, rho.Cell(i,j,k), i, j ,k, Force); 
+                get_moments_Cell(grid, lb,  ux, uy, uz, rho.Cell(i,j,k), i, j ,k, Force,dt); 
 
                 double eta = rho.Node(i,j,k)*b/4.0;
 

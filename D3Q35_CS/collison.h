@@ -17,7 +17,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_3D<T> &grid,
-            lbmD3Q35<T1> &lb,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force ,real dt){
+            lbmD3Q35<T1> &lb,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force ,real dt, real dx, real a, real b){
 
     Grid_N_C_3D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,grid.n_z,2,1);
     Grid_N_C_3D<T>  rho                             (grid.n_x,grid.n_y,grid.n_z,2,1);   
@@ -33,7 +33,7 @@ void collide(Grid_N_C_3D<T> &grid,
     real eta =0;   //   0 ----> fourth order   1-----> second order 
  
 
-    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,TbyTc,kappa );
+    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,TbyTc,kappa, dx ,dt, a , b );
 
 
 

@@ -48,6 +48,7 @@ int main()
 
     real dt = dx/c;
 
+
     real Kin_Vis = u0*(L)/Re;
     real tau = Kin_Vis/(cs*cs);
     std::cout<<"tau "<<tau<<std::endl;
@@ -62,9 +63,12 @@ int main()
 
 
 
-    real TbyTc = 0.85      ;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
-    real kappa = 0.0625;
+    real a = 1.0;
+    real b = 4.0;
+
+    real kappabar = 0.0625;
+    real kappa = kappabar*a * dx *dx;
 
 
 
@@ -73,7 +77,7 @@ int main()
     
     //      initialization(grid,d3q35,Rho_mean,0.0,0.0);
 
-         initialization_equilibrium_profile(grid,d3q35,Rho_mean);
+    initialization_equilibrium_profile(grid,d3q35,Rho_mean);
 
     // initialization_2D_droplet(grid,d3q35,Rho_mean);
 
@@ -90,7 +94,7 @@ int main()
     for(int t = 1; t <=10000;t++){
 
         // Periodic(grid);
-        collide (grid,d3q35,beta,tau,TbyTc,kappa, t,Force, dt);
+        collide (grid,d3q35,beta,tau,TbyTc,kappa, t,Force, dt ,dx,a , b);
 
         Periodic(grid);
 
