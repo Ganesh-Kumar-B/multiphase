@@ -95,12 +95,12 @@ main()
 	nonIdealParam myVDW;
 	int iX,nX,time, finalTime;
 
-    myVDW.b =   4.0;
+    myVDW.b = 4.0;
     myVDW.a = 1.0 ;
 
     T_critical = 0.377332/4.0;
 
-	TbyTc = 0.80;
+	TbyTc = 0.79;
 
     double T_actual = TbyTc* T_critical;
 
@@ -111,22 +111,28 @@ main()
 
 
     nX = 200;
-	beta = 0.012; 
+	beta = 0.2; 
 
 	rho0byrhoc = 1.0;
-	kappabar = 0.02;//0.0625;
-	dX = 1.0/(nX-1.0);
-	dt =  dX/c;
+	kappabar = 0.000000000625;//0.0625;
+    dt = 1.0;
+	dX = c*dt;
+    std::cout<<" dx "<<dX<<std::endl;
+	
 	
 	tau = (1.0-beta)/beta *dt*0.5;   
 	printf("\n beta=%lf kn =%lf \n",beta, tau);
     
     std::cout<<"tau:  "<<tau<<std::endl;
+    std::cout<<"dx :  "<<dX<<std::endl;
+    std::cout<<"dt :  "<<dt<<std::endl;
+    std::cout<<"c:   "<<myD1Q5.c<<std::endl;
 
     T_critical = myD1Q5.T0/TbyTc ;
     rho_critical = 0.521772/4.0 ;
 
 	myVDW.kappa = kappabar*myVDW.a*dX*dX;
+    std::cout<<"kappa "<< myVDW.kappa << std::endl;
 
 	myVDW.rho0 = rho0byrhoc*rho_critical;	
 
@@ -140,9 +146,7 @@ main()
        for( int iX = nX+2  ; iX >=3 ; iX--) 
        {
           myLattice[iX].rho = myLattice[iX].f[ZERO] + myLattice[iX].f[DX] + myLattice[iX].f[DMX] + myLattice[iX].f[D3X] + myLattice[iX].f[DM3X];
-        //  myLattice[iX].vel = (myD1Q5.dvD1Q5[DX]*(myLattice[iX].f[DX]-myLattice[iX].f[DMX]))/myLattice[iX].rho ; 
-        //  double Force_i    = -(myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dX*2.0);
-        //  myLattice[iX].vel = (myLattice[iX].vel + 0.5*dt*Force_i)/myLattice[iX].rho ; //the velocity is actually not needed this thing is for computing the kappa term gradient
+        
        }
        /* Set Periodicity for computing gradients */
 	   myLattice[0     ].vel  = myLattice[nX     ].vel ;
@@ -375,7 +379,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVD
 
         myLattice[iX].muA -= myVDW.kappa*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
 
-
+ 
     }
 	myLattice[0].muA = myLattice[nX].muA    ;
     myLattice[1].muA = myLattice[nX + 1 ].muA ;
@@ -389,6 +393,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVD
     {
         myLattice[iX].surface = (myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
     }
+
     myLattice[0].surface = myLattice[nX].surface ;
     myLattice[1].surface = myLattice[nX + 1 ].surface ;
     myLattice[2].surface = myLattice[nX + 2 ].surface ;
@@ -405,10 +410,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVD
         mass += myLattice[iX].rho;
 		
         myLattice[iX].Force = myLattice[iX].rho*(myLattice[iX+1].muA -myLattice[iX-1].muA)/(dx*2.0);
-        //  myLattice[iX].Force = (myLattice[iX+1].pNid - myLattice[iX-1].pNid)/(dx*2.0);
         
-
-
         myLattice[iX].Force = -myLattice[iX].Force /myLattice[iX].rho; //force density
 
         myLattice[iX].vel = (myD1Q5.dvD1Q5[DX]*(myLattice[iX].f[DX]-myLattice[iX].f[DMX]) + 3*myLattice[iX].f[D3X] - 3*myLattice[iX].f[DM3X]  ) ;
@@ -445,7 +447,6 @@ void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVD
 void getFeqPQuad(double fEq[N_DV], latticeD1Q5 myD1Q5,  double rho,  double vel)
 {
    
-
     double u2 = vel*vel ;
 
     double first,second, third,feq0=0;
@@ -455,13 +456,11 @@ void getFeqPQuad(double fEq[N_DV], latticeD1Q5 myD1Q5,  double rho,  double vel)
         feq0 = rho*myD1Q5.weight[dv];
 
         first  = (vel*myD1Q5.dvD1Q5[dv])*myD1Q5.T0Inv;
-
         second = 0.5*(first * first);
         third = -0.5*u2*myD1Q5.T0Inv ;
 
         fEq[dv] = feq0*(1+ first + second + third);    
 
-        
     }
 
     return;
