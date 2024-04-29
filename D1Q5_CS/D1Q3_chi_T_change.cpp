@@ -88,6 +88,7 @@ void initializePerturbPeriodic(latticeArr lattice, latticeD1Q5 myD1Q5,  int nX, 
 main()
 {
     
+
     latticeArr myLattice;
 	latticeD1Q5 myD1Q5;
 	double kappabar, TbyTc,rho0byrhoc;
@@ -100,33 +101,34 @@ main()
 
     T_critical = 0.377332/4.0;
 
-	TbyTc = 0.79;
+	TbyTc = 0.80;
 
     double T_actual = TbyTc* T_critical;
 
+    std::cout<<" TbyTc "<<TbyTc<<std::endl;
 
 
     c = sqrt( T_actual *  ((5.0/3.0) + (sqrt(10) /3.0)));
 	getLatticeD1Q5(c, &myD1Q5);
 
 
-    nX = 200;
-	beta = 0.2; 
+    nX = 100;
+	beta = 0.6; 
 
 	rho0byrhoc = 1.0;
-	kappabar = 0.000000000625;//0.0625;
-    dt = 1.0;
-	dX = c*dt;
+	kappabar = 0.0000000625;//0.0625;
+    
+	dX = pow(3.0*myVDW.b,1.0/3.0);
     std::cout<<" dx "<<dX<<std::endl;
-	
+	dt = dX/c;
 	
 	tau = (1.0-beta)/beta *dt*0.5;   
 	printf("\n beta=%lf kn =%lf \n",beta, tau);
     
-    std::cout<<"tau:  "<<tau<<std::endl;
-    std::cout<<"dx :  "<<dX<<std::endl;
-    std::cout<<"dt :  "<<dt<<std::endl;
-    std::cout<<"c:   "<<myD1Q5.c<<std::endl;
+    std::cout<<"tau :  "<<tau<<std::endl;
+    std::cout<<"dx  :  "<<dX<<std::endl;
+    std::cout<<"dt  :  "<<dt<<std::endl;
+    std::cout<<"c   :   "<<myD1Q5.c<<std::endl;
 
     T_critical = myD1Q5.T0/TbyTc ;
     rho_critical = 0.521772/4.0 ;
@@ -302,11 +304,12 @@ void printRho(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVDW, int
         dx = 1.0/(nX-1.0);
         double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
     
-        P =(myLattice[iX].rho*myD1Q5.T0  ) *(1+eta_EOS + eta_EOS*eta_EOS - pow(eta_EOS, 3) )/pow((1.0 - eta_EOS), 3)
+        P =(myLattice[iX].rho*myD1Q5.T0  ) *(1  +   eta_EOS + eta_EOS*eta_EOS - pow(eta_EOS, 3) )/pow((1.0 - eta_EOS), 3)
                             - myVDW.a * myLattice[iX].rho*myLattice[iX].rho 
                             - myLattice[iX].rho*myD1Q5.T0
                             ;
         P += -0.5*myVDW.kappa*(myLattice[iX+1].rho - myLattice[iX-1].rho)*(myLattice[iX+1].rho - myLattice[iX-1].rho)/(4.0*dx*dx);
+
         //correction
         //P += -(0.5/beta - 0.25)*temp*temp/myLattice[iX].rho; //term hurts
         //P += 0.25*myVDW.kappa*(myLattice[iX+1].P+myLattice[iX-1].P-2.0*myLattice[iX].P)/(dx*dx); //term may be fine
