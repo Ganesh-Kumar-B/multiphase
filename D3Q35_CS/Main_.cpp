@@ -11,27 +11,36 @@
 
 
 
+
 int main()
 {
 
-    int Nx =100;int Ny = 100; int Nz = 5;
+
+    int Nx =50;int Ny = 50; int Nz = 5;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
     Grid_N_C_3D<real> grid2           (Nx,Ny,Nz,2,35);
     Grid_N_C_3D<real> Force           (Nx,Ny,Nz,2,3);
 
+
+	real TbyTc = 0.90;
+
+    real b = 4.0;
+    real a = 1.0;
+
     real T_critical = 0.377332/4.0;
 
-	real TbyTc = 0.80;
 
     real T_actual = TbyTc* T_critical;
 
 
 
-    real c = sqrt( T_actual *  ((5.0/3.0) + (sqrt(10) /3.0)));
+    real c = sqrt( T_actual *  (1.0/((31.0 + sqrt(7009))/252.0)));
     
     lbmD3Q35<real> d3q35(c);
+    lbmD3Q15<real> d3q15(c);
+    
 
     real cs = sqrt(d3q35.theta0);
     std::cout<<"theta= "<<d3q35.theta0<<std::endl;
@@ -44,9 +53,10 @@ int main()
     real u0 = Ma * cs;
     std::cout<<"u0 = "<<u0<<std::endl;
 
-    real dx = 1.0;
+    real dx = pow(3.0*b,1.0/3.0);
 
     real dt = dx/c;
+    std::cout<<dt<<std::endl;
 
 
     real Kin_Vis = u0*(L)/Re;
@@ -55,7 +65,8 @@ int main()
 
 
     real tauNdim = tau /dt;
-    real beta = 1.0/(2.0*tauNdim + 1);
+    //  real beta = 1.0/(2.0*tauNdim + 1);
+    real beta = 0.5;
     std::cout<<"beta"<<beta<<std::endl;
 
 
@@ -64,12 +75,9 @@ int main()
 
 
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
-    real a = 1.0;
-    real b = 4.0;
-
-    real kappabar = 0.0625;
-    real kappa = kappabar*a * dx *dx;
-
+    
+    real kappabar   = 0.0625;
+    real kappa      = kappabar*a * dx *dx;
 
 
 
@@ -94,7 +102,7 @@ int main()
     for(int t = 1; t <=10000;t++){
 
         // Periodic(grid);
-        collide (grid,d3q35,beta,tau,TbyTc,kappa, t,Force, dt ,dx,a , b);
+        collide (grid,d3q35,d3q15,beta,tau,TbyTc,kappa, t,Force, dt ,dx,a , b);
 
         Periodic(grid);
 

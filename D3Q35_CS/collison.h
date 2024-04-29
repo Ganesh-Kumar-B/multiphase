@@ -9,6 +9,7 @@
 #include <sstream>
 #include<string>
 #include "lbmD3Q35.h"
+#include "lbmD3Q15.h"
 #include "GRID_3D.h"
 #include "multiphase.h"
 #define PI 3.14159265
@@ -17,7 +18,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_3D<T> &grid,
-            lbmD3Q35<T1> &lb,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force ,real dt, real dx, real a, real b){
+            lbmD3Q35<T1> &lb,lbmD3Q15<T1> &lb15,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force ,real dt, real dx, real a, real b){
 
     Grid_N_C_3D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,grid.n_z,2,1);
     Grid_N_C_3D<T>  rho                             (grid.n_x,grid.n_y,grid.n_z,2,1);   
@@ -30,10 +31,10 @@ void collide(Grid_N_C_3D<T> &grid,
 
     real feq_Node[35] = {0}, feq_Cell[35] = {0}, ux = 0, uy = 0, uz = 0;
 
-    real eta =0;   //   0 ----> fourth order   1-----> second order 
- 
+    real eta = 0;   //   0 ----> fourth order   1-----> second order 
 
-    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,TbyTc,kappa, dx ,dt, a , b );
+
+    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,lb15,TbyTc,kappa, dx ,dt, a , b );
 
 
 
@@ -44,8 +45,7 @@ void collide(Grid_N_C_3D<T> &grid,
                 
                 real Rho = 0.0;
 
-                Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Force,i,j,k );             										// $ chemical potential formulation
-                // Multiphase_Force_eta_Node(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa, eta );  		// $41 paper
+                Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb,lb15,Force,i,j,k,dt );             										// $ chemical potential formulation
                 
 
 
@@ -90,7 +90,7 @@ void collide(Grid_N_C_3D<T> &grid,
                 Rho = 0.0;
 
                 
-                Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Force,i,j,k );                                               // $ chemical potential
+                Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,lb15,Force,i,j,k,dt );                                               // $ chemical potential
                 // Multiphase_Force_eta_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa,eta );  // $ 41 paper
 
                 get_moments_Cell(grid, lb,  ux, uy, uz,Rho, i, j, k,Force,dt);            //for the node
@@ -120,13 +120,10 @@ void collide(Grid_N_C_3D<T> &grid,
                 }
 
 
-
                 for (int dv = 0; dv< 35; dv++){
                     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
                                         + (1 - 0.5*alpha*beta)*dt*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Force.Cell(i,j,k,0) * lb.Cx[dv] +Force.Cell(i,j,k,1)* lb.Cy[dv] + Force.Cell(i,j,k,2) * lb.Cz[dv] );
                 }
-
-
 
             }
         }

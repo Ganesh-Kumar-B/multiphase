@@ -1,6 +1,8 @@
 #pragma once
 
 #include "lbmD3Q35.h"
+#include "lbmD3Q15.h"
+
 #include "GRID_3D.h"
 #include <fstream>
 #include <iostream>
