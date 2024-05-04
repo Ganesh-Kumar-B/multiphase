@@ -77,7 +77,7 @@ void printRho(latticeArr lattice, latticeD1Q5 myD1Q5, nonIdealParam myVDW,int nX
 void getFeqPQuad(double fEq[N_DV], latticeD1Q5 myD1Q5,  double rho,  double vel);
 
 void createBoundaryPeriodic(latticeArr lattice, int nX );
-void collideWorking (latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVDW, int nX, double beta,double tau, int time,double c);
+void collideWorking (latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVDW, int nX,double dx, double beta,double tau, int time,double c);
 void advect(latticeArr lattice, int nX);
 void calculateAlpha( latticeArr myLattice, double& alpha, int i, int time);
 void calculateAlpha1( latticeArr myLattice, double& alpha, int i, int time, double beta);
@@ -101,34 +101,39 @@ main()
 
     T_critical = 0.377332/4.0;
 
-	TbyTc = 0.80;
+	TbyTc = 0.90   ;
 
     double T_actual = TbyTc* T_critical;
 
-    std::cout<<" TbyTc "<<TbyTc<<std::endl;
 
 
     c = sqrt( T_actual *  ((5.0/3.0) + (sqrt(10) /3.0)));
+    std::cout<<T_actual<<" "<<((5.0/3.0) + (sqrt(10) /3.0))<<std::endl;
+    std::cout<<" c      :   "<<c<<std::endl;
+
 	getLatticeD1Q5(c, &myD1Q5);
 
 
-    nX = 100;
-	beta = 0.6; 
+    nX = 2000;
+	beta = 0.5; 
 
 	rho0byrhoc = 1.0;
-	kappabar = 0.0000000625;//0.0625;
+	kappabar = 0.00625;//0.0625;
     
-	dX = pow(3.0*myVDW.b,1.0/3.0);
-    std::cout<<" dx "<<dX<<std::endl;
+	dX = 0.01*pow(3.0*myVDW.b,1.0/3.0);
+    std::cout<<"dx      :   "<<dX<<std::endl;
+
 	dt = dX/c;
+    std::cout<<"dt      :   "<<dt<<std::endl;
 	
 	tau = (1.0-beta)/beta *dt*0.5;   
 	printf("\n beta=%lf kn =%lf \n",beta, tau);
     
-    std::cout<<"tau :  "<<tau<<std::endl;
-    std::cout<<"dx  :  "<<dX<<std::endl;
-    std::cout<<"dt  :  "<<dt<<std::endl;
-    std::cout<<"c   :   "<<myD1Q5.c<<std::endl;
+    std::cout<<" TbyTc  :   "<<TbyTc<<std::endl;
+    std::cout<<"tau     :   "<<tau<<std::endl;
+    std::cout<<"dx      :   "<<dX<<std::endl;
+    std::cout<<"dt      :   "<<dt<<std::endl;
+    std::cout<<"c       :   "<<myD1Q5.c<<std::endl;
 
     T_critical = myD1Q5.T0/TbyTc ;
     rho_critical = 0.521772/4.0 ;
@@ -140,41 +145,41 @@ main()
 
     finalTime = 100000    ;
 
-	initializePerturbPeriodic(  myLattice,   myD1Q5,    nX, 0.0, myVDW.rho0, 0.01,2 );//0.001,2
+	initializePerturbPeriodic(  myLattice,   myD1Q5,    nX, 0.0, myVDW.rho0, 0.01, 2 );//0.001,2
+
 	createBoundaryPeriodic(  myLattice,  nX );
     
 	for(time =0; time<= finalTime ; time++)
     {      
-       for( int iX = nX+2  ; iX >=3 ; iX--) 
-       {
-          myLattice[iX].rho = myLattice[iX].f[ZERO] + myLattice[iX].f[DX] + myLattice[iX].f[DMX] + myLattice[iX].f[D3X] + myLattice[iX].f[DM3X];
-        
-       }
-       /* Set Periodicity for computing gradients */
-	   myLattice[0     ].vel  = myLattice[nX     ].vel ;
-       myLattice[1     ].vel  = myLattice[nX + 1 ].vel ;
-       myLattice[2     ].vel  = myLattice[nX + 2 ].vel ;
-       myLattice[nX + 3].vel  = myLattice[3      ].vel ;
-       myLattice[nX + 4].vel  = myLattice[4      ].vel ;
-       myLattice[nX + 5].vel  = myLattice[5      ].vel ;        
+        for( int iX = nX+2  ; iX >=3 ; iX--) 
+        {
+            myLattice[iX].rho = myLattice[iX].f[ZERO] + myLattice[iX].f[DX] + myLattice[iX].f[DMX] + myLattice[iX].f[D3X] + myLattice[iX].f[DM3X];
+            
+        }
+        /* Set Periodicity for computing gradients */
+        myLattice[0     ].vel   = myLattice[nX     ].vel ;
+        myLattice[1     ].vel   = myLattice[nX + 1 ].vel ;
+        myLattice[2     ].vel   = myLattice[nX + 2 ].vel ;
+        myLattice[nX + 3].vel   = myLattice[3      ].vel ;
+        myLattice[nX + 4].vel   = myLattice[4      ].vel ;
+        myLattice[nX + 5].vel   = myLattice[5      ].vel ;        
 
-       myLattice[0].rho = myLattice[nX].rho ;
-       myLattice[1].rho = myLattice[nX + 1].rho;
-       myLattice[2].rho = myLattice[nX + 2].rho;
-       myLattice[nX + 3].rho = myLattice[3].rho;
-       myLattice[nX + 4].rho = myLattice[4].rho;
-       myLattice[nX + 5].rho = myLattice[5].rho;
-        
-          
-        
-	   collideWorking (  myLattice,   myD1Q5, myVDW,   nX,  beta,tau,time,c);  
-       
-	   createBoundaryPeriodic ( myLattice,  nX );
-	   advect(   myLattice,       nX);
+        myLattice[0].rho        = myLattice[nX].rho ;
+        myLattice[1].rho        = myLattice[nX + 1].rho;
+        myLattice[2].rho        = myLattice[nX + 2].rho;
+        myLattice[nX + 3].rho   = myLattice[3].rho;
+        myLattice[nX + 4].rho   = myLattice[4].rho;
+        myLattice[nX + 5].rho   = myLattice[5].rho;
 
-       if(time % 1000== 0) {
-         printRho(myLattice,myD1Q5,myVDW,nX,beta,3,nX+2,time,c);
-       }
+
+        collideWorking (  myLattice,   myD1Q5, myVDW,   nX,dX,  beta,tau,time,c);  
+        
+        createBoundaryPeriodic ( myLattice,  nX );
+        advect(   myLattice,       nX);
+
+        if(time % 100== 0) {
+            printRho(myLattice,myD1Q5,myVDW,nX,beta,3,nX+2,time,c);
+        }
 /*  ______________________________________________________________   */	  
 	}
     printRho(myLattice,myD1Q5,myVDW,nX,beta,3,nX+2,finalTime,c);
@@ -196,10 +201,10 @@ void   getLatticeD1Q5(double c, latticeD1Q5 *myD1Q5)
 
 
 
-		myD1Q5->dvD1Q5[ZERO] = 0.0;
-		myD1Q5->dvD1Q5[DX]   = c;
-		myD1Q5->dvD1Q5[DMX]  = -1.0 * c;
-		myD1Q5->dvD1Q5[D3X]   = 3.0*c;
+		myD1Q5->dvD1Q5[ZERO ] = 0.0;
+		myD1Q5->dvD1Q5[DX   ]   = c;
+		myD1Q5->dvD1Q5[DMX  ]  = -1.0 * c;
+		myD1Q5->dvD1Q5[D3X  ]   = 3.0*c;
 		myD1Q5->dvD1Q5[DM3X]  = -3.0 * c;
 		myD1Q5->sgn[ZERO] = 0;
 		myD1Q5->sgn[DX]   = 1;
@@ -326,15 +331,14 @@ void printRho(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVDW, int
     fclose(fpt);
 }
 
-void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVDW,  int nX, double beta,double tau, int time, double c)
+void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVDW,  int nX,double dx, double beta,double tau, int time, double c)
 {
     int iX,dv;
     double  fact,quad, quad1, tmp;
     double fEq[N_DV],fc[N_DV], dRho,dPnid;
-    double  vel,alpha, lapRho, dmuA,dmuR, mass,sum, df, dt,dx;
+    double  vel,alpha, lapRho, dmuA,dmuR, mass,sum, df, dt;
     double rhoReduced ,tmp2,fact2,tauM,betaM,rhoRedby4,g;
     mass = 0.0;
-    dx = 1.0/(nX-1.0);
     dt = dx / c;
 
 
@@ -443,7 +447,7 @@ void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVD
         }      
     }
       
-    if(time % 1000 == 0)
+    if(time % 100 == 0)
     printf("\nAt time =%d mass = %.16lf ", time, mass);
 }
 
