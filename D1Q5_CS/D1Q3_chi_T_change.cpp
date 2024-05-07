@@ -99,53 +99,45 @@ main()
     myVDW.b = 4.0;
     myVDW.a = 1.0 ;
 
-    T_critical = 0.377332/4.0;
-
-	TbyTc = 0.90   ;
-
+    T_critical      = (0.377332*myVDW.a)/myVDW.b;
+	TbyTc           = 0.90   ;
     double T_actual = TbyTc* T_critical;
 
+    rho_critical    = 0.521772/myVDW.b;
+	rho0byrhoc      = 1.0;
+	myVDW.rho0      = rho0byrhoc*rho_critical;	
 
 
-    c = sqrt( T_actual *  ((5.0/3.0) + (sqrt(10) /3.0)));
-    std::cout<<T_actual<<" "<<((5.0/3.0) + (sqrt(10) /3.0))<<std::endl;
+
+    c = sqrt( T_actual *  ((5.0/3.0) + (sqrt(10.0) /3.0)));
+
     std::cout<<" c      :   "<<c<<std::endl;
-
-	getLatticeD1Q5(c, &myD1Q5);
-
-
-    nX = 2000;
-	beta = 0.5; 
-
-	rho0byrhoc = 1.0;
-	kappabar = 0.00625;//0.0625;
-    
-	dX = 0.01*pow(3.0*myVDW.b,1.0/3.0);
-    std::cout<<"dx      :   "<<dX<<std::endl;
-
-	dt = dX/c;
-    std::cout<<"dt      :   "<<dt<<std::endl;
 	
+    getLatticeD1Q5(c, &myD1Q5);
+    nX = 500;
+
+	kappabar = 1.0;//0.0625;
+            
+	dX = pow(myVDW.b,1.0/3.0);
+	dt = dX/c;
+	
+	beta = 0.5; 
 	tau = (1.0-beta)/beta *dt*0.5;   
-	printf("\n beta=%lf kn =%lf \n",beta, tau);
     
     std::cout<<" TbyTc  :   "<<TbyTc<<std::endl;
-    std::cout<<"tau     :   "<<tau<<std::endl;
     std::cout<<"dx      :   "<<dX<<std::endl;
     std::cout<<"dt      :   "<<dt<<std::endl;
     std::cout<<"c       :   "<<myD1Q5.c<<std::endl;
+    std::cout<<"tau     :   "<<tau<<std::endl;
 
-    T_critical = myD1Q5.T0/TbyTc ;
-    rho_critical = 0.521772/4.0 ;
 
 	myVDW.kappa = kappabar*myVDW.a*dX*dX;
     std::cout<<"kappa "<< myVDW.kappa << std::endl;
 
-	myVDW.rho0 = rho0byrhoc*rho_critical;	
 
     finalTime = 100000    ;
 
-	initializePerturbPeriodic(  myLattice,   myD1Q5,    nX, 0.0, myVDW.rho0, 0.01, 2 );//0.001,2
+	initializePerturbPeriodic(  myLattice,   myD1Q5,    nX, 0.0, myVDW.rho0, 0.001, 2 );//0.001,2
 
 	createBoundaryPeriodic(  myLattice,  nX );
     
@@ -177,7 +169,7 @@ main()
         createBoundaryPeriodic ( myLattice,  nX );
         advect(   myLattice,       nX);
 
-        if(time % 100== 0) {
+        if(time % 1000== 0) {
             printRho(myLattice,myD1Q5,myVDW,nX,beta,3,nX+2,time,c);
         }
 /*  ______________________________________________________________   */	  
@@ -206,6 +198,7 @@ void   getLatticeD1Q5(double c, latticeD1Q5 *myD1Q5)
 		myD1Q5->dvD1Q5[DMX  ]  = -1.0 * c;
 		myD1Q5->dvD1Q5[D3X  ]   = 3.0*c;
 		myD1Q5->dvD1Q5[DM3X]  = -3.0 * c;
+
 		myD1Q5->sgn[ZERO] = 0;
 		myD1Q5->sgn[DX]   = 1;
 		myD1Q5->sgn[DMX]  = -1 ;
@@ -301,32 +294,14 @@ void printRho(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVDW, int
     
     fpt=fopen(fileName,"w");
 
-    fprintf(fpt,  " # iX \t rho \t vel \t P \t mu \n");
+    fprintf(fpt,  "iX \t rho \t vel \t mu \n");
     
     for(iX =iX_begin; iX<iX_end;iX++)
     {
         double P = 0.0, mu = 0.0, dx=0.0, temp;
-        dx = 1.0/(nX-1.0);
-        double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
-    
-        P =(myLattice[iX].rho*myD1Q5.T0  ) *(1  +   eta_EOS + eta_EOS*eta_EOS - pow(eta_EOS, 3) )/pow((1.0 - eta_EOS), 3)
-                            - myVDW.a * myLattice[iX].rho*myLattice[iX].rho 
-                            - myLattice[iX].rho*myD1Q5.T0
-                            ;
-        P += -0.5*myVDW.kappa*(myLattice[iX+1].rho - myLattice[iX-1].rho)*(myLattice[iX+1].rho - myLattice[iX-1].rho)/(4.0*dx*dx);
 
-        //correction
-        //P += -(0.5/beta - 0.25)*temp*temp/myLattice[iX].rho; //term hurts
-        //P += 0.25*myVDW.kappa*(myLattice[iX+1].P+myLattice[iX-1].P-2.0*myLattice[iX].P)/(dx*dx); //term may be fine
-        //P += -1.0/12.0*myVDW.kappa*(myLattice[iX+1].rho+myLattice[iX-1].rho-2.0*myLattice[iX].rho)/(dx*dx); // this term is good
 
-        mu = myD1Q5.T0*log(myLattice[iX].rho) ;
-        mu += -1.5*myD1Q5.T0*log(2.0*M_PI*myD1Q5.T0);
-        mu += -2.0*myVDW.a*myLattice[iX].rho -myD1Q5.T0*log(1.0-myLattice[iX].rho*myVDW.b);
-        mu += myLattice[iX].rho*myD1Q5.T0*myVDW.b/(1.0-myLattice[iX].rho*myVDW.b);
-        mu += - myVDW.kappa*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx);
-
-        fprintf(fpt,  "%d,%.7lf,%.7lf,%.7lf,%.7lf,%.7lf\n",iX, myLattice[iX].rho/myVDW.rho0, myLattice[iX].vel, P, mu,myLattice[iX].chi);
+        fprintf(fpt,  "%d,%.7lf,%.7lf,%.7lf\n",iX, myLattice[iX].rho/myVDW.rho0, myLattice[iX].vel, myLattice[iX].muA);
     }
     fclose(fpt);
 }
@@ -338,47 +313,17 @@ void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVD
     double fEq[N_DV],fc[N_DV], dRho,dPnid;
     double  vel,alpha, lapRho, dmuA,dmuR, mass,sum, df, dt;
     double rhoReduced ,tmp2,fact2,tauM,betaM,rhoRedby4,g;
+
+
+
     mass = 0.0;
     dt = dx / c;
 
 
-    //$pressure from Pnid carnahan starling EOS
-        for( iX = nX+2 ; iX >=3 ; iX--)
-    {
-        double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
-        myLattice[iX].pNid = (myLattice[iX].rho*myD1Q5.T0  ) *(1+eta_EOS + eta_EOS*eta_EOS - pow(eta_EOS, 3) )/pow((1.0 - eta_EOS), 3)
-                            - myVDW.a * myLattice[iX].rho*myLattice[iX].rho 
-                            - myLattice[iX].rho*myD1Q5.T0
-                            ;
-    }
-
-    //$ F_nid  free energy
-        for( iX = nX+2 ; iX >=3 ; iX--)
-    {   
-        double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
-        myLattice[iX].FNid =  - myVDW.a * myLattice[iX].rho*myLattice[iX].rho   -   myLattice[iX].rho*myD1Q5.T0 *(3.0 * eta_EOS*eta_EOS - 4.0*eta_EOS) / pow(1 - eta_EOS,2)
-                            - myVDW.kappa * 0.5*pow((myLattice[iX+1].rho -myLattice[iX-1].rho)/(dx*2.0),2)
-        ;
-    }
-
-    myLattice[0     ].FNid = myLattice[nX       ].FNid ;
-    myLattice[1     ].FNid = myLattice[nX + 1   ].FNid ;
-    myLattice[2     ].FNid = myLattice[nX + 2   ].FNid ;
-    myLattice[nX + 3].FNid = myLattice[3        ].FNid ;
-    myLattice[nX + 4].FNid = myLattice[4        ].FNid ;
-    myLattice[nX + 5].FNid = myLattice[5        ].FNid ;    
-    
-    myLattice[0].pNid = myLattice[nX].pNid ;
-    myLattice[1].pNid = myLattice[nX + 1 ].pNid ;
-    myLattice[2].pNid = myLattice[nX + 2 ].pNid ;
-    myLattice[nX + 3].pNid = myLattice[3].pNid ;
-    myLattice[nX + 4].pNid = myLattice[4].pNid ;
-    myLattice[nX + 5].pNid = myLattice[5].pNid ;    
 
    	//calculate chemical potential
    	for( iX = nX+2; iX >=3; iX--)
     {
-        //from continuous derivative
         double eta_EOS = myLattice[iX].rho * myVDW.b / 4.0;
 
         myLattice[iX].muA = myD1Q5.T0*(3.0*pow(eta_EOS,3) - 9.0 *eta_EOS*eta_EOS + 8.0 *eta_EOS )/(pow(1 - eta_EOS,3));
@@ -386,30 +331,15 @@ void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVD
 
         myLattice[iX].muA -= myVDW.kappa*(myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
 
- 
     }
-	myLattice[0].muA = myLattice[nX].muA    ;
-    myLattice[1].muA = myLattice[nX + 1 ].muA ;
-    myLattice[2].muA = myLattice[nX + 2 ].muA ;
-    myLattice[nX + 3].muA = myLattice[3].muA ;
-    myLattice[nX + 4].muA = myLattice[4].muA ;
-    myLattice[nX + 5].muA = myLattice[5].muA ;
+	myLattice[0     ].muA = myLattice[nX    ].muA    ;
+    myLattice[1     ].muA = myLattice[nX +1 ].muA ;
+    myLattice[2     ].muA = myLattice[nX +2 ].muA ;
+    myLattice[nX + 3].muA = myLattice[3     ].muA ;
+    myLattice[nX + 4].muA = myLattice[4     ].muA ;
+    myLattice[nX + 5].muA = myLattice[5     ].muA ;
 
-    //calcualte the surface terms contribution from kappa
-    for( iX = nX+2; iX >=3; iX--)
-    {
-        myLattice[iX].surface = (myLattice[iX-1].rho + myLattice[iX+1].rho - 2.0*myLattice[iX].rho)/(dx*dx) ;
-    }
 
-    myLattice[0].surface = myLattice[nX].surface ;
-    myLattice[1].surface = myLattice[nX + 1 ].surface ;
-    myLattice[2].surface = myLattice[nX + 2 ].surface ;
-    myLattice[nX + 3].surface = myLattice[3].surface ;
-    myLattice[nX + 4].surface = myLattice[4].surface ;
-    myLattice[nX + 5].surface = myLattice[5].surface ;
-    
-    
-    double eta = 0;
 
     //calculate force
     for( iX = nX+2; iX >=3 ; iX--)
@@ -429,25 +359,15 @@ void collideWorking(latticeArr myLattice, latticeD1Q5 myD1Q5, nonIdealParam myVD
     for( iX = nX+2  ; iX >=3 ; iX--)
     {
 	    alpha = 2.0;
-        // calculateAlpha( myLattice, alpha, iX, time);
-        // calculateAlpha1( myLattice, alpha, iX, time,betaM);
-	
-	    double chi = 0.0;
-
-        rhoReduced = myVDW.b*myLattice[iX].rho;
-        chi = rhoReduced/(1.0-rhoReduced) - myVDW.a*myLattice[iX].rho/myD1Q5.T0;
-        tauM = tau;//*myVDW.rho0/myLattice[iX].rho *(1 + rhoReduced*(5.0/8.0 + rhoReduced*(0.2869+ rhoReduced*(0.1103+ 0.0386*rhoReduced))));
-//             tauM = tauM/(1.0+chi);
-	    betaM = dt/(2.0*tauM + dt);
-      
+       
         for(dv = 0; dv < N_DV; dv++)
         {
-            myLattice[iX].f[dv]  = myLattice[iX] .f[dv] + alpha*betaM*(myLattice[iX].fEq[dv] - myLattice[iX] .f[dv]); 
-            myLattice[iX].f[dv] += alpha*betaM*tauM*myD1Q5.T0Inv*myLattice[iX].rho*myD1Q5.weight[dv]*myD1Q5.dvD1Q5[dv]*myLattice[iX].Force;
+            myLattice[iX].f[dv]  = myLattice[iX] .f[dv] + alpha*beta*(myLattice[iX].fEq[dv] - myLattice[iX] .f[dv]); 
+            myLattice[iX].f[dv] += alpha*beta*tau*myD1Q5.T0Inv*myLattice[iX].rho*myD1Q5.weight[dv]*myD1Q5.dvD1Q5[dv]*myLattice[iX].Force;
         }      
     }
       
-    if(time % 100 == 0)
+    if(time % 1000 == 0)
     printf("\nAt time =%d mass = %.16lf ", time, mass);
 }
 
@@ -476,165 +396,4 @@ void getFeqPQuad(double fEq[N_DV], latticeD1Q5 myD1Q5,  double rho,  double vel)
 
 
 
-void calculateAlpha1( latticeArr myLattice, double& alpha, int i,int , double beta)
-{
-    alpha = 2.0; 
-    
-    double a(0.), b(0.), c(0.), ximax,ximin(0.0);
-    double x_i[N_DV], xSq[N_DV],fxSq[N_DV];
-    
-    for(int dv = 0; dv<N_DV; dv++)
-    {
-    x_i[dv] = myLattice[i].fEq[dv]/myLattice[i].f[dv]-1.0;
-    }
 
-    ximax = 0.0;
-    for(int dv = 0; dv<N_DV; dv++)
-    {
-    ximax = std::max(fabs(ximax),x_i[dv]);
-    ximin = std::min(ximin, x_i[dv])  ;
-    }
-
-    if(ximax>0.001)  // this is the main loop for steps 2 to 5  /refere Atif's thesis
-    {
-
-        for(int dv = 0;dv<N_DV;dv++)
-        {
-            xSq[dv]  = x_i[dv]*x_i[dv] ;
-            fxSq[dv] = myLattice[i].f[dv]*x_i[dv]*x_i[dv] ;
-
-            if(x_i[dv]<0.0)
-            a += fxSq[dv]*x_i[dv]*0.5 ;
-
-            b += fxSq[dv]*0.5 ;
-            c += fxSq[dv]/(1.0 + 0.5*x_i[dv]) ;
-        }
-
-        
-        double alphaMax = -1.0/(beta*ximin);
-
-        double k;
-        if(a<0 && b>0 && c>0)
-            k = (b-sqrt(b*b - 4.0*a*c))/(2.0*a);
-        else
-            k = 1.5;
-
-        a = 0.0;b=0.0;c=0.0;
-        //   double kBeta   = k*beta;
-        double beta2   = beta*beta;
-        double fourByK = 4.0/k;
-        double hBeta = 0.0;
-
-        for(int dv = 0; dv < N_DV; dv++)
-        {
-            if(x_i[dv]<0.0)
-            {
-            a += fxSq[dv]*x_i[dv]*beta2*( 1.0/6.0 - hBeta*x_i[dv]/12.0 + hBeta*hBeta*x_i[dv]*x_i[dv]/20 - hBeta*hBeta*hBeta*x_i[dv]*x_i[dv]*x_i[dv]/5.0 );
-            b += fxSq[dv]*0.5;
-            }
-
-            if(x_i[dv]>0.0)
-                b += myLattice[i].f[dv]*( (x_i[dv]*x_i[dv]*0.5) - beta2*(x_i[dv]*x_i[dv]*x_i[dv]/15.0)* ( (4.0/(fourByK+x_i[dv])) + (2.0/(fourByK+2.0*x_i[dv])) + (4.0/(fourByK+3.0*x_i[dv])) ));
-
-            c += myLattice[i].f[dv]*(60.0*x_i[dv]*x_i[dv] + 60.0*x_i[dv]*x_i[dv]*x_i[dv] + 11.0*x_i[dv]*x_i[dv]*x_i[dv]*x_i[dv])/( 60.0 + 90.0*x_i[dv] + 36.0*x_i[dv]*x_i[dv] + 3.0*x_i[dv]*x_i[dv]*x_i[dv]);
-        }
-
-        double  h;
-        if(a<0 && b>0 && c>0)
-            h = (b-std::sqrt(b*b - 4.0*a*c))/(2.0*a);
-        else
-            h = 2.1;
-
-        a = 0.0;
-        hBeta = h*beta;
-
-        for(int dv = 0; dv < N_DV; dv++)
-        {
-            if(x_i[dv]<0.0)
-            {
-            a += myLattice[i].f[dv]*x_i[dv]*x_i[dv]*x_i[dv]*beta2*( 1.0/6.0 - hBeta*x_i[dv]/12.0 + hBeta*hBeta*x_i[dv]*x_i[dv]/20 - hBeta*hBeta*hBeta*x_i[dv]*x_i[dv]*x_i[dv]/5.0 );
-            }
-        }
-
-        if(a<0 && b>0 && c>0)
-            alpha = 2.0*c/(b+sqrt(b*b - 4.0*a*c));
-
-        if(alpha > alphaMax)
-        {
-            if ( alphaMax > 1.0)
-            alpha = 0.5*(1.0+alphaMax) ;
-            else
-            alpha = 0.95*alphaMax;
-        }
-
-    }
-    
-    // std::cout<<alpha<<std::endl;
-
-}
-
-
-
-
-
-void calculateAlpha( latticeArr myLattice, double& alpha, int i,int time)
-{
-      alpha = 2.0; 
-      
-      double a(0.), b(0.), c(0.), ximax;
-      double x_i[N_DV];
-      
-      for(int dv = 0; dv<N_DV; dv++)
-      {
-	x_i[dv] = myLattice[i].fEq[dv]/myLattice[i].f[dv]-1.0;
-      }
-	
-      ximax = 0.0;
-      for(int dv = 0; dv<N_DV; dv++)
-      {
-	ximax = std::max(fabs(ximax),x_i[dv]);
-      }
-      
-      if(ximax>0.01)
-      {
-	  for(int dv = 0; dv<N_DV; dv++)
-	  {
-	      if(x_i[dv]<0.0)
-	      {
-		  a += myLattice[i].f[dv]*x_i[dv]*x_i[dv]*x_i[dv]*0.5;
-		  c += myLattice[i].f[dv]*x_i[dv]*x_i[dv];
-	      }
-	      
-	      else
-	      {
-		  c += myLattice[i].f[dv]*x_i[dv]*x_i[dv]/(1.0+x_i[dv]);
-	      }
-	      
-	      b += myLattice[i].f[dv]*x_i[dv]*x_i[dv]*0.5;
-	  }
-	  alpha = (b-sqrt(b*b - 4.0*a*c))/(2.0*a);       
-      }
-      
-//       if( (time==3260) && (i==46)) 
-//       {
-// 	printf("\n f_i  %.16lf  %.16lf %.16lf   ", myLattice[i].f[DX],myLattice[i].f[ZERO],myLattice[i].f[DMX]);
-// 	printf("\n fEq  %.16lf  %.16lf %.16lf   ", myLattice[i].fEq[DX],myLattice[i].fEq[ZERO],myLattice[i].fEq[DMX]);
-// 	printf("\n x_i  %.16lf  %.16lf %.16lf   ", x_i[DX],x_i[ZERO],x_i[DMX]);
-// 	printf("\n f*x  %.16lf  %.16lf %.16lf   ", myLattice[i].f[DX]*x_i[DX],myLattice[i].f[ZERO]*x_i[ZERO],myLattice[i].f[DMX]*x_i[DMX]);
-// 	printf("\n abc  %.16lf  %.16lf %.16lf  alpha %.16lf ", a, b ,c, alpha);
-// 	printf("\n %16lf diff in f and feq",myLattice[i].f[ZERO] + myLattice[i].f[DX] + myLattice[i].f[DMX] - myLattice[i].fEq[ZERO] - myLattice[i].fEq[DX] - myLattice[i].fEq[DMX]);
-// // 	std::cout << "\n"<< b*b - 4.0*a*c << "\n";
-//       }
-	for(int dv = 0; dv<N_DV; dv++)
-	{
-	  if( (myLattice[i].f[dv]<0.0) && (a>=0.0) )
-	  {
-	    alpha = 2.0;
-	    printf(" forcing alpha=2 here %d \t %d \t %.16lf \t %.16lf \n",i,dv, myLattice[i].f[dv],a);
-	    break;
-	  }
-// 	  if (time==3427) std::cout << myLattice[i] .f[dv]<< "  " << myLattice[i] .fEq[dv]<< "  " << alpha << "  "<< dv << "  "<<i << "\n";
-	}
-     
-    //  std::cout<<alpha<<std::endl;
-}
