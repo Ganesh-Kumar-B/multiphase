@@ -80,7 +80,7 @@ void collide(Grid_N_C_3D<T> &grid,
 
                 for (int dv = 0; dv< 35; dv++){
                     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Force.Node(i,j,k,0) * lb.Cx[dv] + Force.Node(i,j,k,1) * lb.Cy[dv] + Force.Node(i,j,k,2) * lb.Cz[dv] );
+                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * feq_Node[dv] * (Force.Node(i,j,k,0) * (lb.Cx[dv] - ux) + Force.Node(i,j,k,1) * (lb.Cy[dv] - uy) + Force.Node(i,j,k,2) * (lb.Cz[dv]- uz) );
                 }       
 
 
@@ -123,7 +123,7 @@ void collide(Grid_N_C_3D<T> &grid,
 
                 for (int dv = 0; dv< 35; dv++){
                     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Force.Cell(i,j,k,0) * lb.Cx[dv] +Force.Cell(i,j,k,1)* lb.Cy[dv] + Force.Cell(i,j,k,2) * lb.Cz[dv] );
+                                        + (1 - 0.5*alpha*beta)*lb.thetaInverse * feq_Cell[dv] * (Force.Cell(i,j,k,0) * (lb.Cx[dv]- ux) +Force.Cell(i,j,k,1)* (lb.Cy[dv]-uy) + Force.Cell(i,j,k,2) *( lb.Cz[dv] - uz) );
                 }
 
 
@@ -418,8 +418,8 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_me
                 y = ((real)j)/ grid.n_y - y_0;
                 z = ((real)k)/ grid.n_z - z_0;
 
-				double rho_gas = 0.72564;
-				double rho_liq = 1.29016;
+				double rho_gas = 0.5;
+				double rho_liq = 1.5;
 
 				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
 
