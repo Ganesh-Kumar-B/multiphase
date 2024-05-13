@@ -41,7 +41,7 @@ int oppdV[35] =  {  dV_ZERO_ZERO_ZERO,
 
 
 template<typename T >
-struct lbmD3Q35
+struct  lbmD3Q35
 {
     int dvN;
 

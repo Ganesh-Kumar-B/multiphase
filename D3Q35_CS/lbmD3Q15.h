@@ -9,7 +9,7 @@ enum velocityDir_15{
                 };
 
 
-int oppdV[15] =  {  
+int oppdV_15[15] =  {  
                     dV_15_ZERO_ZERO_ZERO,
                     dV_15_M1_ZERO_ZERO, dV_15_P1_ZERO_ZERO, dV_15_ZERO_M1_ZERO, dV_15_ZERO_P1_ZERO, dV_15_ZERO_ZERO_M1 ,dV_15_ZERO_ZERO_P1,
                     dV_15_MH1_MH1_MH1,dV_15_MH1_PH1_MH1,dV_15_PH1_PH1_MH1,dV_15_PH1_MH1_MH1,dV_15_MH1_MH1_PH1,dV_15_MH1_PH1_PH1,dV_15_PH1_PH1_PH1,dV_15_PH1_MH1_PH1,

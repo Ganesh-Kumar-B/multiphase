@@ -34,7 +34,7 @@ void collide(Grid_N_C_3D<T> &grid,
     real eta = 0;   //   0 ----> fourth order   1-----> second order 
 
 
-    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,lb15,TbyTc,kappa, dx ,dt, a , b );
+    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,lb15,TbyTc,kappa, dt ,dx, a , b );
 
 
 
@@ -80,7 +80,7 @@ void collide(Grid_N_C_3D<T> &grid,
 
                 for (int dv = 0; dv< 35; dv++){
                     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                                        + (1 - 0.5*alpha*beta)*dt*lb.thetaInverse * rho.Node(i,j,k)* lb.W[dv] * (Force.Node(i,j,k,0) * lb.Cx[dv] + Force.Node(i,j,k,1) * lb.Cy[dv] + Force.Node(i,j,k,2) * lb.Cz[dv] );
+                                        + (1 - 0.5*alpha*beta)*dt*lb.thetaInverse * feq_Node[dv] * (Force.Node(i,j,k,0) * (lb.Cx[dv] - ux) + Force.Node(i,j,k,1) * (lb.Cy[dv] - uy) + Force.Node(i,j,k,2) * (lb.Cz[dv] - uz));
                 }       
 
 
@@ -119,10 +119,9 @@ void collide(Grid_N_C_3D<T> &grid,
                     }
                 }
 
-
                 for (int dv = 0; dv< 35; dv++){
                     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                                        + (1 - 0.5*alpha*beta)*dt*lb.thetaInverse * rho.Cell(i,j,k)* lb.W[dv] * (Force.Cell(i,j,k,0) * lb.Cx[dv] +Force.Cell(i,j,k,1)* lb.Cy[dv] + Force.Cell(i,j,k,2) * lb.Cz[dv] );
+                                        + (1 - 0.5*alpha*beta)*dt*lb.thetaInverse * feq_Cell[dv] * (Force.Cell(i,j,k,0) * (lb.Cx[dv] - ux) +Force.Cell(i,j,k,1)* (lb.Cy[dv] - uy)+ Force.Cell(i,j,k,2) * (lb.Cz[dv] - uz) );
                 }
 
             }
@@ -365,8 +364,8 @@ void initialization_equilibrium_profile(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,re
                 y = ((real)j)/ grid.n_y - y_0;
                 z = ((real)k)/ grid.n_z - z_0;
 
-				double rho_gas = 0.4227;
-				double rho_liq = 1.6572;
+				double rho_gas = 0.4227*Rho_mean;
+				double rho_liq = 1.6572*Rho_mean;
 
 				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(x);
 
