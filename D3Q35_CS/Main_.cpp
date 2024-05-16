@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx =50;int Ny = 5; int Nz = 5;
+    int Nx =200 ;    int Ny = 5; int Nz = 5;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
@@ -44,24 +44,26 @@ int main()
 
 
     real beta = 0.9;
-    std::cout<<"beta"<<beta<<std::endl;
+    std ::cout<<"beta"<<beta<<std::endl;
 
 
     real Rho_mean = 1.0;
 
 
 
-    real TbyTc = 0.98      ;
+    real TbyTc = 0.92   ;       ;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
-    real kappa = 0.0625;
+    real kappa = 0.00625;
 
 
 
     //:fixed ------------------------------Main code--------------------------//
     
+
+    
     //  initialization(grid,d3q35,Rho_mean,0.0,0.0);
 
-     initialization_equilibrium_profile(grid,d3q35,Rho_mean);
+    initialization_equilibrium_profile(grid,d3q35,Rho_mean);
 
     // initialization_2D_droplet(grid,d3q35,Rho_mean);
 
@@ -75,7 +77,7 @@ int main()
 
     std::cout<<"simulation started and Simulation time "<< sim_time<<std::endl;
     
-    for(int t = 1; t <=10000;t++){
+    for(int t = 1; t <=10;t++){
 
         // Periodic(grid);
         collide (grid,d3q35,beta,tau,TbyTc,kappa, t,Force);
@@ -88,7 +90,7 @@ int main()
         advection(grid);
         // stationary_correction(grid);
 
-        if(t%500== 0){
+        if(t%1000== 0){
             std::cout<<t<<" ";
             printMass(grid);
             print_vtk(d3q35,grid,t,u0,TbyTc,Force);

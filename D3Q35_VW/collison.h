@@ -33,7 +33,16 @@ void collide(Grid_N_C_3D<T> &grid,
     real eta =0;   //   0 ----> fourth order   1-----> second order 
  
 
-    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,TbyTc,kappa );
+    real rho_critical = 1.0, T_critical = lb.theta0/TbyTc ; 
+    real b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;
+
+
+    kappa = kappa*a;
+
+
+
+
+    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,TbyTc,kappa, a ,b  );
 
 
 
@@ -44,7 +53,7 @@ void collide(Grid_N_C_3D<T> &grid,
                 
                 real Rho = 0.0;
 
-                Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Force,i,j,k );             										// $ chemical potential formulation
+                Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Force,i,j,k, kappa, a, b);             										// $ chemical potential formulation
                 // Multiphase_Force_eta_Node(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa, eta );  		// $41 paper
                 
 
@@ -90,7 +99,7 @@ void collide(Grid_N_C_3D<T> &grid,
                 Rho = 0.0;
 
                 
-                Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Force,i,j,k );                                               // $ chemical potential
+                Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb,Force,i,j,k, kappa, a ,b );                                               // $ chemical potential
                 // Multiphase_Force_eta_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb,Fx,Fy,Fz,i,j,k,kappa,eta );  // $ 41 paper
 
                 get_moments_Cell(grid, lb,  ux, uy, uz,Rho, i, j, k,Force);            //for the node

@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx =100;int Ny = 100; int Nz = 5;
+    int Nx =100;int Ny = 5; int Nz = 5;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
@@ -42,7 +42,7 @@ int main()
     std::cout<<"tau "<<tau<<std::endl;
 
 
-    real beta = 1.0/(2.0*tau + 1);
+    real beta = 0.6;
     std::cout<<"beta"<<beta<<std::endl;
 
 
@@ -50,7 +50,7 @@ int main()
 
 
 
-    real TbyTc = 0.82      ;
+    real TbyTc = 0.90     ;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
     real kappa = 0.00625;
 
@@ -61,9 +61,9 @@ int main()
     
     //      initialization(grid,d3q35,Rho_mean,0.0,0.0);
 
-        //  initialization_equilibrium_profile(grid,d3q35,Rho_mean);
+        initialization_equilibrium_profile(grid,d3q35,Rho_mean);
 
-    initialization_2D_droplet(grid,d3q35,Rho_mean);
+    // initialization_2D_droplet(grid,d3q35,Rho_mean);
 
 
 
