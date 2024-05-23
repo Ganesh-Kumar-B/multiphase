@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx =200 ;    int Ny = 5; int Nz = 5;
+    int Nx =100 ;    int Ny = 5; int Nz = 5;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
@@ -23,7 +23,8 @@ int main()
 
     
     
-    lbmD3Q35<real> d3q35(1.0,0.33333333333333);
+    lbmD3Q35<real> d3q35(1.0);
+    lbmD3Q15<real> d3q15(1.0);
 
 
     real cs = sqrt(d3q35.theta0);
@@ -51,7 +52,7 @@ int main()
 
 
 
-    real TbyTc = 0.92   ;       ;
+    real TbyTc = 0.90  ;       ;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
     real kappa = 0.00625;
 
@@ -77,10 +78,10 @@ int main()
 
     std::cout<<"simulation started and Simulation time "<< sim_time<<std::endl;
     
-    for(int t = 1; t <=10;t++){
+    for(int t = 1; t <=10000;t++){
 
         // Periodic(grid);
-        collide (grid,d3q35,beta,tau,TbyTc,kappa, t,Force);
+        collide (grid,d3q35,d3q15,beta,tau,TbyTc,kappa, t,Force);
 
         Periodic(grid);
 
