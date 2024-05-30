@@ -36,7 +36,7 @@ int main()
     real Kn =0.002;
     real Ma = Kn * Re;
     real u0 = Ma * cs;
-    std::cout<<"u0 = "<<u0<<std::endl;
+    // std::cout<<"u0 = "<<u0<<std::endl;
 
 
     real Kin_Vis = u0*(L)/Re;
@@ -52,15 +52,13 @@ int main()
 
 
 
-    real TbyTc = 0.90  ;       ;
+    real TbyTc = 0.80  ;       ;
     std::cout<<"T/T0 = "<<TbyTc<<std::endl;
-    real kappa = 0.00625;
+    real kappa = 0.0625;
 
 
 
     //:fixed ------------------------------Main code--------------------------//
-    
-
     
     //  initialization(grid,d3q35,Rho_mean,0.0,0.0);
 
