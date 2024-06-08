@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx =200 ;    int Ny = 200; int Nz = 3;
+    int Nx =50 ;    int Ny = 50; int Nz = 3;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,41);
@@ -88,10 +88,10 @@ int main()
         Periodic(grid);
 
         // Diffuse_41(grid,d3q41,u0,0.0);
-        // // BB_wall_top     (grid,d3q41,u0,0.0);
-        // BB_wall_bottom  (grid,d3q41,u0,0.0);
-        // BB_wall_left    (grid,d3q41,u0,0.0);
-        // BB_wall_right   (grid,d3q41,u0,0.0);
+        BB_wall_top     (grid,d3q41,u0,0.0);
+        BB_wall_bottom  (grid,d3q41,u0,0.0);
+        BB_wall_left    (grid,d3q41,u0,0.0);
+        BB_wall_right   (grid,d3q41,u0,0.0);
 
         advection(grid);
         // stationary_correction(grid);

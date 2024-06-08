@@ -15,29 +15,38 @@ void Diffuse_41(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubottom
 
         // #  ------------------------------------------------------------------------------=--top wall
 
-        int topC_last[]         =   { 
-                                    dV_ZERO_P2_ZERO ,
-                                    dV_P1_P1_ZERO   ,dV_M1_P1_ZERO  ,dV_ZERO_P1_P1  ,dV_ZERO_P1_M1  ,
-                                    dV_P2_P2_P2     ,dV_M2_P2_P2    ,dV_P2_P2_M2    ,dV_M2_P2_M2    ,
-                                    dV_PH1_PH1_PH1  ,dV_MH1_PH1_PH1 ,dV_PH1_PH1_MH1 , dV_MH1_PH1_MH1
-                                    };
+         int topC_last[]       =   { 
+                                dV_ZERO_P2_ZERO ,
+                                dV_ZERO_P1_ZERO ,
 
-        int topC_2nd_last[]     =   {
-                                    dV_ZERO_P2_ZERO ,
-                                    dV_P2_P2_P2     ,dV_M2_P2_P2    ,dV_P2_P2_M2    ,dV_M2_P2_M2,
-                                    };
-                                    
-        int topN_last[]         =   {
-                                    dV_ZERO_P2_ZERO ,
-                                    dV_P1_P1_ZERO   ,dV_M1_P1_ZERO  ,dV_ZERO_P1_P1  ,dV_ZERO_P1_M1  ,
-                                    dV_P2_P2_P2     ,dV_M2_P2_P2    ,dV_P2_P2_M2    ,dV_M2_P2_M2    ,
-                                    };
 
-        int topN_2nd_last[]   =     {
-                                    dV_ZERO_P2_ZERO,
-                                    dV_P2_P2_P2     ,dV_M2_P2_P2    ,dV_P2_P2_M2    ,dV_M2_P2_M2,  
-                                    }
-                                    ;
+                                dV_P1_P1_ZERO   ,dV_M1_P1_ZERO  ,dV_ZERO_P1_P1  ,dV_ZERO_P1_M1  ,
+                                dV_P1_P1_P1     ,dV_M1_P1_P1    ,dV_P1_P1_M1    ,dV_M1_P1_M1    ,
+                                dV_PH1_PH1_PH1  ,dV_MH1_PH1_PH1 ,dV_PH1_PH1_MH1 , dV_MH1_PH1_MH1
+
+                                };
+
+                                
+    int topC_2nd_last[]   =   {
+                                dV_ZERO_P2_ZERO ,
+                                };
+                                
+
+
+    int topN_last[]       =   {  
+                                dV_ZERO_P2_ZERO ,
+                                dV_ZERO_P1_ZERO ,
+
+                                dV_P1_P1_ZERO   ,dV_M1_P1_ZERO  ,dV_ZERO_P1_P1  ,dV_ZERO_P1_M1  ,
+
+                                dV_P1_P1_P1     ,dV_M1_P1_P1    ,dV_P1_P1_M1    ,dV_M1_P1_M1    ,
+                                
+                                };
+
+    int topN_2nd_last[]   =   {
+                                dV_ZERO_P2_ZERO ,
+                                }
+                                ;
 
     get_equi(feq,lb,utop,0.0,0.0,rho_wall_top);
 
@@ -201,30 +210,35 @@ void BB_wall_bottom(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubo
 
     int botomC_last[]       =   { 
                                 dV_ZERO_M2_ZERO ,
+                                dV_ZERO_M1_ZERO ,
+
 
                                 dV_P1_M1_ZERO   ,dV_M1_M1_ZERO  ,dV_ZERO_M1_P1  ,dV_ZERO_M1_M1  ,
-                                dV_P2_M2_P2     ,dV_M2_M2_P2    ,dV_P2_M2_M2    ,dV_M2_M2_M2    ,
+                                dV_P1_M1_P1     ,dV_M1_M1_P1    ,dV_P1_M1_M1    ,dV_M1_M1_M1    ,
                                 };
 
 
 
     int botomC_2nd_last[]   =   {
                                 dV_ZERO_M2_ZERO ,
-                                dV_P2_M2_P2     ,dV_M2_M2_P2    ,dV_P2_M2_M2    ,dV_M2_M2_M2,
+                                
                                 };
                                 
     
 
     int botomN_last[]       =   {
                                 dV_ZERO_M2_ZERO ,
+                                dV_ZERO_M1_ZERO ,
+
                                 dV_P1_M1_ZERO   ,dV_M1_M1_ZERO  ,dV_ZERO_M1_P1  ,dV_ZERO_M1_M1  ,
-                                dV_P2_M2_P2     ,dV_M2_M2_P2    ,dV_P2_M2_M2    ,dV_M2_M2_M2    ,
+                                dV_P1_M1_P1     ,dV_M1_M1_P1    ,dV_P1_M1_M1    ,dV_M1_M1_M1    ,
+
                                 dV_PH1_MH1_PH1  ,dV_MH1_MH1_PH1 ,dV_PH1_MH1_MH1 , dV_MH1_MH1_MH1
                                 };
 
     int botomN_2nd_last[]   =   {
                                 dV_ZERO_M2_ZERO ,
-                                dV_P2_M2_P2     ,dV_M2_M2_P2    ,dV_P2_M2_M2    ,dV_M2_M2_M2,  
+
                                 }
                                 ;
 
@@ -249,10 +263,10 @@ void BB_wall_bottom(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubo
             //second last
             j = grid.nby + 1;
 
-            for(int l = 0; l<5; l++)
+            for(int l = 0; l<1; l++)
                 grid.Cell(i + (int)lb.Cx[botomC_2nd_last[l]], j +  (int)lb.Cy[botomC_2nd_last[l]],  k +  (int)lb.Cz[botomC_2nd_last[l]] ,oppdV[botomC_2nd_last[l]]) = grid.Cell(i,j,k,botomC_2nd_last[l]);
 
-            for(int l = 0; l<5; l++)
+            for(int l = 0; l<1; l++)
                 grid.Node(i + (int)lb.Cx[botomN_2nd_last[l]], j +  (int)lb.Cy[botomN_2nd_last[l]],  k +  (int)lb.Cz[botomN_2nd_last[l]] ,oppdV[botomN_2nd_last[l]]) = grid.Node(i,j,k,botomN_2nd_last[l]);
 
         }
@@ -270,10 +284,11 @@ void BB_wall_left(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubott
 
     int leftC_last[]       =   { 
                                 dV_M2_ZERO_ZERO ,
+                                dV_M1_ZERO_ZERO ,
                                 
                                 dV_M1_P1_ZERO   ,dV_M1_M1_ZERO  ,dV_M1_ZERO_P1  ,dV_M1_ZERO_M1  ,
 
-                                dV_M2_P2_P2     ,dV_M2_P2_M2    ,dV_M2_M2_P2    ,dV_M2_M2_M2    ,
+                                dV_M1_P1_P1     ,dV_M1_P1_M1    ,dV_M1_M1_P1    ,dV_M1_M1_M1    ,
                                 };
 
 
@@ -281,17 +296,17 @@ void BB_wall_left(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubott
     int leftC_2nd_last[]   =   {
                                 dV_M2_ZERO_ZERO ,
 
-                                dV_M2_P2_P2     ,dV_M2_P2_M2    ,dV_M2_M2_P2    ,dV_M2_M2_M2    ,
                                 };
                                 
 
 
     int leftN_last[]       =   {
                                 dV_M2_ZERO_ZERO ,
-                                
+                                dV_M1_ZERO_ZERO ,
+
                                 dV_M1_P1_ZERO   ,dV_M1_M1_ZERO  ,dV_M1_ZERO_P1  ,dV_M1_ZERO_M1  ,
 
-                                dV_M2_P2_P2     ,dV_M2_P2_M2    ,dV_M2_M2_P2    ,dV_M2_M2_M2    ,
+                                dV_M1_P1_P1     ,dV_M1_P1_M1    ,dV_M1_M1_P1    ,dV_M1_M1_M1    ,
 
 
                                 dV_MH1_PH1_PH1     ,dV_MH1_PH1_MH1    ,dV_MH1_MH1_PH1    ,dV_MH1_MH1_MH1    
@@ -300,7 +315,6 @@ void BB_wall_left(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubott
     int leftN_2nd_last[]   =   {
                                 dV_M2_ZERO_ZERO ,
 
-                                dV_M2_P2_P2     ,dV_M2_P2_M2    ,dV_M2_M2_P2    ,dV_M2_M2_M2    ,  
                                 }
                                 ;
 
@@ -325,10 +339,10 @@ void BB_wall_left(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubott
             //second last
             i = grid.nbx + 1;
 
-            for(int l = 0; l<5; l++)
+            for(int l = 0; l<1; l++)
                 grid.Cell(i + (int)lb.Cx[leftC_2nd_last[l]], j +  (int)lb.Cy[leftC_2nd_last[l]],  k +  (int)lb.Cz[leftC_2nd_last[l]] ,oppdV[leftC_2nd_last[l]]) = grid.Cell(i,j,k,leftC_2nd_last[l]);
 
-            for(int l = 0; l<5; l++)
+            for(int l = 0; l<1; l++)
                 grid.Node(i + (int)lb.Cx[leftN_2nd_last[l]], j +  (int)lb.Cy[leftN_2nd_last[l]],  k +  (int)lb.Cz[leftN_2nd_last[l]] ,oppdV[leftN_2nd_last[l]]) = grid.Node(i,j,k,leftN_2nd_last[l]);
 
         }
@@ -346,8 +360,11 @@ void BB_wall_top(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubotto
 
     int topC_last[]       =   { 
                                 dV_ZERO_P2_ZERO ,
+                                dV_ZERO_P1_ZERO ,
+
+
                                 dV_P1_P1_ZERO   ,dV_M1_P1_ZERO  ,dV_ZERO_P1_P1  ,dV_ZERO_P1_M1  ,
-                                dV_P2_P2_P2     ,dV_M2_P2_P2    ,dV_P2_P2_M2    ,dV_M2_P2_M2    ,
+                                dV_P1_P1_P1     ,dV_M1_P1_P1    ,dV_P1_P1_M1    ,dV_M1_P1_M1    ,
                                 dV_PH1_PH1_PH1  ,dV_MH1_PH1_PH1 ,dV_PH1_PH1_MH1 , dV_MH1_PH1_MH1
 
                                 };
@@ -355,20 +372,22 @@ void BB_wall_top(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubotto
                                 
     int topC_2nd_last[]   =   {
                                 dV_ZERO_P2_ZERO ,
-                                dV_P2_P2_P2     ,dV_M2_P2_P2    ,dV_P2_P2_M2    ,dV_M2_P2_M2,  
                                 };
                                 
 
 
-    int topN_last[]       =   {  dV_ZERO_P2_ZERO ,
+    int topN_last[]       =   {  
+                                dV_ZERO_P2_ZERO ,
+                                dV_ZERO_P1_ZERO ,
+
                                 dV_P1_P1_ZERO   ,dV_M1_P1_ZERO  ,dV_ZERO_P1_P1  ,dV_ZERO_P1_M1  ,
-                                dV_P2_P2_P2     ,dV_M2_P2_P2    ,dV_P2_P2_M2    ,dV_M2_P2_M2    ,
+
+                                dV_P1_P1_P1     ,dV_M1_P1_P1    ,dV_P1_P1_M1    ,dV_M1_P1_M1    ,
                                 
                                 };
 
     int topN_2nd_last[]   =   {
                                 dV_ZERO_P2_ZERO ,
-                                dV_P2_P2_P2     ,dV_M2_P2_P2    ,dV_P2_P2_M2    ,dV_M2_P2_M2,
                                 }
                                 ;
 
@@ -392,10 +411,10 @@ void BB_wall_top(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubotto
             //second last
             j = grid.ney - 1;
 
-            for(int l = 0; l<5; l++)
+            for(int l = 0; l<1; l++)
                 grid.Cell(i + (int)lb.Cx[topC_2nd_last[l]], j +  (int)lb.Cy[topC_2nd_last[l]],  k +  (int)lb.Cz[topC_2nd_last[l]] ,oppdV[topC_2nd_last[l]]) = grid.Cell(i,j,k,topC_2nd_last[l]);
 
-            for(int l = 0; l<5; l++)
+            for(int l = 0; l<1; l++)
                 grid.Node(i + (int)lb.Cx[topN_2nd_last[l]], j +  (int)lb.Cy[topN_2nd_last[l]],  k +  (int)lb.Cz[topN_2nd_last[l]] ,oppdV[topN_2nd_last[l]]) = grid.Node(i,j,k,topN_2nd_last[l]);
 
         }
@@ -411,9 +430,10 @@ void BB_wall_right(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubot
     //#--rightwall
 
      int rightC_last[]       =   {  dV_P2_ZERO_ZERO ,
+                                    dV_P1_ZERO_ZERO ,
                                 
                                     dV_P1_P1_ZERO   ,dV_P1_M1_ZERO  ,dV_P1_ZERO_P1  ,dV_P1_ZERO_M1  ,
-                                    dV_P2_P2_P2     ,dV_P2_P2_M2    ,dV_P2_M2_P2    ,dV_P2_M2_M2    ,
+                                    dV_P1_P1_P1     ,dV_P1_P1_M1    ,dV_P1_M1_P1    ,dV_P1_M1_M1    ,
                                     dV_PH1_PH1_PH1     ,dV_PH1_PH1_MH1    ,dV_PH1_MH1_PH1    ,dV_PH1_MH1_MH1    
 
                                
@@ -424,26 +444,26 @@ void BB_wall_right(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubot
     int rightC_2nd_last[]   =   {
                                 dV_P2_ZERO_ZERO ,
 
-                                dV_P2_P2_P2     ,dV_P2_P2_M2    ,dV_P2_M2_P2    ,dV_P2_M2_M2    ,
                                 };
                                 
 
 
-    int rightN_last[]       =   { dV_P2_ZERO_ZERO ,
+    int rightN_last[]       =   { 
+                                dV_P2_ZERO_ZERO ,
+                                dV_P1_ZERO_ZERO ,
+
                                 
                                 dV_P1_P1_ZERO   ,dV_P1_M1_ZERO  ,dV_P1_ZERO_P1  ,dV_P1_ZERO_M1  ,
 
-                                dV_P2_P2_P2     ,dV_P2_P2_M2    ,dV_P2_M2_P2    ,dV_P2_M2_M2    ,
+                                dV_P1_P1_P1     ,dV_P1_P1_M1    ,dV_P1_M1_P1    ,dV_P1_M1_M1    ,
                                 
                                 };
 
     int rightN_2nd_last[]   =   {
                                 dV_P2_ZERO_ZERO ,
 
-                                dV_P2_P2_P2     ,dV_P2_P2_M2    ,dV_P2_M2_P2    ,dV_P2_M2_M2    ,  
                                 }
                                 ;
-
 
 
 
@@ -469,10 +489,10 @@ void BB_wall_right(Grid_N_C_3D<T> &grid,  lbmD3Q41<T1> &lb, real utop, real ubot
             //second last
             i = grid.nex - 1;
 
-            for(int l = 0; l<5; l++)
+            for(int l = 0; l<1; l++)
                 grid.Cell(i + (int)lb.Cx[rightC_2nd_last[l]], j +  (int)lb.Cy[rightC_2nd_last[l]],  k +  (int)lb.Cz[rightC_2nd_last[l]] ,oppdV[rightC_2nd_last[l]]) = grid.Cell(i,j,k,rightC_2nd_last[l]);
 
-            for(int l = 0; l<5; l++)
+            for(int l = 0; l<1; l++)
                 grid.Node(i + (int)lb.Cx[rightN_2nd_last[l]], j +  (int)lb.Cy[rightN_2nd_last[l]],  k +  (int)lb.Cz[rightN_2nd_last[l]] ,oppdV[rightN_2nd_last[l]]) = grid.Node(i,j,k,rightN_2nd_last[l]);
 
         }
