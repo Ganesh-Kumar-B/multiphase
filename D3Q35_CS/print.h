@@ -52,16 +52,16 @@ void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, real u
 }
 
 template<typename T, typename T1>
-void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real theta, Grid_N_C_3D<T> &Force)
+void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real theta,real kappa, Grid_N_C_3D<T> &Force)
 {
     T u1,u2,u3,u4,um, rho1,rho2,del=0.05;
 
     std::ofstream file;
     char fileName[250];
     char foldername[250];
-    sprintf(foldername,"Result_wc%.2f",theta);
+    sprintf(foldername,"kappa_%0.6f_%.2f",kappa,theta);
     mkdir(foldername,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    sprintf(fileName,"./Result_wc%.2f/velocity_%d.vtk", theta,step) ;
+    sprintf(fileName,"./kappa_%0.6f_%.2f/velocity_%d.vtk",kappa, theta,step) ;
     file.open(fileName);
     file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_GRID"<<std::endl;
     // file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_POINTS"<<std::endl;

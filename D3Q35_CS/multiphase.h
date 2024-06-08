@@ -99,11 +99,11 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
                 // //>------
                 real kappa_node = kappa;
 
-                kappa_node = kappa - (1.0/2.0)* lb35.theta0* (
-                                                        -32.0 *b* lb35.theta0*(-16.0 + b* rho.Node(i,j,k)) / (pow(-4.0 + b*rho.Node(i,j,k) , 4.0))
-                                                            - 2.0*a
-                                                        ) 
-                                                    ;
+                // kappa_node = kappa - (1.0/2.0)* lb35.theta0* (
+                //                                         -32.0 *b* lb35.theta0*(-16.0 + b* rho.Node(i,j,k)) / (pow(-4.0 + b*rho.Node(i,j,k) , 4.0))
+                //                                             - 2.0*a
+                //                                         ) 
+                //                                     ;
 
                 double eta = rho.Node(i,j,k)*b/4.0;
 
@@ -117,11 +117,11 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
 
 
                 real kappa_cell = kappa;
-                kappa_cell = kappa - (1.0/2.0)* lb35.theta0* (
-                                                       -32.0 *b* lb35.theta0*(-16.0 + b* rho.Cell(i,j,k)) / (pow(-4.0 + b*rho.Cell(i,j,k) , 4.0))
-                                                            - 2.0*a
-                                                        ) 
-                                                    ;
+                // kappa_cell = kappa - (1.0/2.0)* lb35.theta0* (
+                //                                        -32.0 *b* lb35.theta0*(-16.0 + b* rho.Cell(i,j,k)) / (pow(-4.0 + b*rho.Cell(i,j,k) , 4.0))
+                //                                             - 2.0*a
+                //                                         ) 
+                //                                     ;
 
 
                 eta = rho.Cell(i,j,k)*b/4.0;
@@ -174,9 +174,9 @@ void Multiphase_Force_Node(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &rho, Grid_N_C_3
         grad_muz += lb35.W[dv]*lb35.Cz[dv]*munid.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
     }
 
-    Force.Node(i,j,k,0) = - Coeff_grad*(grad_mux);
-    Force.Node(i,j,k,1) = - Coeff_grad*(grad_muy);
-    Force.Node(i,j,k,2) = - Coeff_grad*(grad_muz);
+    Force.Node(i,j,k,0) = - Coeff_grad*(grad_mux)   ;
+    Force.Node(i,j,k,1) = - Coeff_grad*(grad_muy)-0.0001;
+    Force.Node(i,j,k,2) = - Coeff_grad*(grad_muz)   ;
 
     // // // > direct              
 
@@ -299,7 +299,7 @@ void Multiphase_Force_Cell(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &rho, Grid_N_C_3
 
 
     Force.Cell(i,j,k,0) = - Coeff_grad*(grad_mux);
-    Force.Cell(i,j,k,1) = - Coeff_grad*(grad_muy);  
+    Force.Cell(i,j,k,1) = - Coeff_grad*(grad_muy) - 0.0001;  
     Force.Cell(i,j,k,2) = - Coeff_grad*(grad_muz);  
 
 
