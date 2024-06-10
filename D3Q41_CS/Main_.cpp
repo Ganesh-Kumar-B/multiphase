@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx =50 ;    int Ny = 50; int Nz = 3;
+    int Nx =100 ;    int Ny = 100; int Nz = 3;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,41);
@@ -45,7 +45,7 @@ int main()
     real tau = Kin_Vis/(cs*cs);
     std::cout<<"tau "<<tau<<std::endl;
 
-    real beta = 0.5/(2.0*tau + 0.5);
+    real beta = 1.0/(2.0*tau + 1.0);
     // real beta = 0.9;
     std ::cout<<"beta"<<beta<<std::endl;
 
@@ -87,8 +87,8 @@ int main()
 
         Periodic(grid);
 
-        // Diffuse_41(grid,d3q41,u0,0.0);
-        BB_wall_top     (grid,d3q41,u0,0.0);
+        Diffuse_41(grid,d3q41,u0,0.0);
+        // BB_wall_top     (grid,d3q41,u0,0.0);
         BB_wall_bottom  (grid,d3q41,u0,0.0);
         BB_wall_left    (grid,d3q41,u0,0.0);
         BB_wall_right   (grid,d3q41,u0,0.0);

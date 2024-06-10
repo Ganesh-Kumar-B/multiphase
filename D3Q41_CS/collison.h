@@ -41,7 +41,7 @@ void collide(Grid_N_C_3D<T> &grid,
 
     ux = 0, uy = 0, uz = 0;
 
-    real eta =0;   //   0 ----> fourth order   1-----> second order 
+    real eta =  0;   //   0 ----> fourth order   1-----> second order 
  
 
 
