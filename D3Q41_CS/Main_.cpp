@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx =100 ;    int Ny = 100; int Nz = 3;
+    int Nx =75 ;    int Ny = 75; int Nz = 1;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,41);
@@ -80,7 +80,7 @@ int main()
 
     std::cout<<"simulation started and Simulation time "<< sim_time<<std::endl;
     
-    for(int t = 1; t <=20000;t++){
+    for(int t = 1; t <= 100000;t++){
 
         // Periodic(grid);
         collide (grid,d3q41,d3q15,beta,tau,TbyTc,kappa, t,Force);
@@ -96,7 +96,8 @@ int main()
         advection(grid);
         // stationary_correction(grid);
 
-        if(t%500== 0){
+        if(t%2000== 0){
+            std::cout<<"time:  "<< t*Kin_Vis/(L*L)<<std::endl;
             std::cout<<t<<" ";
             printMass(grid);
             print_vtk(d3q41,grid,t,u0,TbyTc,kappa,Force);

@@ -190,7 +190,7 @@ void Periodic(Grid_N_C_3D<T> &grid){
             }
         }
 
-    // // // #periodic in y direction
+    // // // // #periodic in y direction
     // for(int i = 0 ; i < grid.n_x_node;i++ ){
     //     for(int k = 0 ; k < grid.n_z_node;k++ ){
     //         for(int dv = 0; dv<grid.d_v; dv++){
@@ -212,30 +212,30 @@ void Periodic(Grid_N_C_3D<T> &grid){
     // }
 
 
-    // // // #periodic in x direction
-    // for(int j = 0 ; j < grid.n_y_node;j++ ){
-    //     for(int k = 0 ; k < grid.n_z_node;k++ ){
-    //         for(int dv = 0; dv<grid.d_v; dv++){
+    // // #periodic in x direction
+    for(int j = 0 ; j < grid.n_y_node;j++ ){
+        for(int k = 0 ; k < grid.n_z_node;k++ ){
+            for(int dv = 0; dv<grid.d_v; dv++){
 
-    //             grid.Node( 0                               ,j ,k, dv)   = grid.Node(grid.n_x_node-grid.noghost -2 ,j ,k   ,dv);
-    //             grid.Node( 1                               ,j ,k, dv)   = grid.Node(grid.n_x_node-grid.noghost -1 ,j ,k   ,dv);
+                grid.Node( 0                               ,j ,k, dv)   = grid.Node(grid.n_x_node-grid.noghost -2 ,j ,k   ,dv);
+                grid.Node( 1                               ,j ,k, dv)   = grid.Node(grid.n_x_node-grid.noghost -1 ,j ,k   ,dv);
 
-    //             grid.Node( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Node(2                             ,j ,k   ,dv);
-    //             grid.Node( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Node(3                             ,j ,k   ,dv);
+                grid.Node( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Node(2                             ,j ,k   ,dv);
+                grid.Node( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Node(3                             ,j ,k   ,dv);
 
-    //             grid.Cell( 0                               ,j ,k, dv)   = grid.Cell(grid.n_x_node-grid.noghost -2 ,j ,k   ,dv);
-    //             grid.Cell( 1                               ,j ,k, dv)   = grid.Cell(grid.n_x_node-grid.noghost -1 ,j ,k   ,dv);
+                grid.Cell( 0                               ,j ,k, dv)   = grid.Cell(grid.n_x_node-grid.noghost -2 ,j ,k   ,dv);
+                grid.Cell( 1                               ,j ,k, dv)   = grid.Cell(grid.n_x_node-grid.noghost -1 ,j ,k   ,dv);
 
-    //             grid.Cell( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Cell(2                             ,j ,k   ,dv);
-    //             grid.Cell( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Cell(3                             ,j ,k   ,dv);
-
-
+                grid.Cell( grid.n_x_node - grid.noghost    ,j ,k, dv)   = grid.Cell(2                             ,j ,k   ,dv);
+                grid.Cell( grid.n_x_node - grid.noghost +1 ,j ,k, dv)   = grid.Cell(3                             ,j ,k   ,dv);
 
 
 
-    //         }
-    //     }
-    // }
+
+
+            }
+        }
+    }
 
 
 

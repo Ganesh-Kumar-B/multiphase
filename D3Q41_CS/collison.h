@@ -63,13 +63,13 @@ void collide(Grid_N_C_3D<T> &grid,
                 // Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb41, lb15,Force,i,j,k, kappa, a, b );             										// $ chemical potential formulation
                 // Multiphase_Force_eta_Node(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb41,Fx,Fy,Fz,i,j,k,kappa, eta );  		// $41 paper
                 
-                Force.Node(i,j,k,0) = 0;
-                Force.Node(i,j,k,1) = 0;
-                Force.Node(i,j,k,2) = 0;
+                // Force.Node(i,j,k,0) = 0;
+                // Force.Node(i,j,k,1) = 0;
+                // Force.Node(i,j,k,2) = 0;
 
 
-                get_moments_Node_force(grid, lb41,  ux, uy, uz,Rho, i, j, k,Force ,beta);            //for the node
-                get_equi(feq_Node_delu,lb41, ux, uy,uz, Rho);
+                // get_moments_Node_force(grid, lb41,  ux, uy, uz,Rho, i, j, k,Force ,beta);            //for the node
+                // get_equi(feq_Node_delu,lb41, ux, uy,uz, Rho);
 
 
 
@@ -79,44 +79,44 @@ void collide(Grid_N_C_3D<T> &grid,
                 get_equi(feq_Node ,lb41, ux, uy,uz, Rho);
 
 
-                // // //> normal
-                // for (int dv = 0; dv< grid.d_v; dv++){
-                //     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                //                         + 2.0 *beta * tau*lb41.thetaInverse * rho.Node(i,j,k)* lb41.W[dv] * (Fx * lb41.Cx[dv] + Fy * lb41.Cy[dv] + Fz * lb41.Cz[dv])
-                //                         ;
+                // //> normal
+                for (int dv = 0; dv< grid.d_v; dv++){
+                    grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
+                                        // + 2.0 *beta * tau*lb41.thetaInverse * rho.Node(i,j,k)* lb41.W[dv] * (Fx * lb41.Cx[dv] + Fy * lb41.Cy[dv] + Fz * lb41.Cz[dv])
+                                        ;
+                }
+
+
+
+                // //> with entropic 
+                // //<this works properly
+                // //$for node
+                // real x_i[41];
+                // for(int dv = 0; dv< grid.d_v; dv++)
+                //     x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
+                
+                // real alpha = 0;
+                // for(int dv = 0; dv< grid.d_v; dv++){
+                //     alpha = 2.0;
+                //     if( std::fabs(x_i[dv]) > 0.0001){
+                //         calculateAlpha(lb41,x_i,&grid.Node(i,j,0),beta,alpha);
+                //         break;
+                //     }
                 // }
 
+                // // for (int dv = 0; dv< 41; dv++){
+                // //     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
+                // //                         + (1 - 0.5*alpha*beta)*lb41.thetaInverse * feq_Node[dv] * (Force.Node(i,j,k,0) * (lb41.Cx[dv] - ux) + Force.Node(i,j,k,1) * (lb41.Cy[dv] - uy) + Force.Node(i,j,k,2) * (lb41.Cz[dv]- uz) );
+                // // }   
 
 
-                //> with entropic 
-                //<this works properly
-                //$for node
-                real x_i[41];
-                for(int dv = 0; dv< grid.d_v; dv++)
-                    x_i[dv] = feq_Node[dv]/grid.Node(i,j,dv) - 1.0;
-                
-                real alpha = 0;
-                for(int dv = 0; dv< grid.d_v; dv++){
-                    alpha = 2.0;
-                    if( std::fabs(x_i[dv]) > 0.0001){
-                        calculateAlpha(lb41,x_i,&grid.Node(i,j,0),beta,alpha);
-                        break;
-                    }
-                }
+
 
                 // for (int dv = 0; dv< 41; dv++){
                 //     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                //                         + (1 - 0.5*alpha*beta)*lb41.thetaInverse * feq_Node[dv] * (Force.Node(i,j,k,0) * (lb41.Cx[dv] - ux) + Force.Node(i,j,k,1) * (lb41.Cy[dv] - uy) + Force.Node(i,j,k,2) * (lb41.Cz[dv]- uz) );
-                // }   
-
-
-
-
-                for (int dv = 0; dv< 41; dv++){
-                    grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + alpha* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                                        // +   (feq_Node_delu[dv] - feq_Node[dv]) 
-                                        ;
-                }      
+                //                         // +   (feq_Node_delu[dv] - feq_Node[dv]) 
+                //                         ;
+                // }      
 
 
 
@@ -129,13 +129,13 @@ void collide(Grid_N_C_3D<T> &grid,
                 // Multiphase_Force_eta_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb41,Fx,Fy,Fz,i,j,k,kappa,eta );  // $ 41 paper
 
 
-                Force.Cell(i,j,k,0) = 0;
-                Force.Cell(i,j,k,1) = 0;
-                Force.Cell(i,j,k,2) = 0;
+                // Force.Cell(i,j,k,0) = 0;
+                // Force.Cell(i,j,k,1) = 0;
+                // Force.Cell(i,j,k,2) = 0;
 
 
-                get_moments_Cell_force(grid, lb41,  ux, uy, uz,Rho, i, j, k,Force, beta);            //for the cell
-                get_equi(feq_Cell_delu,lb41, ux, uy,uz, Rho);
+                // get_moments_Cell_force(grid, lb41,  ux, uy, uz,Rho, i, j, k,Force, beta);            //for the cell
+                // get_equi(feq_Cell_delu,lb41, ux, uy,uz, Rho);
 
 
 
@@ -147,42 +147,42 @@ void collide(Grid_N_C_3D<T> &grid,
                 
 
 
-                //> normal
-                // for (int dv = 0; dv< grid.d_v; dv++){
-                //     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + 2.0* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                //                         + 2.0 *beta * tau*lb41.thetaInverse * rho.Cell(i,j,k)* lb41.W[dv] * (Fx * lb41.Cx[dv] + Fy * lb41.Cy[dv] + Fz * lb41.Cz[dv])
-                //                         ;
-                // }       
+                // //////> normal
+                for (int dv = 0; dv< grid.d_v; dv++){
+                    grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + 2.0* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
+                                        // + 2.0 *beta * tau*lb41.thetaInverse * rho.Cell(i,j,k)* lb41.W[dv] * (Fx * lb41.Cx[dv] + Fy * lb41.Cy[dv] + Fz * lb41.Cz[dv])
+                                        ;
+                }       
 
 
 
-                //$ for Cell
+                // //$ for Cell
                 
-                for(int dv = 0; dv< grid.d_v; dv++)
-                    x_i[dv] = feq_Cell[dv]/grid.Cell(i,j,dv) - 1.0;
+                // for(int dv = 0; dv< grid.d_v; dv++)
+                //     x_i[dv] = feq_Cell[dv]/grid.Cell(i,j,dv) - 1.0;
                 
-                alpha = 0;
-                for(int dv = 0; dv< grid.d_v; dv++){
-                    alpha = 2.0;
-                    if( std::fabs(x_i[dv]) > 0.0001){
-                        calculateAlpha(lb41,x_i,&grid.Cell(i,j,0),beta,alpha);
-                        break;
-                    }
-                }
+                // alpha = 0;
+                // for(int dv = 0; dv< grid.d_v; dv++){
+                //     alpha = 2.0;
+                //     if( std::fabs(x_i[dv]) > 0.0001){
+                //         calculateAlpha(lb41,x_i,&grid.Cell(i,j,0),beta,alpha);
+                //         break;
+                //     }
+                // }
 
+
+
+                // // for (int dv = 0; dv< 41; dv++){
+                // //     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
+                // //                         + (1 - 0.5*alpha*beta)*lb41.thetaInverse * feq_Cell[dv] * (Force.Cell(i,j,k,0) * (lb41.Cx[dv]- ux) +Force.Cell(i,j,k,1)* (lb41.Cy[dv]-uy) + Force.Cell(i,j,k,2) *( lb41.Cz[dv] - uz) );
+                // // }
 
 
                 // for (int dv = 0; dv< 41; dv++){
                 //     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                //                         + (1 - 0.5*alpha*beta)*lb41.thetaInverse * feq_Cell[dv] * (Force.Cell(i,j,k,0) * (lb41.Cx[dv]- ux) +Force.Cell(i,j,k,1)* (lb41.Cy[dv]-uy) + Force.Cell(i,j,k,2) *( lb41.Cz[dv] - uz) );
+                //                         // + (feq_Cell_delu[dv] - feq_Cell[dv])
+                //                         ;
                 // }
-
-
-                for (int dv = 0; dv< 41; dv++){
-                    grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + alpha* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                                        // + (feq_Cell_delu[dv] - feq_Cell[dv])
-                                        ;
-                }
 
 
 
