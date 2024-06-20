@@ -55,9 +55,37 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
 
 
 
-    Periodic(rho);
-    Periodic(pnid);
-    Periodic(fnid);
+    //  Periodic_x(rho);
+    //  Periodic_y(rho);
+     Periodic_z(rho);
+
+
+    grad_zero_x(rho);
+    grad_zero_y(rho);
+    // grad_zero_z(rho);
+
+
+
+    //  Periodic_x(pnid);
+    //  Periodic_y(pnid);
+     Periodic_z(pnid);
+
+    grad_zero_x(pnid);
+    grad_zero_y(pnid);
+    // grad_zero_z(pnid);
+
+
+
+
+    //  Periodic_x(fnid);
+    //  Periodic_y(fnid);
+     Periodic_z(fnid);
+    
+    grad_zero_x(fnid);
+    grad_zero_y(fnid);
+    // grad_zero_z(fnid);
+
+
 
 
 
@@ -133,11 +161,34 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
             }
         }    
     }
-    Periodic(laplacian_rho);
-    Periodic(laplacian_fnid);
 
 
-    Periodic(munid); 
+
+    // Periodic_x(laplacian_rho);
+    // Periodic_y(laplacian_rho);
+    Periodic_z(laplacian_rho);
+
+    grad_zero_x(laplacian_rho);
+    grad_zero_y(laplacian_rho);
+    // grad_zero_z(laplacian_rho);
+
+
+    // Periodic_x(laplacian_fnid);
+    // Periodic_y(laplacian_fnid);
+    Periodic_z(laplacian_fnid);
+
+    grad_zero_x(laplacian_fnid);
+    grad_zero_y(laplacian_fnid);
+    // grad_zero_z(laplacian_fnid);
+
+    // Periodic_x(munid);
+    // Periodic_y(munid);
+    Periodic_z(munid);
+
+    grad_zero_x(munid);
+    grad_zero_y(munid);
+    // grad_zero_z(munid);
+
 
 }
 
@@ -175,7 +226,7 @@ void Multiphase_Force_Node(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &rho, Grid_N_C_3
     }
 
     Force.Node(i,j,k,0) = - Coeff_grad*(grad_mux)   ;
-    Force.Node(i,j,k,1) = - Coeff_grad*(grad_muy)-0.0001;
+    Force.Node(i,j,k,1) = - Coeff_grad*(grad_muy)- 0.0001;
     Force.Node(i,j,k,2) = - Coeff_grad*(grad_muz)   ;
 
     // // // > direct              

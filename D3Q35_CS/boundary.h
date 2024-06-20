@@ -266,7 +266,7 @@ void BB_wall_bottom(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubo
 template<typename T, typename T1>
 void BB_wall_left(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubottom){
 
-    //#--bottom wall
+    //#--left wall
 
     int leftC_last[]       =   { 
                                 dV_M2_ZERO_ZERO ,
@@ -408,13 +408,13 @@ void BB_wall_top(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubotto
 template<typename T, typename T1>
 void BB_wall_right(Grid_N_C_3D<T> &grid,  lbmD3Q35<T1> &lb, real utop, real ubottom){
 
-    //#--bottom wall
+    //#--rightwall
 
      int rightC_last[]       =   {  dV_P2_ZERO_ZERO ,
                                 
                                     dV_P1_P1_ZERO   ,dV_P1_M1_ZERO  ,dV_P1_ZERO_P1  ,dV_P1_ZERO_M1  ,
                                     dV_P2_P2_P2     ,dV_P2_P2_M2    ,dV_P2_M2_P2    ,dV_P2_M2_M2    ,
-                                    dV_MH1_PH1_PH1     ,dV_MH1_PH1_MH1    ,dV_MH1_MH1_PH1    ,dV_MH1_MH1_MH1    
+                                    dV_PH1_PH1_PH1     ,dV_PH1_PH1_MH1    ,dV_PH1_MH1_PH1    ,dV_PH1_MH1_MH1    
 
                                
                                 };
