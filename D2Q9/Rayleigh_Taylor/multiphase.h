@@ -43,23 +43,23 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
 
 
     Periodic_left_Right(rho);
-    Periodic_top_bottom(rho);
+    // Periodic_top_bottom(rho);
 
-    Grad_zero_left_Right(rho);
+    // Grad_zero_left_Right(rho);
     Grad_zero_top_bottom(rho);
 
     //>  -----------------------
     Periodic_left_Right(pnid);
-    Periodic_top_bottom(pnid);
+    // Periodic_top_bottom(pnid);
 
-    Grad_zero_left_Right(pnid);
+    // Grad_zero_left_Right(pnid);
     Grad_zero_top_bottom(pnid);
 
     //>--------------------------
     Periodic_left_Right(fnid);
-    Periodic_top_bottom(fnid);
+    // Periodic_top_bottom(fnid);
     
-    Grad_zero_left_Right(fnid);
+    // Grad_zero_left_Right(fnid);
     Grad_zero_top_bottom(fnid);
 
 
@@ -78,7 +78,7 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
             laplacian_rho.Node(i,j)  = 0.0;
 
             for(int dv = 0; dv<  grid.d_v; dv++)
-                laplacian_rho.Node(i,j) += lb9.W[dv]*rho.Node( i+ (int)lb9.Cx[dv]  , j + (int)lb9.Cy[dv] , k + (int)lb9.Cz[dv] ) ;
+                laplacian_rho.Node(i,j) += lb9.W[dv]*rho.Node( i+ (int)lb9.Cx[dv]  , j + (int)lb9.Cy[dv]  ) ;
 
 
             laplacian_rho.Node(i,j) = Coeff * ( laplacian_rho.Node(i,j) - rho.Node(i,j));
@@ -115,22 +115,24 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
 
 
     Periodic_left_Right(laplacian_rho);
-    Periodic_top_bottom(laplacian_rho);
+    // Periodic_top_bottom(laplacian_rho);
 
-    Grad_zero_left_Right(laplacian_rho);
+    // Grad_zero_left_Right(laplacian_rho);
     Grad_zero_top_bottom(laplacian_rho);
 
-
+    //>-------------------------------------<
     Periodic_left_Right(laplacian_fnid);
-    Periodic_top_bottom(laplacian_fnid);
+    // Periodic_top_bottom(laplacian_fnid);
 
-    Grad_zero_left_Right(laplacian_fnid);
+    // Grad_zero_left_Right(laplacian_fnid);
     Grad_zero_top_bottom(laplacian_fnid);
 
-    Periodic_left_Right(munid);
-    Periodic_top_bottom(munid);
 
-    Grad_zero_left_Right(munid);
+    //>----------------------------------------
+    Periodic_left_Right(munid);
+    // Periodic_top_bottom(munid);
+
+    // Grad_zero_left_Right(munid);
     Grad_zero_top_bottom(munid);
 
 
@@ -147,8 +149,8 @@ void Multiphase_Force_Node(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &rho, Grid_N_C_2
     //> CHEMICAL POTENTIAL FORMULATION 
     real grad_mux = 0.0, grad_muy = 0.0;
 
-    Force.Node(i,j,k,0) = 0.0;
-    Force.Node(i,j,k,1) = 0.0;
+    Force.Node(i,j,0) = 0.0;
+    Force.Node(i,j,1) = 0.0;
 
 
     real del_t = 1.0;
@@ -160,8 +162,8 @@ void Multiphase_Force_Node(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &rho, Grid_N_C_2
     }
 
 
-    Force.Node(i,j,k,0) = - Coeff_grad*(grad_mux)        ;
-    Force.Node(i,j,k,1) = - Coeff_grad*(grad_muy)  -g    ;
+    Force.Node(i,j,0) = - Coeff_grad*(grad_mux)*rho.Node(i,j)         ;
+    Force.Node(i,j,1) = - Coeff_grad*(grad_muy)*rho.Node(i,j) -g     ;
 
 
 }
