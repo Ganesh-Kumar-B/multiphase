@@ -216,8 +216,22 @@ void Grad_zero_top_bottom(Grid_N_C_2D<T> &gridf){
     for(int i = 0 ; i < gridf.n_x_node;i++ ){
         for(int dv = 0; dv<gridf.d_v; dv++){
 
-            gridf.Node(i,0           , dv)  = gridf.Node(i,gridf.nby, dv);
-            gridf.Node(i,gridf.ney +1, dv)  = gridf.Node(i,gridf.ney, dv);
+            // gridf.Node(i,0           , dv)  = gridf.Node(i,gridf.nby, dv);
+            // gridf.Node(i,2           , dv)  = gridf.Node(i,gridf.nby, dv);
+
+            // gridf.Node(i,gridf.ney +1, dv)  = gridf.Node(i,gridf.ney, dv);
+            // gridf.Node(i,gridf.ney -1, dv)  = gridf.Node(i,gridf.ney, dv);
+
+
+
+
+            gridf.Node(i,0           , dv)  = gridf.Node(i,gridf.nby +1, dv);
+            gridf.Node(i,gridf.nby   , dv)  = gridf.Node(i,gridf.nby +1, dv);
+
+            gridf.Node(i,gridf.ney +1, dv)  = gridf.Node(i,gridf.ney -1, dv);
+            gridf.Node(i,gridf.ney   , dv)  = gridf.Node(i,gridf.ney -1, dv);
+
+
 
         }
     }

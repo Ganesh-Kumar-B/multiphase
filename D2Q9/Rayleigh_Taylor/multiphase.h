@@ -27,19 +27,8 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
             get_moments_Node(grid, lb9,  ux, uy,  rho.Node(i,j), i, j , Force); 
 
 
-            real eta = rho.Node(i,j)*b/4.0;
-
-            //> pnid Node
-            pnid.Node(i,j) = (rho.Node(i,j)*lb9.theta0*(1.0 + eta + eta* eta - eta*eta*eta) )/pow(1.0 - eta,  3.0)  - 
-                                a * rho.Node(i,j)*rho.Node(i,j) ;
-
-            //> Fnid_node
-            fnid.Node(i,j) = -1.0*(rho.Node(i,j)*lb9.theta0*(3.0*eta*eta - 4.0 * eta) )/pow(1.0 - eta,  2.0)  - 
-                                a * rho.Node(i,j)*rho.Node(i,j) ;
-
         }
     }
-
 
 
     Periodic_left_Right(rho);
@@ -47,21 +36,6 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
 
     // Grad_zero_left_Right(rho);
     Grad_zero_top_bottom(rho);
-
-    //>  -----------------------
-    Periodic_left_Right(pnid);
-    // Periodic_top_bottom(pnid);
-
-    // Grad_zero_left_Right(pnid);
-    Grad_zero_top_bottom(pnid);
-
-    //>--------------------------
-    Periodic_left_Right(fnid);
-    // Periodic_top_bottom(fnid);
-    
-    // Grad_zero_left_Right(fnid);
-    Grad_zero_top_bottom(fnid);
-
 
 
 
@@ -82,7 +56,6 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
 
 
             laplacian_rho.Node(i,j) = Coeff * ( laplacian_rho.Node(i,j) - rho.Node(i,j));
-
 
 
 
@@ -120,13 +93,6 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
     // Grad_zero_left_Right(laplacian_rho);
     Grad_zero_top_bottom(laplacian_rho);
 
-    //>-------------------------------------<
-    Periodic_left_Right(laplacian_fnid);
-    // Periodic_top_bottom(laplacian_fnid);
-
-    // Grad_zero_left_Right(laplacian_fnid);
-    Grad_zero_top_bottom(laplacian_fnid);
-
 
     //>----------------------------------------
     Periodic_left_Right(munid);
@@ -162,8 +128,12 @@ void Multiphase_Force_Node(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &rho, Grid_N_C_2
     }
 
 
-    Force.Node(i,j,0) = - Coeff_grad*(grad_mux)*rho.Node(i,j)         ;
-    Force.Node(i,j,1) = - Coeff_grad*(grad_muy)*rho.Node(i,j) -g     ;
+    Force.Node(i,j,0) = - Coeff_grad*(grad_mux)                     ;
+    Force.Node(i,j,1) = - Coeff_grad*(grad_muy) -g   ;
+
+    // if(j == grid.ney){
+    //     std::cout<<Force.Node(i,j,0)<<"   "<<Force.Node(i,j,1)<<std::endl;
+    // }
 
 
 }

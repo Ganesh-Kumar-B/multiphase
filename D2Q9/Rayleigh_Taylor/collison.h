@@ -68,6 +68,15 @@ void collide(Grid_N_C_2D<T> &grid,
             }
 
 
+            
+            // // // //> normal //from the he paper
+            // for (int dv = 0; dv< grid.d_v; dv++){
+            //     grid.Node(i,j,dv) =  grid.Node(i,j,dv) + (1.0/tau)*(feq_Node[dv] - grid.Node(i,j,dv))
+            //                         - (1.0 - 0.5/tau)*lb9.thetaInverse *  feq_Node[dv] * (Force.Node(i,j,0) * (lb9.Cx[dv] - ux) + Force.Node(i,j,1) * (lb9.Cy[dv] - uy) );
+            //                         ;
+            // }
+
+
         }
     }
 
@@ -129,10 +138,16 @@ void initialization_equilibrium_profile_y(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,r
             x = ((real)i)/ grid.n_x - x_0;
             y = ((real)j)/ grid.n_x - y_0;
 
-            phi = (tanh((y - 1 - 0.025*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
+
+
+            phi = (tanh((y - 2.0 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
+
 
             Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
             
+
+
+
 
             get_equi(Feq_node,lb,ux_node,uy_node,Rho);
 
@@ -142,7 +157,6 @@ void initialization_equilibrium_profile_y(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,r
 
         }
     }
-    
 }
 
 

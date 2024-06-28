@@ -12,6 +12,7 @@
 
 
 
+
 template<typename T, typename T1>
 void print_vtk(lbmD2Q9<T1> &lb,  Grid_N_C_2D<T> &grid,  int step, real u0, real theta,real kappa, Grid_N_C_2D<T> &Force, const std::string &name)
 {

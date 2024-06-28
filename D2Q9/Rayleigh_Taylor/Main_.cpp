@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx = 256 ;int Ny = 512;
+    int Nx = 256 ;int Ny = 1024;
 
 
     Grid_N_C_2D<real> grid                  (Nx,Ny,1,9);
@@ -29,6 +29,7 @@ int main()
     std::cout<<"theta= "<<d2q9.theta0<<std::endl;
 
 
+    
 
 
     real Re = 2048;
@@ -36,10 +37,11 @@ int main()
     real L  = Nx;
 
 
-    real u0 = 0.05;
+    real u0 = 0.04;
     std::cout<<"u0      = "<<u0<<std::endl;
 
-    real g = (u0*u0)/L;
+    real g = 2.0*(u0*u0)/L;
+    // real g = 0.0;
     std::cout<<"g       = "<<g<<std::endl;
 
 
@@ -47,8 +49,8 @@ int main()
     std::cout<<"Kin_Vis = "<<Kin_Vis<<std::endl;
 
 
-
     real tau = Kin_Vis/(cs*cs);
+    // real tau = Kin_Vis/(cs*cs) +0.5;
     std::cout<<"tau     = "<<tau<<std::endl;
 
     real beta = 1.0/(2.0*tau + 1.0);
@@ -59,13 +61,13 @@ int main()
 
 
     real Rho_mean = 1.0;
-    real rho_liq =  1.36861;
-    real rho_gas = 0.6887;
+    real rho_liq =  1.61;
+    real rho_gas =0.50;
 
 
-    real TbyTc = 0.98  ;       ;
+    real TbyTc = 0.95  ;       ;
     std::cout<<"T/T0    = "<<TbyTc<<std::endl;
-    real kappa = -0.00625;
+    real kappa = 0.00;
 
 
 
@@ -87,12 +89,12 @@ int main()
     std::cout<<"Simulation time "<< sim_time<<std::endl;
 
 
-    for(int t = 1; t <=20000;t++){
+    for(int t = 1; t <=100000;t++){
 
         collide (grid,d2q9,beta,tau,TbyTc,kappa, t,Force,g);
 
         Periodic_left_Right(grid);
-        // Periodic_top_bottom(grid);
+        //  Periodic_top_bottom(grid);
       
 
         // BB_left     (grid,d2q9,u0);
@@ -106,7 +108,7 @@ int main()
         advection_D2Q9(grid);
 
 
-        if(t%100== 0){
+        if(t%500== 0){
             std::cout<<t<<" ";
             printMass(grid);
             print_vtk(d2q9,grid,t,u0,TbyTc,kappa,Force,name);
