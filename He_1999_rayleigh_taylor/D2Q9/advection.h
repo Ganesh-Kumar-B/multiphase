@@ -15,7 +15,7 @@
 
 
 template<typename T>
-void advection_D2Q9(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg){
+void advection_D2Q9(Grid_N_C_2D<T> &gridf){
 
 
     for(int i = 0 + gridf.noghost ; i < gridf.n_x_node - (gridf.noghost);i++){
@@ -42,35 +42,6 @@ void advection_D2Q9(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg){
 
             gridf.Node(i,j,dV_P1_P1) = gridf.Node(i-1,j-1,dV_P1_P1);
             gridf.Node(i,j,dV_P1_M1) = gridf.Node(i-1,j+1,dV_P1_M1);
-
-        }
-    }
-
-
-    for(int i = 0 + gridg.noghost ; i < gridg.n_x_node - (gridg.noghost);i++){
-        for(int j = 0 + gridg.noghost ; j < gridg.n_y_node - (gridg.noghost);j++){ 
-           
-            
-            gridg.Node(i,j,dV_ZERO_M1) = gridg.Node(i  ,j+1, dV_ZERO_M1 ); 
-            gridg.Node(i,j,dV_M1_ZERO) = gridg.Node(i+1,j , dV_M1_ZERO);
-
-
-            gridg.Node(i,j,dV_M1_M1) = gridg.Node(i+1,j+1,dV_M1_M1);
-            gridg.Node(i,j,dV_M1_P1) = gridg.Node(i+1,j-1,dV_M1_P1);
-
-        }
-    }
-
-
-
-    for(int i = gridg.n_x_node - (gridg.noghost +1); i> gridg.noghost-1; i--){                                                                                        //  #pragma omp parallel for shared(b)
-        for(int j = gridg.n_y_node - (gridg.noghost +1); j> gridg.noghost-1; j--){
-
-            gridg.Node(i,j,dV_ZERO_P1) = gridg.Node(i  ,j-1, dV_ZERO_P1 );
-            gridg.Node(i,j,dV_P1_ZERO) = gridg.Node(i-1,j  , dV_P1_ZERO );
-
-            gridg.Node(i,j,dV_P1_P1) = gridg.Node(i-1,j-1,dV_P1_P1);
-            gridg.Node(i,j,dV_P1_M1) = gridg.Node(i-1,j+1,dV_P1_M1);
 
         }
     }
@@ -124,7 +95,7 @@ void cavity_walls(Grid_N_C_2D<T> &grid,double u0){
 
 
 template<typename T>
-void BB_top(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T> &lb9,double u0){
+void BB_top(Grid_N_C_2D<T> &gridf, lbmD2Q9<T> &lb9,double u0){
 
     int topN_last[]       =   { dV_ZERO_P1,  dV_P1_P1,   dV_M1_P1 };
 
@@ -138,7 +109,7 @@ void BB_top(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T> &lb9,double 
 }
 
 template<typename T>
-void BB_bottom(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T> &lb9,double u0){
+void BB_bottom(Grid_N_C_2D<T> &gridf, lbmD2Q9<T> &lb9,double u0){
 
     int bottomN_last[]       =   { dV_ZERO_M1, dV_P1_M1,dV_M1_M1};
 
@@ -154,7 +125,7 @@ void BB_bottom(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T> &lb9,doub
 
 
 template<typename T>
-void BB_left(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T> &lb9,double u0){
+void BB_left(Grid_N_C_2D<T> &gridf, lbmD2Q9<T> &lb9,double u0){
 
     int leftN_last[]       =   {  dV_M1_ZERO,dV_M1_M1,dV_M1_P1};
 
@@ -170,7 +141,7 @@ void BB_left(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T> &lb9,double
 
 
 template<typename T>
-void BB_right(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T> &lb9,double u0){
+void BB_right(Grid_N_C_2D<T> &gridf, lbmD2Q9<T> &lb9,double u0){
 
     int rightN_last[]       =   {  dV_P1_ZERO,dV_P1_M1,dV_P1_P1 };
 
@@ -187,59 +158,81 @@ void BB_right(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T> &lb9,doubl
 
 
 
+
+
 template<typename T>
-void Periodic_left_Right(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg){
+void Periodic_left_Right(Grid_N_C_2D<T> &gridf){
 
     for(int j = 0 ; j < gridf.n_y_node;j++ ){
-        for(int dv = 0; dv<9; dv++){
+        for(int dv = 0; dv<gridf.d_v; dv++){
 
-            gridf.Node(0,j,dv) = gridf.Node((gridf.n_x_node-gridf.noghost) -1, j, dv);
-            gridf.Node((gridf.n_x_node - gridf.noghost), j , dv) = gridf.Node(1,j,dv);
+            gridf.Node(0    ,j      ,dv)          = gridf.Node((gridf.n_x_node-gridf.noghost) -1, j, dv);
+            // gridf.Node(gridf.n_x_node - gridf.noghost, j , dv) = gridf.Node(1,j,dv);
 
+            gridf.Node(gridf.nex+1, j,dv) = gridf.Node(1, j,dv);
         }
 
     }
-
-
-    for(int j = 0 ; j < gridg.n_y_node;j++ ){
-        for(int dv = 0; dv<9; dv++){
-
-            gridg.Node(0,j,dv) = gridg.Node((gridg.n_x_node-gridg.noghost) -1, j, dv);
-            gridg.Node((gridg.n_x_node - gridg.noghost), j , dv) = gridg.Node(1,j,dv);
-
-        }
-
-    }
-
 
 }
 
 
 
+
+
 template<typename T>
-void Periodic_top_bottom(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg){
+void Periodic_top_bottom(Grid_N_C_2D<T> &gridf){
 
     for(int i = 0 ; i < gridf.n_x_node;i++ ){
-        for(int dv = 0; dv<9; dv++){
+        for(int dv = 0; dv<gridf.d_v; dv++){
 
             gridf.Node(i,0,dv) = gridf.Node(i,(gridf.n_y_node-gridf.noghost) -1, dv);
             gridf.Node(i,(gridf.n_y_node - gridf.noghost), dv) = gridf.Node(i,1,dv);
 
         }
     }
-    
+}
 
 
-    for(int i = 0 ; i < gridg.n_x_node;i++ ){
-        for(int dv = 0; dv<9; dv++){
 
-            gridg.Node(i,0,dv) = gridg.Node(i,(gridg.n_y_node-gridg.noghost) -1, dv);
-            gridg.Node(i,(gridg.n_y_node - gridg.noghost), dv) = gridg.Node(i,1,dv);
+template<typename T>
+void Grad_zero_left_Right(Grid_N_C_2D<T> &gridf){
+
+    for(int j = 0 ; j < gridf.n_y_node;j++ ){
+        for(int dv = 0; dv<gridf.d_v; dv++){
+
+            gridf.Node(0,j,dv)                  = gridf.Node(gridf.nbx, j, dv);
+            gridf.Node(gridf.nex +1 , j , dv)   = gridf.Node(gridf.nex, j, dv);
 
         }
     }
-
 }
+
+
+
+template<typename T>
+void Grad_zero_top_bottom(Grid_N_C_2D<T> &gridf){
+
+    for(int i = 0 ; i < gridf.n_x_node;i++ ){
+        for(int dv = 0; dv<gridf.d_v; dv++){
+
+            // gridf.Node(i,0           , dv)  = gridf.Node(i,gridf.nby, dv);
+            // gridf.Node(i,gridf.ney +1, dv)  = gridf.Node(i,gridf.ney, dv);
+
+
+
+            gridf.Node(i,0           , dv)  = gridf.Node(i,gridf.nby +1, dv);
+            gridf.Node(i,gridf.nby   , dv)  = gridf.Node(i,gridf.nby +1, dv);
+
+            gridf.Node(i,gridf.ney +1, dv)  = gridf.Node(i,gridf.ney -1, dv);
+            gridf.Node(i,gridf.ney   , dv)  = gridf.Node(i,gridf.ney -1, dv);
+
+
+        }
+    }
+}
+
+
 
 
 

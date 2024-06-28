@@ -16,35 +16,63 @@
 
 
 template<typename T, typename T1>
-void collide(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lbD2Q9,double beta,double tau, double gx, double gy ){
-    double feq_Node[9] = {0},feq_Cell[9]={0}, ux = 0, uy = 0, rho = 0, G[9]={0};
-    int a = 0,b = 1; //just for representation of node or cell 
-
-    Grid_N_C_2D<T> phi(gridf.n_x_node,gridf.n_y_node,1,9);
-    Grid_N_C_2D<T> rho(gridf.n_x_node,gridf.n_y_node,1,9);
+void collide(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, Grid_N_C_2D<T> &grad_psi_rho,
+            lbmD2Q9<T1> &lb9,double beta,double tau, double kappa, double g ,
+            double phi_l, double phi_h,double rho_l, double rho_h,  double a , double b, Grid_N_C_2D<T> &Force){
 
 
+    double  feq_Node[9] = {0},geq_Node[9]={0},gamma_Node[9]={0}, 
+            ux = 0, uy = 0, p = 0;
 
-    Multiphase_terms(gridf,gridg, phi, rho);
 
+    Grid_N_C_2D<T> phi(gridf.n_x,gridf.n_y,1,1);
+    Grid_N_C_2D<T> rho(gridf.n_x,gridf.n_y,1,1);
+
+    Grid_N_C_2D<T> laplacian_rho(gridf.n_x,gridf.n_y,1,1);
+
+    Grid_N_C_2D<T> grad_psi_phi(gridf.n_x,gridf.n_y,1,2); // $phi 
+
+    Grid_N_C_2D<T> psi_rho(gridf.n_x,gridf.n_y,1,1); // $psi 
+    Grid_N_C_2D<T> psi_phi(gridf.n_x,gridf.n_y,1,1); // $phi 
+
+
+    Multiphase_terms(gridf,gridg,lb9 ,rho, phi, laplacian_rho,psi_phi,psi_rho, grad_psi_phi, grad_psi_rho, rho_l, rho_h, phi_l, phi_h, a, b);
 
     //  // first the population of nodes are resetted and second  the population of the cells are resetted
     for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost) ; i++){
         for(int j = 0 + gridf.noghost;j < gridf.n_y_node - (gridf.noghost) ; j++){
             
+
+
+
             
-            get_moments(gridf, lbD2Q9,  ux, uy,rho, i, j);            //for the node
-            get_equi(feq_Node,lbD2Q9, ux, uy, rho);
+            get_Force_and_gravity(gridf, lb9, laplacian_rho, kappa, g, Force,i,j);
+
+            
+            get_P_and_u(gridg, grad_psi_rho,lb9,  ux, uy,p,rho.Node(i,j), i, j, Force);            //for the node
+            
+            
+            get_equi_f      (feq_Node   ,lb9, ux, uy, phi.Node(i,j)  );   //need phi, u 
+            get_equi_g      (geq_Node   ,lb9, ux, uy, rho.Node(i,j),p);                               // need p and rho and u
+            get_equi_gamma  (gamma_Node ,lb9, ux, uy, phi.Node(i,j)  );                           //need u onlu
 
 
-            for (int dv = 0; dv< 9; dv++){      
-                gridf.Node(i,j,dv) =  gridf.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - gridf.Node(i,j,dv)) 
-                                    - (1 - 1.0/(2.0*tau))    ;
+            for (int dv = 0; dv< gridf.d_v; dv++){      
+                gridf.Node(i,j,dv) =  gridf.Node(i,j,dv) + (1.0/tau)*(feq_Node[dv] - gridf.Node(i,j,dv)) 
+                                    - (1 - 1.0/(2.0*tau))*lb9.thetaInverse *(
+                                        gamma_Node[dv]*((lb9.Cx[dv] - ux)*grad_psi_phi.Node(i,j,0) + (lb9.Cy[dv] - uy)*grad_psi_phi.Node(i,j,1)  )
+                                        )    ;
             }
 
 
 
-
+            for (int dv = 0; dv< gridg.d_v; dv++){      
+                gridg.Node(i,j,dv) =  gridg.Node(i,j,dv) +(1.0/tau)*(geq_Node[dv] - gridg.Node(i,j,dv)) 
+                                            + (1 - 1.0/(2.0*tau))*lb9.thetaInverse *(
+                                            gamma_Node[dv]*((lb9.Cx[dv] - ux)*Force.Node(i,j,0) + (lb9.Cy[dv] - uy)*Force.Node(i,j,1) ) 
+                                            -   (gamma_Node[dv] - lb9.W[dv])*((lb9.Cx[dv] - ux)*grad_psi_rho.Node(i,j,0) + (lb9.Cy[dv] - uy)*grad_psi_rho.Node(i,j,1) ) 
+                                    )   ;
+            }
         }
     }
 
@@ -55,22 +83,67 @@ void collide(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lbD2Q9,dou
 
 
 
-
 template<typename T>
-void get_equi(double feq[9], lbmD2Q9<T> &lbD2Q9, double ux, double uy, double rho){
+void get_equi_f(double feq[9], lbmD2Q9<T> &lb9, double ux, double uy, double phi){
 
 
     double u2 = ux*ux + uy*uy;
-     double a1=0;
+    double a1=0;
     double first,second, third,feq0=0;
     for (int dv = 0; dv< 9; dv++){
 
-        feq0 = rho*lbD2Q9.W[dv];
+        feq0 = phi*lb9.W[dv];
 
-        first  = (ux*lbD2Q9.Cx[dv] + uy*lbD2Q9.Cy[dv])*lbD2Q9.thetaInverse;
+        first  = (ux*lb9.Cx[dv] + uy*lb9.Cy[dv])*lb9.thetaInverse;
         second = 0.5*(first * first);
-        third = -0.5*u2*lbD2Q9.thetaInverse;
+        third = -0.5*u2*lb9.thetaInverse;
         feq[dv] = feq0*(1+ first + second + third);    
+
+
+    }
+}
+
+
+
+
+template<typename T>
+void get_equi_g(double geq[9], lbmD2Q9<T> &lb9, double ux, double uy, double rho, double p){
+
+
+    double u2 = ux*ux + uy*uy;
+    double a1=0;
+    double first,second, third,geq0=0;
+
+    for (int dv = 0; dv< 9; dv++){
+
+        geq0 = lb9.W[dv];
+
+        first  = (ux*lb9.Cx[dv] + uy*lb9.Cy[dv])*lb9.thetaInverse;
+        second = 0.5*(first * first);
+        third = -0.5*u2*lb9.thetaInverse;
+
+        geq[dv] = geq0*(p + first + second + third);    
+   
+    }
+}
+
+
+
+template<typename T>
+void get_equi_gamma(double gamma[9], lbmD2Q9<T> &lb9, double ux, double uy, double phi){
+
+
+    double u2 = ux*ux + uy*uy;
+    double a1=0;
+    double first,second, third,gamma0=0;
+    for (int dv = 0; dv< 9; dv++){
+
+        gamma0 =  lb9.W[dv];
+
+        first  = (ux*lb9.Cx[dv] + uy*lb9.Cy[dv])*lb9.thetaInverse;
+        second = 0.5*(first * first);
+        third = -0.5*u2*lb9.thetaInverse;
+        gamma[dv] = gamma0*(1+ first + second + third);    
    
     }
 }
@@ -80,43 +153,84 @@ void get_equi(double feq[9], lbmD2Q9<T> &lbD2Q9, double ux, double uy, double rh
 
 
 template<typename T,typename T1>
-void get_moments(Grid_N_C_2D<T> &lbgrid, lbmD2Q9<T1> &lbD2Q9,double &Ux, double &Uy,double &Rho,  int X, int Y){ ///node or cell 0-Node 1- cell
-   Ux  = 0.0;
-   Uy  = 0.0;
-   Rho = 0.0;
+void get_P_and_u(Grid_N_C_2D<T> &gridg,Grid_N_C_2D<T> &grad_psi_rho, lbmD2Q9<T1> &lb9,double &Ux, double &Uy,double &p,double rho , int i,int j, Grid_N_C_2D<T> &Force){ ///node or cell 0-Node 1- cell
+    Ux  = 0.0;
+    Uy  = 0.0;
+    p   = 0;
 
-
+    double sum_g = 0;
     for(int dv = 0; dv <9; dv++){
 
-        Ux  += lbgrid.Node(X,Y,dv)*lbD2Q9.Cx[dv];
-        Uy  += lbgrid.Node(X,Y,dv)*lbD2Q9.Cy[dv];
-        Rho += lbgrid.Node(X,Y,dv);
+        Ux  += gridg.Node(i,j,dv)*lb9.Cx[dv];
+        Uy  += gridg.Node(i,j,dv)*lb9.Cy[dv];
+        p   += gridg.Node(i,j,dv);
 
     }  
 
-    Ux = Ux/Rho;
-    Uy = Uy/Rho;  
+    Ux = Ux/(rho*lb9.theta0) + 0.5*(Force.Node(i,j,0)); //dont include the density in F
+    Uy = Uy/(rho*lb9.theta0) + 0.5*(Force.Node(i,j,1)); //dont include the density in F
+
+    p = p - 0.5* (Ux* grad_psi_rho.Node(i,j,0) + Uy* grad_psi_rho.Node(i,j,1));
 
 }
 
 
+template<typename T,typename T1>
+void get_phi(Grid_N_C_2D<T> &lbgrid, lbmD2Q9<T1> &lb9,double &phi,  int X, int Y){ ///node or cell 0-Node 1- cell
+   
+    phi = 0.0;
+    for(int dv = 0; dv <lbgrid.d_v; dv++){
+
+        phi += lbgrid.Node(X,Y,dv);
+
+    }  
+}
+
+
+
 template<typename T, typename T1>
-void initialization(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lbD2Q9, double U0,double u1){
+void initialization(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lb9, double phi_l ,double phi_h, double rho_l , double rho_h, double a, double b){
 
-    double  Feq_node[9] = {0},Rho = 1.0;
-    double  x,y,
-            n_to_n_dist = (2*PI)/gridf.n_x;    ///distance between nodes 
+    double Feq_node[9] = {0},Geq_node[9] = {0},rho = 1.0;
+    double x,y;
+
+    double phi = 0;
     
-    double ux_node = 0,uy_node =0;
+    double ux = 0,  uy =  0;
+    
+    double u1 = 0.0, u2 = 0.0;
 
-    get_equi(Feq_node,lbD2Q9,ux_node,uy_node,Rho);
+    double p = 0;
     
     for(int i = gridf.nbx; i <= gridf.nex ; i++){
         for(int j = gridf.nby;j <= gridf.ney ; j++){
             
-            for(int dv = 0; dv< 9; dv++){
+            x = ((double)i)/ gridf.n_x ;
+            y = ((double)j)/ gridf.n_x ;
+
+
+            phi = (tanh((y - 2.0 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/gridf.n_x))));
+            
+            get_equi_f(Feq_node   ,lb9, ux, uy, phi);   //need phi, u 
+
+            for (int dv = 0; dv< gridf.d_v; dv++){
                 gridf.Node(i,j,dv) = Feq_node[dv];
             }
+
+            rho = rho_l + ((phi - phi_l)/(phi_h - phi_l)) *(rho_h - rho_l);
+
+            double eta = rho*b/4.0;
+
+            p = rho *lb9.theta0*(1 + eta + eta*eta - eta*eta*eta)/pow(1 - eta, 3)  - a *rho*rho ;
+
+            get_equi_g (Geq_node   ,lb9, ux, uy, rho,p);                               // need p and rho and u
+
+            for(int dv = 0; dv< gridg.d_v; dv++){
+                gridg.Node(i,j,dv) = Geq_node[dv];
+            }
+
+
+
 
         }
     }
