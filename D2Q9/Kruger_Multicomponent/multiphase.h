@@ -22,14 +22,17 @@ void Multiphase_terms(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T1> &
     for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost) ; i++){
         for(int j = 0 + gridf.noghost;j < gridf.n_y_node - (gridf.noghost) ; j++){
             
-                get_moments_Node_g(gridg, lb, phi.Node(i,j), i, j ); 
+            get_moments_Node_g(gridg, lb, phi.Node(i,j), i, j ); 
 
 
         }
     }
 
     Periodic_left_Right(phi); 
-    Periodic_top_bottom(phi); 
+    // Periodic_top_bottom(phi); 
+
+    // Grad_zero_left_Right(phi);
+    Grad_zero_top_bottom(phi);
 
 
 
@@ -37,29 +40,29 @@ void Multiphase_terms(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T1> &
         for(int j = 0 + gridf.noghost;j < gridf.n_y_node - (gridf.noghost) ; j++){
 
 
-                //> laplacian of phi  
-                
-                real del_t = 1.0;
-                real Coeff = (2.0/(del_t*del_t*lb.theta0));
-                
-                laplacian_phi.Node(i,j)  = 0.0;
+            //> laplacian of phi  
+            
+            real del_t = 1.0;
+            real Coeff = (2.0/(del_t*del_t*lb.theta0));
+            
+            laplacian_phi.Node(i,j)  = 0.0;
 
-                for(int dv = 0; dv< 9; dv++)
-                    laplacian_phi.Node(i,j) += lb.W[dv]*phi.Node( i+ (int)lb.Cx[dv]  , j + (int)lb.Cy[dv]  ) ;
-
-
-                laplacian_phi.Node(i,j) = Coeff * ( laplacian_phi.Node(i,j) - phi.Node(i,j));
-
-                //>---------------------
+            for(int dv = 0; dv< 9; dv++)
+                laplacian_phi.Node(i,j) += lb.W[dv]*phi.Node( i+ (int)lb.Cx[dv]  , j + (int)lb.Cy[dv]  ) ;
 
 
+            laplacian_phi.Node(i,j) = Coeff * ( laplacian_phi.Node(i,j) - phi.Node(i,j));
+
+            //>---------------------
 
 
 
-                //> munid
-                munid.Node(i,j)   = - A * phi.Node(i,j) +  A * phi.Node(i,j) *  phi.Node(i,j) * phi.Node(i,j)   ;
-                
-                munid.Node(i,j) -= kappa*laplacian_phi.Node(i,j);
+
+
+            //> munid
+            munid.Node(i,j)   = - A * phi.Node(i,j) +  A * phi.Node(i,j) *  phi.Node(i,j) * phi.Node(i,j)   ;
+            
+            munid.Node(i,j) -= kappa*laplacian_phi.Node(i,j);
 
 
             
@@ -67,7 +70,10 @@ void Multiphase_terms(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T1> &
     }
 
     Periodic_left_Right(munid); 
-    Periodic_top_bottom(munid); 
+    // Periodic_top_bottom(munid); 
+
+    // Grad_zero_left_Right(munid);
+    Grad_zero_top_bottom(munid);
 
 
 }

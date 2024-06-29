@@ -13,7 +13,7 @@
 
 
 template<typename T, typename T1>
-void print_vtk(lbmD2Q9<T1> &lb,  Grid_N_C_2D<T> &gridf ,Grid_N_C_2D<T> &gridg,  int step, real u0, real theta, Grid_N_C_2D<T> &Force)
+void print_vtk(lbmD2Q9<T1> &lb,  Grid_N_C_2D<T> &gridf ,Grid_N_C_2D<T> &gridg,  int step, real u0,  Grid_N_C_2D<T> &Force)
 {
    
     T u1,u2,um, rho1,rho2,del=0.05;
@@ -21,9 +21,9 @@ void print_vtk(lbmD2Q9<T1> &lb,  Grid_N_C_2D<T> &gridf ,Grid_N_C_2D<T> &gridg,  
     std::ofstream file;
     char fileName[250];
     char foldername[250];
-    sprintf(foldername,"Result_%.2f",theta);
+    sprintf(foldername,"Result_%.2f",0.1);
     mkdir(foldername,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    sprintf(fileName,"./Result_%.2f/velocity_%d.vtk", theta,step) ;
+    sprintf(fileName,"./Result_%.2f/velocity_%d.vtk", 0.1,step) ;
     file.open(fileName);
 
     file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_POINTS"<<std::endl;

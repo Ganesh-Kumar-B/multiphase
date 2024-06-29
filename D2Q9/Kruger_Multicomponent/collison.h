@@ -17,7 +17,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,Grid_N_C_2D<T> &rho, Grid_N_C_2D<T> &phi,Grid_N_C_2D<T> &mu,Grid_N_C_2D<T> &laplacian_phi,
-            lbmD2Q9<T1> &lb,real beta,real tau,real tauphi, real TbyTc, int t,Grid_N_C_2D<T> &Force, real kappa,real gamma_s, real A ){
+            lbmD2Q9<T1> &lb,real beta,real tau,real tauphi, int t,Grid_N_C_2D<T> &Force, real kappa,real gamma_s, real A, real g ){
 
         
     real    feq_Node[9] = {0}, 
@@ -34,19 +34,23 @@ void collide(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,Grid_N_C_2D<T> &rho, Gr
             
             real Rho = 0.0;
 
-            Multiphase_Force_Node(gridf,phi , mu,lb,Force,i,j );             										
+            Multiphase_Force_Node(gridf,phi , mu,lb,Force,i,j );      //this force includes the force with the density       										
             
-            get_moments_Node_f(gridf, lb,  ux, uy, Rho, i, j, Force);            //for the node
+            Force.Node(i,j,1) = Force.Node(i,j,1) - phi.Node(i,j)*g; 
+
+            get_moments_Node_f(gridf, lb,  ux, uy, Rho, i, j, Force);            //in this the force is divinded by the density
             get_equi_f(feq_Node,lb, ux, uy, Rho, phi.Node(i,j),mu.Node(i,j));
 
             // // //> normal
             for (int dv = 0; dv< gridf.d_v; dv++){
                 gridf.Node(i,j,dv) =  gridf.Node(i,j,dv) + (1.0/tau )*(feq_Node[dv] - gridf.Node(i,j,dv))
-                                    +(1.0 - (1.0 / (2.0* tau)  ) )*lb.thetaInverse * rho.Node(i,j)* lb.W[dv] * (Force.Node(i,j,0) * lb.Cx[dv] + Force.Node(i,j,1) * lb.Cy[dv] + Force.Node(i,j,1) * lb.Cz[dv])
+                                    +(1.0 - (1.0 / (2.0* tau)) )*
+                                                                (lb.thetaInverse *  lb.W[dv] * (Force.Node(i,j,0) * (lb.Cx[dv] - ux) + Force.Node(i,j,1) * (lb.Cy[dv] - uy) ) +
+                                                                lb.thetaInverse *lb.thetaInverse *(( lb.Cx[dv]*ux + lb.Cy[dv]*uy )*(Force.Node(i,j,0)*lb.Cx[dv] + Force.Node(i,j,1)*lb.Cy[dv] ))
+                                                                )
+
                                     ;
             }
-
-
         }
     }
 
@@ -178,8 +182,8 @@ void get_moments_Node_f(Grid_N_C_2D<T> &grid, lbmD2Q9<T1> &lb,real &Ux, real &Uy
         Rho += grid.Node(X,Y,dv);
     }  
 
-    Ux = Ux/Rho + 0.5*Force.Node(X,Y,0);
-    Uy = Uy/Rho + 0.5*Force.Node(X,Y,1);
+    Ux = Ux/Rho + 0.5*Force.Node(X,Y,0)/Rho;
+    Uy = Uy/Rho + 0.5*Force.Node(X,Y,1)/Rho;
 
 }
 
@@ -241,19 +245,29 @@ Grid_N_C_2D<T> &phi,Grid_N_C_2D<T> &mu,Grid_N_C_2D<T> &laplacian_phi,lbmD2Q9<T1>
             x = ((real)i)/ gridf.n_x - x_0;
             y = ((real)j)/ gridf.n_y - y_0;
             
-            phi.Node(i,j) = -1.0;
+            real    phi_h =  1.0,
+                    phi_l = -1.0;
 
-            if( x * x  + y * y < 0.25*0.25 ){
+            phi.Node(i,j) = (phi_h + phi_l)* 0.5 + (phi_h - phi_l) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
 
-                phi.Node(i,j) = 1.0;
 
-            }
+            // phi.Node(i,j) = -1.0;
+
+            // if( x * x  + y * y < 0.25*0.25 ){
+
+            //     phi.Node(i,j) = 1.0;
+
+            // }
 
         
 
             
         }
     }
+
+    Periodic_left_Right(phi); 
+    Periodic_top_bottom(phi); 
+
 
     Periodic_left_Right(phi); 
     Periodic_top_bottom(phi); 
@@ -305,5 +319,90 @@ Grid_N_C_2D<T> &phi,Grid_N_C_2D<T> &mu,Grid_N_C_2D<T> &laplacian_phi,lbmD2Q9<T1>
 }
 
 
+
+template<typename T, typename T1>
+void initialization_y_RT(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,Grid_N_C_2D<T> &rho,
+Grid_N_C_2D<T> &phi,Grid_N_C_2D<T> &mu,Grid_N_C_2D<T> &laplacian_phi,lbmD2Q9<T1> &lb,real Rho_mean, real kappa, real gamma_s, real A ){
+
+	real Feq_node[9] = {0};
+    real x,y;     ///distance between nodes 
+    
+
+    real  x_0 = 0.0;
+    real  y_0 = 0.0;
+
+    real ux_node = 0.0, uy_node = 0.0;
+    
+
+    for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost); i++){
+        for(int j = 0 + gridf.noghost; j < gridf.n_y_node - (gridf.noghost); j++){
+
+            x = ((real)i)/ gridf.n_x - x_0;
+            y = ((real)j)/ gridf.n_x - y_0;
+            
+
+
+
+
+            phi.Node(i,j) = (tanh((y - 2 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/gridf.n_x))));
+        
+
+        
+        }
+    }
+
+    Periodic_left_Right(phi); 
+    // Periodic_top_bottom(phi); 
+
+
+
+    // Grad_zero_left_Right(phi);
+    Grad_zero_top_bottom(phi);
+
+
+    for(int i = 0 + gridf.noghost; i < gridf.n_x_node - (gridf.noghost); i++){
+        for(int j = 0 + gridf.noghost; j < gridf.n_y_node - (gridf.noghost); j++){
+
+
+            //> laplacian of phi  
+            
+            real del_t = 1.0;
+            real Coeff = (2.0/(del_t*del_t*lb.theta0));
+            
+            laplacian_phi.Node(i,j)  = 0.0;
+
+            for(int dv = 0; dv< 9; dv++)
+                laplacian_phi.Node(i,j) += lb.W[dv]*phi.Node( i+ (int)lb.Cx[dv]  , j + (int)lb.Cy[dv] ) ;
+
+            
+
+            laplacian_phi.Node(i,j) = Coeff * ( laplacian_phi.Node(i,j) - phi.Node(i,j));
+
+            
+            
+            //>-------------------------------------------<\\
+
+
+            //$------------------Node
+
+            real    mu = - A * phi.Node(i,j) +  A * phi.Node(i,j) *  phi.Node(i,j) * phi.Node(i,j)   ;
+                    mu -= kappa*laplacian_phi.Node(i,j);
+
+
+            get_equi_f(Feq_node,lb,ux_node,uy_node,Rho_mean, phi.Node(i,j),mu);
+
+            for (int dv = 0; dv<gridf.d_v; dv++)
+                gridf.Node(i,j,dv) = Feq_node[dv];
+
+            get_equi_g(Feq_node,lb,ux_node,uy_node ,phi.Node(i,j), gamma_s, mu);
+
+            for (int dv = 0; dv<gridf.d_v; dv++)
+                gridg.Node(i,j,dv) = Feq_node[dv];
+            
+
+                
+        }
+    }
+}
 
 
