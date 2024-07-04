@@ -122,7 +122,7 @@ void get_equi_g(double geq[9], lbmD2Q9<T> &lb9, double ux, double uy, double rho
         second = 0.5*(first * first);
         third = -0.5*u2*lb9.thetaInverse;
 
-        geq[dv] = geq0*(p + first + second + third);    
+        geq[dv] = geq0*(p + rho*lb9.theta0*(first + second + third));    
    
     }
 }
@@ -209,7 +209,8 @@ void initialization(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lb9
             y = ((double)j)/ gridf.n_x ;
 
 
-            phi = (tanh((y - 2.0 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/gridf.n_x))));
+
+            phi = (tanh((y - 2.0 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/gridf.n_x) )));
             
             get_equi_f(Feq_node   ,lb9, ux, uy, phi);   //need phi, u 
 
@@ -228,9 +229,6 @@ void initialization(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lb9
             for(int dv = 0; dv< gridg.d_v; dv++){
                 gridg.Node(i,j,dv) = Geq_node[dv];
             }
-
-
-
 
         }
     }

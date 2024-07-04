@@ -24,7 +24,6 @@ int main()
 
 
 
-
     lbmD2Q9<double> d2q9(1.0,(1.0/3.0));
     
     double cs = sqrt(d2q9.theta0);
@@ -50,12 +49,15 @@ int main()
     double tau = Kin_Vis/(cs*cs) + 0.5;
     std::cout<<"tau     = "<<tau<<std::endl;
 
+
+
     double beta = 1.0/(2.0*tau + 1.0);
     std::cout<<"beta    ="<<beta<<std::endl;
     
 
-    double rho_l = 0.5, rho_h = 1.61;
-    double phi_l = -1.0, phi_h = 2.0;
+    double rho_l = 0.50, rho_h = 1.61;
+    double phi_l = -1.0, phi_h = 1.0;
+
 
 
     double TbyTc = 0.95;
@@ -77,20 +79,23 @@ int main()
     std::cout<<"Simulation time "<< sim_time<<std::endl;
 
 
-    for(int t = 1; t <=10;t++){
+    for(int t = 1; t <=50000;t++){
 
 
-        collide(gridf,gridg,grad_psi_rho,d2q9,beta,tau,kappa,g, phi_l, rho_h,rho_l, rho_h,  a, b, Force);
+        collide(gridf,gridg,grad_psi_rho,d2q9,beta,tau,kappa,g, phi_l, phi_h,rho_l, rho_h,  a, b, Force);
 
         Periodic_left_Right(gridf);
         // Periodic_top_bottom(gridf);
         
+
         Periodic_left_Right(gridg);
         // Periodic_top_bottom(gridg);
 
 
         // BB_left     (gridf,d2q9,u0);
         // BB_right    (gridf,d2q9,u0);
+
+
 
         BB_top      (gridf,d2q9,u0);
         BB_bottom   (gridf,d2q9,u0);
@@ -108,7 +113,7 @@ int main()
         advection_D2Q9(gridg);
 
 
-        if(t%1== 0){
+        if(t%25== 0){
             std::cout<<t<<" ";
             printMass(gridf,gridg);
             print_vtk(d2q9,gridf,gridg,grad_psi_rho,t,u0, kappa,phi_l,phi_h,rho_l, rho_h, Force );
