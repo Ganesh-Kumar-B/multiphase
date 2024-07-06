@@ -41,24 +41,24 @@ void Multiphase_terms(  Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T1>
     }
 
     Periodic_left_Right(rho);
-    // Periodic_top_bottom(rho);
+    Periodic_top_bottom(rho);
 
     Periodic_left_Right(psi_phi);
-    // Periodic_top_bottom(psi_phi);
+    Periodic_top_bottom(psi_phi);
 
     Periodic_left_Right(psi_rho);
-    // Periodic_top_bottom(psi_rho);
+    Periodic_top_bottom(psi_rho);
 
 
 
     // Grad_zero_left_Right(rho);
-    Grad_zero_top_bottom(rho);
+    // Grad_zero_top_bottom(rho);
 
     // Grad_zero_left_Right(psi_phi);
-    Grad_zero_top_bottom(psi_phi);
+    // Grad_zero_top_bottom(psi_phi);
 
     // Grad_zero_left_Right(psi_rho);
-    Grad_zero_top_bottom(psi_rho);
+    // Grad_zero_top_bottom(psi_rho);
 
 
     //  $ LAPLACIAN OF RHO
@@ -82,11 +82,11 @@ void Multiphase_terms(  Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T1>
 
 
     Periodic_left_Right(laplacian_rho);
-    // Periodic_top_bottom(laplacian_rho);
+    Periodic_top_bottom(laplacian_rho);
 
     // Grad_zero_left_Right(laplacian_rho);
-    Grad_zero_top_bottom(laplacian_rho);
-
+    // Grad_zero_top_bottom(laplacian_rho);
+// 
 
 
     double del_t = 1.0;
@@ -130,18 +130,18 @@ void Multiphase_terms(  Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg, lbmD2Q9<T1>
 
 
     Periodic_left_Right(grad_psi_phi);
-    // Periodic_top_bottom(grad_psi_phi);
+    Periodic_top_bottom(grad_psi_phi);
 
     Periodic_left_Right(grad_psi_rho);
-    // Periodic_top_bottom(grad_psi_rho);
+    Periodic_top_bottom(grad_psi_rho);
 
 
 
     // Grad_zero_left_Right(grad_psi_phi);
-    Grad_zero_top_bottom(grad_psi_phi);
+    // Grad_zero_top_bottom(grad_psi_phi);
 
     // Grad_zero_left_Right(grad_psi_rho);
-    Grad_zero_top_bottom(grad_psi_rho);
+    // Grad_zero_top_bottom(grad_psi_rho);
 
 }
 

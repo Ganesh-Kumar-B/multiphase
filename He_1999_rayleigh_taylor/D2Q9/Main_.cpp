@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx = 128 ;int Ny = 512;
+    int Nx = 256 ;int Ny = 256;
 
 
     Grid_N_C_2D<double> gridf               (Nx,Ny,1,9);
@@ -27,17 +27,19 @@ int main()
     lbmD2Q9<double> d2q9(1.0,(1.0/3.0));
     
     double cs = sqrt(d2q9.theta0);
-    std::cout<<"theta= "<<d2q9.theta0<<std::endl;
+    std::cout<<"theta   = "<<d2q9.theta0<<std::endl;
 
 
 
 
-    double Re = 2048;
-    double L = Nx;
+    double Re   = 2048;
+    double L    = Nx;
 
-    double u0 = 0.04;
+    double u0   = 0.04;
+    std::cout<<"Ma      = "<<u0/cs<<std::endl;
 
-    double g =(u0*u0)/L;
+    // double g    =(u0*u0)/L;
+    double g    = 0.0;
     std::cout<<"g       = "<<g<<std::endl;
 
 
@@ -55,41 +57,55 @@ int main()
     std::cout<<"beta    ="<<beta<<std::endl;
     
 
-    double rho_l = 0.50, rho_h = 1.61;
     double phi_l = -1.0, phi_h = 1.0;
 
 
 
-    double TbyTc = 0.95;
+    double TbyTc = 0.954;
+
+
     double rho_critical = 1.0, T_critical = d2q9.theta0/TbyTc ; 
+    double rho_l = 0.522573, rho_h = 1.5888;
+
+
     double b = 0.521772/(rho_critical), a = b*T_critical/0.377332;
 
-    double kappa = 0;
+    double kappa = 0.00625;
+
+
+    std::string name="Result_ellipseu_0.04";
 
 
     //fixed ------------------------------Main code--------------------------//
-    initialization(gridf,gridg,d2q9,phi_l,phi_h,rho_l, rho_h, a,b   );
-    print_vtk(d2q9,gridf,gridg,grad_psi_rho,0.0,u0, kappa,phi_l,phi_h,rho_l, rho_h,Force);
+    // initialization(gridf,gridg,d2q9,phi_l,phi_h,rho_l, rho_h, a,b   );
+    initialization_ellipse(gridf,gridg,d2q9,phi_l,phi_h,rho_l, rho_h, a,b   );
+
+
+
+    print_vtk(d2q9,gridf,gridg,grad_psi_rho,0.0,u0, kappa,phi_l,phi_h,rho_l, rho_h,Force,name);
 
     // exit(0);
     printMass(gridf,gridg);
 
     int sim_time = 50*20*Nx/u0;
 
+
     std::cout<<"Simulation time "<< sim_time<<std::endl;
 
 
-    for(int t = 1; t <=50000;t++){
+    for(int t = 1; t <=200000;t++){
 
 
         collide(gridf,gridg,grad_psi_rho,d2q9,beta,tau,kappa,g, phi_l, phi_h,rho_l, rho_h,  a, b, Force);
 
         Periodic_left_Right(gridf);
-        // Periodic_top_bottom(gridf);
+        Periodic_top_bottom(gridf);
         
 
+
         Periodic_left_Right(gridg);
-        // Periodic_top_bottom(gridg);
+        Periodic_top_bottom(gridg);
+
 
 
         // BB_left     (gridf,d2q9,u0);
@@ -97,15 +113,15 @@ int main()
 
 
 
-        BB_top      (gridf,d2q9,u0);
-        BB_bottom   (gridf,d2q9,u0);
+        // BB_top      (gridf,d2q9,u0);
+        // BB_bottom   (gridf,d2q9,u0);
 
 
 
         // BB_left     (gridg,d2q9,u0);
         // BB_right    (gridg,d2q9,u0);
-        BB_top      (gridg,d2q9,u0);
-        BB_bottom   (gridg,d2q9,u0);
+        // BB_top      (gridg,d2q9,u0);
+        // BB_bottom   (gridg,d2q9,u0);
 
 
 
@@ -113,10 +129,14 @@ int main()
         advection_D2Q9(gridg);
 
 
-        if(t%25== 0){
-            std::cout<<t<<" ";
+        if(t%500== 0){
+            g  = 0.00001;
+            double time = t/sqrt(Nx/g);
+            // double time = t;
+            std::cout<<"time actual =  "<<time<<" ";
             printMass(gridf,gridg);
-            print_vtk(d2q9,gridf,gridg,grad_psi_rho,t,u0, kappa,phi_l,phi_h,rho_l, rho_h, Force );
+            print_vtk(d2q9,gridf,gridg,grad_psi_rho,time,u0, kappa,phi_l,phi_h,rho_l, rho_h, Force,name );
+            g = 0;
         }
     }
 

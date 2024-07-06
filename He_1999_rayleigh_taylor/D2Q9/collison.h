@@ -210,7 +210,7 @@ void initialization(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lb9
 
 
 
-            phi = (tanh((y - 2.0 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/gridf.n_x) )));
+            phi = (tanh((y - 2.0 - 0.1*cos(2.0*M_PI*x))/(sqrt(4.0) * (1.0/gridf.n_x) )));
             
             get_equi_f(Feq_node   ,lb9, ux, uy, phi);   //need phi, u 
 
@@ -233,6 +233,79 @@ void initialization(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lb9
         }
     }
 }
+
+
+
+
+
+
+
+template<typename T, typename T1>
+void initialization_ellipse(Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,lbmD2Q9<T1> &lb9, double phi_l ,double phi_h, double rho_l , double rho_h, double a, double b){
+
+    double Feq_node[9] = {0},Geq_node[9] = {0},rho = 1.0;
+    double x,y;
+
+    double phi = 0;
+    
+    double ux = 0,  uy =  0;
+    
+    double u1 = 0.0, u2 = 0.0;
+
+    double p = 0;
+    
+    for(int i = gridf.nbx; i <= gridf.nex ; i++){
+        for(int j = gridf.nby;j <= gridf.ney ; j++){
+            
+            x = ((double)i)/ gridf.n_x ;
+            y = ((double)j)/ gridf.n_x ;
+
+
+
+            phi = tanh( (0.2 - sqrt( (x -0.5)*(x - 0.5 ) + 0.5*(y - 0.5)*(y - 0.5) )  )/
+                        (sqrt(2.0) * (1.5/ gridf.n_x) )  
+                        );
+
+
+
+            get_equi_f(Feq_node   ,lb9, ux, uy, phi);   //need phi, u 
+
+            for (int dv = 0; dv< gridf.d_v; dv++){
+                gridf.Node(i,j,dv) = Feq_node[dv];
+            }
+
+            rho = rho_l + ((phi - phi_l)/(phi_h - phi_l)) *(rho_h - rho_l);
+
+            double eta = rho*b/4.0;
+
+            p = rho *lb9.theta0*(1 + eta + eta*eta - eta*eta*eta)/pow(1 - eta, 3)  - a *rho*rho ;
+
+            get_equi_g (Geq_node   ,lb9, ux, uy, rho,p);                               // need p and rho and u
+
+            for(int dv = 0; dv< gridg.d_v; dv++){
+                gridg.Node(i,j,dv) = Geq_node[dv];
+            }
+
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

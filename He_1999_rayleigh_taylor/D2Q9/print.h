@@ -14,8 +14,8 @@
 
 template<typename T, typename T1>
 void print_vtk(lbmD2Q9<T1> &lb9,  Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,Grid_N_C_2D<T> &grad_psi_rho,
-                int step, double u0,double kappa,
-                double phi_l ,double phi_h, double rho_l , double rho_h,Grid_N_C_2D<T> &Force )
+                double step, double u0,double kappa,
+                double phi_l ,double phi_h, double rho_l , double rho_h,Grid_N_C_2D<T> &Force,const std::string &name )
 {
     T u1,u2,p,um, rho1,rho2,del=0.05;
 
@@ -25,10 +25,14 @@ void print_vtk(lbmD2Q9<T1> &lb9,  Grid_N_C_2D<T> &gridf,Grid_N_C_2D<T> &gridg,Gr
     std::ofstream file;
     char fileName[250];
     char foldername[250];
-    sprintf(foldername,"kappare1000_%0.6f_",kappa);
+
+    
+
+    sprintf(foldername,"%s_%.2f_",name.c_str(),kappa);
     mkdir(foldername,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    sprintf(fileName,"./kappare1000_%0.6f_/velocity_%d.vtk",kappa,step) ;
+    sprintf(fileName,"./%s_%.2f_/velocity_%.6f.vtk",name.c_str(),kappa,0.01*step) ;
     file.open(fileName);
+
 
 
     // file<<"# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET STRUCTURED_GRID"<<std::endl;
