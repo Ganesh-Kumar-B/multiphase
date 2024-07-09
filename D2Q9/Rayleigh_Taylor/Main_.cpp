@@ -65,14 +65,14 @@ int main()
     std::cout<<"beta    = "<<beta<<std::endl;
 
 
-
+    //
 
 
     real Rho_mean = 1.0;
     real rho_liq =  1.6223;
     real rho_gas =  0.5055;
 
-    
+
 
 
     real TbyTc = 0.95  ;       ;
