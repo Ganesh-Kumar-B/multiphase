@@ -30,8 +30,6 @@ void collide(Grid_N_C_2D<T> &grid,
 
     real feq_Node[9] = {0},
 
-
-
     ux = 0, uy = 0;
 
     real eta =  0;   //   0 ----> fourth order   1-----> second order 
@@ -39,7 +37,11 @@ void collide(Grid_N_C_2D<T> &grid,
 
 
     real rho_critical = 1.0, T_critical = lb9.theta0/TbyTc ; 
-    real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;
+
+    real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;    //CS
+
+    // double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;   //VW
+
     kappa = kappa*a;
 
     Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb9,TbyTc,kappa, a, b );
@@ -53,8 +55,9 @@ void collide(Grid_N_C_2D<T> &grid,
 
             Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb9,Force,i,j, kappa, a, b, g );   
 
-        
 
+
+            
             
             get_moments_Node(grid, lb9,  ux, uy,Rho, i, j, Force );            //for the node
             get_equi(feq_Node ,lb9, ux, uy, Rho);
@@ -67,6 +70,9 @@ void collide(Grid_N_C_2D<T> &grid,
                                     ;
             }
 
+
+
+    
 
             
             // // // //> normal //from the he paper
@@ -141,13 +147,58 @@ void initialization_equilibrium_profile_y(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,r
 
 
             phi = (tanh((y - 2.0 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
+            
 
 
             Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
             
 
 
+            get_equi(Feq_node,lb,ux_node,uy_node,Rho);
 
+            for (int dv = 0; dv<grid.d_v; dv++)
+                grid.Node(i,j,dv) = Feq_node[dv];
+
+
+        }
+    }
+}
+
+
+
+
+
+template<typename T, typename T1>
+void initialization_ellipse(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,real rho_gas ){
+
+	real Feq_node[9] = {0},Rho = 0.0;
+    real x,y
+           ;    ///distance between nodes 
+    
+    real  x_0 = 0.0;
+    real  y_0 = 0.0;
+
+    real phi_l = -1.0;
+    real phi_h = +1.0;
+
+    real phi;
+    real ux_node = 0.0, uy_node = 0.0;
+    
+    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
+        for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+
+            
+            x = ((real)i)/ grid.n_x - x_0;
+            y = ((real)j)/ grid.n_x - y_0;
+
+
+            phi = tanh( (0.2 - sqrt( (x -0.5)*(x - 0.5 ) + 0.5*(y - 0.5)*(y - 0.5) )  )/
+                        (sqrt(2.0) * (1.5/ grid.n_x) )  
+                        );
+
+            Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
+
+            
 
             get_equi(Feq_node,lb,ux_node,uy_node,Rho);
 

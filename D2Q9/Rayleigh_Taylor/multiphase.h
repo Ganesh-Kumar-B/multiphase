@@ -26,16 +26,15 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
             
             get_moments_Node(grid, lb9,  ux, uy,  rho.Node(i,j), i, j , Force); 
 
-
         }
     }
 
 
     Periodic_left_Right(rho);
-    // Periodic_top_bottom(rho);
+    Periodic_top_bottom(rho);
 
     // Grad_zero_left_Right(rho);
-    Grad_zero_top_bottom(rho);
+    // Grad_zero_top_bottom(rho);
 
 
 
@@ -79,6 +78,10 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
 
 
 
+            // munid.Node(i,j) = -lb9.theta0*log(1.0 - rho.Node(i,j)*b) ;               //#  VW
+            // munid.Node(i,j) += rho.Node(i,j)*b*lb9.theta0/(1.0 - rho.Node(i,j)*b);   //#  VW
+            // munid.Node(i,j) -= 2.0*rho.Node(i,j)*a                                   //#  VW    
+            //                     -kappa_node*laplacian_rho.Node(i,j);                 //#  VW
 
 
             
@@ -88,22 +91,21 @@ void Multiphase_terms(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D<T
 
 
     Periodic_left_Right(laplacian_rho);
-    // Periodic_top_bottom(laplacian_rho);
+    Periodic_top_bottom(laplacian_rho);
 
     // Grad_zero_left_Right(laplacian_rho);
-    Grad_zero_top_bottom(laplacian_rho);
+    // Grad_zero_top_bottom(laplacian_rho);
 
 
     //>----------------------------------------
     Periodic_left_Right(munid);
-    // Periodic_top_bottom(munid);
+    Periodic_top_bottom(munid);
 
     // Grad_zero_left_Right(munid);
-    Grad_zero_top_bottom(munid);
+    // Grad_zero_top_bottom(munid);
 
 
 }
-
 
 
 
@@ -130,6 +132,8 @@ void Multiphase_Force_Node(Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &rho, Grid_N_C_2
 
     Force.Node(i,j,0) = - Coeff_grad*(grad_mux)                     ;
     Force.Node(i,j,1) = - Coeff_grad*(grad_muy) -g   ;
+
+
 
     // if(j == grid.ney){
     //     std::cout<<Force.Node(i,j,0)<<"   "<<Force.Node(i,j,1)<<std::endl;
