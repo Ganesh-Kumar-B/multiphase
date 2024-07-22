@@ -14,7 +14,7 @@
 
 
 template<typename T, typename T1>
-void print_vtk(lbmD2Q9<T1> &lb,  Grid_N_C_2D<T> &grid,  int step, real u0, real theta,real kappa, Grid_N_C_2D<T> &Force, const std::string &name)
+void print_vtk(lbmD2Q9<T1> &lb,  Grid_N_C_2D<T> &grid,  int step, real u0, real theta,real kappa, Grid_N_C_2D<T> &Force,Grid_N_C_2D<T> &P_tensor, const std::string &name, real dx, real dt)
 {
     T u1,u2,u3,u4,um, rho1,rho2,del=0.05;
 
@@ -56,19 +56,41 @@ void print_vtk(lbmD2Q9<T1> &lb,  Grid_N_C_2D<T> &grid,  int step, real u0, real 
     for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
         for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){ 
 
-            get_moments_Node(grid,lb,u1, u2, rho1, i,j,Force);
+            get_moments_Node(grid,lb,u1, u2, rho1, i,j,Force, dx, dt);
             file<<rho1<<std::endl;
 
         }
     }
     
 
+    file<<"SCALARS pressure double 1\nLOOKUP_TABLE default"<<std::endl;
+
+    for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+        for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){ 
+
+
+            real rho_critical = 1.0, T_critical = lb.theta0/theta ; 
+
+            real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;    //CS
+
+
+            get_moments_Node(grid,lb,u1, u2, rho1, i,j,Force, dx, dt);
+
+            real eta = rho1*b/4.0;           
+            real pnid_value = (rho1*lb.theta0*(1.0 + eta + eta* eta - eta*eta*eta) )/pow(1.0 - eta,  3.0)  - 
+                                    a * rho1*rho1 ;
+
+            file<<pnid_value<<std::endl;
+
+        }
+    }
+
     file<<"VECTORS velocity double"<<std::endl;
 
     for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
         for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){ 
 
-            get_moments_Node(grid,lb,u1, u2, rho1, i,j,Force);
+            get_moments_Node(grid,lb,u1, u2, rho1, i,j,Force, dx ,dt);
 
             file<<u1<<" "<<u2<<" "<<0.0<<std::endl;
 

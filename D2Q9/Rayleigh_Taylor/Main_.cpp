@@ -14,25 +14,27 @@
 int main()
 {
 
-    int Nx = 256 ;int Ny = 256;
+    int Nx = 128 ;int Ny = 128;
 
 
     Grid_N_C_2D<real> grid                  (Nx,Ny,1,9);
     Grid_N_C_2D<real> Force                 (Nx,Ny,1,2);
+    Grid_N_C_2D<real> P_tensor              (Nx,Ny,1,4);   //4 components - 0-xx, 1xy, 2yx, 3yy
 
 
-
-
-    lbmD2Q9<real> d2q9(1.0,(1.0/3.0));
+    real c =1.0;
+    lbmD2Q9<real> d2q9(c);
     
     real cs = sqrt(d2q9.theta0);
     std::cout<<"theta   = "<<d2q9.theta0<<std::endl;
 
 
+    real dx = 1.0/Nx;
+    real dt = dx/c;
 
 
 
-    real Re = 200;
+    real Re = 100;
     std::cout<<"Re      = "<<Re<<std::endl;
     real L  = Nx;
 
@@ -45,8 +47,8 @@ int main()
     std::cout<<"Ma      = "<<Ma<<std::endl;
 
 
-    // real g =1.0*(u0*u0)/L;
-    real g = 0.0;
+    real g =1.0*(u0*u0)/1.0;
+    // real g = 0.0;
     std::cout<<"g       = "<<g<<std::endl;
 
 
@@ -55,81 +57,85 @@ int main()
     std::cout<<"Kin_Vis = "<<Kin_Vis<<std::endl;
 
 
+
     real tau = Kin_Vis/(cs*cs);
+    real tauNdim = tau/dt;
+
     // real tau = Kin_Vis/(cs*cs) +0.5;
     std::cout<<"tau     = "<<tau<<std::endl;
 
 
 
-    real beta = 1.0/(2.0*tau + 1.0);
+    real beta = 1.0/(2.0*tauNdim + 1.0);
     std::cout<<"beta    = "<<beta<<std::endl;
 
 
-    //
-
 
     real Rho_mean = 1.0;
-    real rho_liq =  1.6223;
-    real rho_gas =  0.5055;
+    real rho_liq =  1.5819;
+    real rho_gas =  0.46344;
+
 
 
 
 
     real TbyTc = 0.95  ;       ;
     std::cout<<"T/T0    = "<<TbyTc<<std::endl;
-    real kappa = 0.0625;
+    real kappa = 0.0006;
+    std::cout<<"kappa   = "<<kappa<<std::endl;
 
 
 
     //fixed ------------------------------Main code--------------------------//
-    // initialization(grid,d2q9,Rho_mean);
+    // initialization(grid,d2q9,Rho_mean, rho_liq, rho_gas);
     // initialization_equilibrium_profile_y(grid,d2q9,rho_liq, rho_gas);
 
-    initialization_ellipse(grid,d2q9,rho_liq, rho_gas);
+    // initialization_ellipse(grid,d2q9,rho_liq, rho_gas);
+
+    initialization_circle(grid,d2q9,rho_liq, rho_gas);
 
 
-    std::string name="Result_";
-    print_vtk(d2q9,grid,0.0,u0,TbyTc,kappa,Force,name);
+    std::string name="Result_k_0006";
+    print_vtk(d2q9,grid,0.0,u0,TbyTc,kappa,Force,P_tensor,name, dx ,dt);
 
 
 
     // exit(0);
 
 
-    int sim_time = 50*20*Nx/u0;
+    int sim_time = 2*Nx/u0;
 
     std::cout<<"Simulation time "<< sim_time<<std::endl;
 
 
     for(int t = 1; t <=50000;t++){
 
-        collide (grid,d2q9,beta,tau,TbyTc,kappa, t,Force,g);
+        collide (grid,d2q9,beta,tau,TbyTc,kappa, t,Force,P_tensor,g, dx, dt);
 
         Periodic_left_Right(grid);
-        Periodic_top_bottom(grid);
+        // Periodic_top_bottom(grid);
 
 
         // BB_left     (grid,d2q9,u0);
         // BB_right    (grid,d2q9,u0);
 
-        // BB_top      (grid,d2q9,u0);
-        // BB_bottom   (grid,d2q9,u0);
+        BB_top      (grid,d2q9,u0);
+        BB_bottom   (grid,d2q9,u0);
 
 
 
         advection_D2Q9(grid);
 
 
-        if(t%1000== 0){
+        if(t%500== 0){
             std::cout<<t<<" ";
             printMass(grid);
-            print_vtk(d2q9,grid,t,u0,TbyTc,kappa,Force,name);
+            print_vtk(d2q9,grid,t,u0,TbyTc,kappa,Force,P_tensor,name,dx,dt);
         }
     }
 
 
 }
-   
 
 
 
@@ -138,7 +144,8 @@ int main()
 
 
 
-//for the drop acoustic thing
+
+    //for the drop acoustic thing
     // real Re = 2048;
     // std::cout<<"Re      = "<<Re<<std::endl;
     // real L  = Nx;

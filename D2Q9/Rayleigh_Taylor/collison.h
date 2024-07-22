@@ -17,7 +17,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_2D<T> &grid,
-            lbmD2Q9<T1> &lb9, real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_2D<T> &Force, real g ){
+            lbmD2Q9<T1> &lb9, real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_2D<T> &Force, Grid_N_C_2D<T> &P_tensor ,real g, real dx , real dt ){
 
     Grid_N_C_2D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,1,1);
     Grid_N_C_2D<T>  rho                             (grid.n_x,grid.n_y,1,1);   
@@ -27,6 +27,7 @@ void collide(Grid_N_C_2D<T> &grid,
     Grid_N_C_2D<T>  laplacian_rho                   (grid.n_x,grid.n_y,1,1);   
     Grid_N_C_2D<T>  laplacian_fnid                  (grid.n_x,grid.n_y,1,1);   
     Grid_N_C_2D<T>  gradient_rho                    (grid.n_x,grid.n_y,1,2);   //2 components
+    
 
     real feq_Node[9] = {0},
 
@@ -42,9 +43,9 @@ void collide(Grid_N_C_2D<T> &grid,
 
     // double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;   //VW
 
-    kappa = kappa*a;
+    kappa = kappa*a*dx*dx;
 
-    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb9,TbyTc,kappa, a, b );
+    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,P_tensor,lb9,TbyTc,kappa, a, b, dx, dt );
 
     //       //  first the population of nodes are resetted and second  the population of the cells are resetted
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
@@ -53,20 +54,21 @@ void collide(Grid_N_C_2D<T> &grid,
         
             real Rho = 0.0;
 
-            Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb9,Force,i,j, kappa, a, b, g );   
+            // Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
+            Multiphase_Force_P(grid,rho,pnid, fnid, munid,laplacian_rho,P_tensor,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
 
 
 
             
-            
-            get_moments_Node(grid, lb9,  ux, uy,Rho, i, j, Force );            //for the node
+
+            get_moments_Node(grid, lb9,  ux, uy,Rho, i, j, Force,dx,dt );            //for the node
             get_equi(feq_Node ,lb9, ux, uy, Rho);
 
         
             // // //> normal
             for (int dv = 0; dv< grid.d_v; dv++){
                 grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
-                                    + 2.0 *beta * tau*lb9.thetaInverse *  feq_Node[dv] * (Force.Node(i,j,0) * (lb9.Cx[dv] - ux) + Force.Node(i,j,1) * (lb9.Cy[dv] - uy) );
+                                    + (1.0 - beta)*dt*lb9.thetaInverse *  feq_Node[dv] * (Force.Node(i,j,0) * (lb9.Cx[dv] - ux) + Force.Node(i,j,1) * (lb9.Cy[dv] - uy) );
                                     ;
             }
 
@@ -96,8 +98,10 @@ void collide(Grid_N_C_2D<T> &grid,
 
 
 
+
+
 template<typename T, typename T1>
-void initialization(Grid_N_C_2D<T> &gridf,lbmD2Q9<T1> &lb9, real Rho){
+void initialization(Grid_N_C_2D<T> &gridf,lbmD2Q9<T1> &lb9, real Rho, real rho_liq, real rho_gas){
 
     real Feq_node[9] = {0};
 
@@ -105,11 +109,20 @@ void initialization(Grid_N_C_2D<T> &gridf,lbmD2Q9<T1> &lb9, real Rho){
     
     real ux = 0,  uy =  0;
     
+    real x,y;
+
+    real x_0 = 0.0;
+    real y_0 = 0.0;
 
     
     for(int i = gridf.nbx; i <= gridf.nex ; i++){
         for(int j = gridf.nby;j <= gridf.ney ; j++){
             
+            x = ((real)i)/ gridf.n_x - x_0;
+            y = ((real)j)/ gridf.n_x - y_0;
+
+
+            Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(x);
 
             get_equi(Feq_node,lb9,ux,uy,Rho);
 
@@ -132,8 +145,8 @@ void initialization_equilibrium_profile_y(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,r
     real  x_0 = 0.0;
     real  y_0 = 0.0;
 
-    real phi_l = -1.0;
-    real phi_h = +1.0;
+    real phi_l = +1.0;
+    real phi_h = -1.0;
 
     real phi;
     real ux_node = 0.0, uy_node = 0.0;
@@ -146,7 +159,7 @@ void initialization_equilibrium_profile_y(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,r
 
 
 
-            phi = (tanh((y - 2.0 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
+            phi = (tanh((y - 2.0 - 0.00*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
             
 
 
@@ -191,9 +204,53 @@ void initialization_ellipse(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,re
             x = ((real)i)/ grid.n_x - x_0;
             y = ((real)j)/ grid.n_x - y_0;
 
+            if(y > 2.5){
+                phi = tanh( (0.15 - sqrt( (x -0.5)*(x - 0.5 ) + 1.0*(y - 3.0)*(y - 3.0) )  )/
+                            (sqrt(2.0) * (1.2/ grid.n_x) )  
+                            );
 
-            phi = tanh( (0.2 - sqrt( (x -0.5)*(x - 0.5 ) + 0.5*(y - 0.5)*(y - 0.5) )  )/
-                        (sqrt(2.0) * (1.5/ grid.n_x) )  
+                Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
+
+                
+
+                get_equi(Feq_node,lb,ux_node,uy_node,Rho);
+
+                for (int dv = 0; dv<grid.d_v; dv++)
+                    grid.Node(i,j,dv) = Feq_node[dv];
+            }
+
+
+        }
+    }
+}
+
+
+
+template<typename T, typename T1>
+void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,real rho_gas ){
+
+	real Feq_node[9] = {0},Rho = 0.0;
+    real x,y
+           ;    ///distance between nodes 
+    
+    real  x_0 = 0.0;
+    real  y_0 = 0.0;
+
+    real phi_l = -1.0;
+    real phi_h = +1.0;
+
+    real phi;
+    real ux_node = 0.0, uy_node = 0.0;
+    
+    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
+        for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+
+            
+            x = ((real)i)/ grid.n_x - x_0;
+            y = ((real)j)/ grid.n_x - y_0;
+            
+            phi = tanh( (0.3 - sqrt( (x -0.5)*(x - 0.5 ) + 1.0*(y - 0.5)*(y - 0.5) )  )/
+                        (sqrt(2.0) * (1.2/ grid.n_x) )  
                         );
 
             Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
@@ -209,6 +266,7 @@ void initialization_ellipse(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,re
         }
     }
 }
+
 
 
 
@@ -238,7 +296,7 @@ void get_equi(real *feq , lbmD2Q9<T> &lb, real ux, real uy, real rho){
 
 
 template<typename T,typename T1>
-void get_moments_Node(Grid_N_C_2D<T> &grid, lbmD2Q9<T1> &lb,real &Ux, real &Uy, real &Rho,  int X, int Y, Grid_N_C_2D<T> &Force){ ///node or cell 0-Node 1- cell
+void get_moments_Node(Grid_N_C_2D<T> &grid, lbmD2Q9<T1> &lb,real &Ux, real &Uy, real &Rho,  int X, int Y, Grid_N_C_2D<T> &Force,real dx, real dt){ ///node or cell 0-Node 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Rho = 0.0;
@@ -250,8 +308,8 @@ void get_moments_Node(Grid_N_C_2D<T> &grid, lbmD2Q9<T1> &lb,real &Ux, real &Uy, 
         Rho += grid.Node(X,Y,dv);
     }  
 
-    Ux = Ux/Rho + 0.5*Force.Node(X,Y,0);
-    Uy = Uy/Rho + 0.5*Force.Node(X,Y,1);
+    Ux = Ux/Rho + 0.5*Force.Node(X,Y,0)*dt;
+    Uy = Uy/Rho + 0.5*Force.Node(X,Y,1)*dt;
 
 
 }
