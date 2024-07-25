@@ -54,17 +54,16 @@ void collide(Grid_N_C_2D<T> &grid,
         
             real Rho = 0.0;
 
-            // Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
+
+            //  Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
             Multiphase_Force_P(grid,rho,pnid, fnid, munid,laplacian_rho,P_tensor,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
 
 
 
-            
-
             get_moments_Node(grid, lb9,  ux, uy,Rho, i, j, Force,dx,dt );            //for the node
             get_equi(feq_Node ,lb9, ux, uy, Rho);
 
-        
+
             // // //> normal
             for (int dv = 0; dv< grid.d_v; dv++){
                 grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
@@ -246,11 +245,12 @@ void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,rea
         for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
 
             
+            
             x = ((real)i)/ grid.n_x - x_0;
             y = ((real)j)/ grid.n_x - y_0;
             
-            phi = tanh( (0.3 - sqrt( (x -0.5)*(x - 0.5 ) + 1.0*(y - 0.5)*(y - 0.5) )  )/
-                        (sqrt(2.0) * (1.2/ grid.n_x) )  
+            phi = tanh( (0.25 - sqrt( (x -0.5)*(x - 0.5 ) + 0.5*(y - 0.5)*(y - 0.5) )  )/
+                        (sqrt(2.0) * (1.0/ grid.n_x) )  
                         );
 
             Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);

@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx = 128 ;int Ny = 128;
+    int Nx = 256 ;int Ny = 256;
 
 
     Grid_N_C_2D<real> grid                  (Nx,Ny,1,9);
@@ -34,12 +34,12 @@ int main()
 
 
 
-    real Re = 100;
+    real Re = 1000;
     std::cout<<"Re      = "<<Re<<std::endl;
     real L  = Nx;
 
 
-    real u0 = 0.01;
+    real u0 = 0.001;
     std::cout<<"u0      = "<<u0<<std::endl;
 
 
@@ -47,8 +47,8 @@ int main()
     std::cout<<"Ma      = "<<Ma<<std::endl;
 
 
-    real g =1.0*(u0*u0)/1.0;
-    // real g = 0.0;
+    // real g =1.0*(u0*u0)/1.0;
+    real g = 0.0;
     std::cout<<"g       = "<<g<<std::endl;
 
 
@@ -81,7 +81,7 @@ int main()
 
     real TbyTc = 0.95  ;       ;
     std::cout<<"T/T0    = "<<TbyTc<<std::endl;
-    real kappa = 0.0006;
+    real kappa = 0.006;
     std::cout<<"kappa   = "<<kappa<<std::endl;
 
 
@@ -90,12 +90,12 @@ int main()
     // initialization(grid,d2q9,Rho_mean, rho_liq, rho_gas);
     // initialization_equilibrium_profile_y(grid,d2q9,rho_liq, rho_gas);
 
-    // initialization_ellipse(grid,d2q9,rho_liq, rho_gas);
+    // initialization_ellipse(grid,d2q9,rho_liq, rho_gas); // with bubble on top domain
 
     initialization_circle(grid,d2q9,rho_liq, rho_gas);
 
 
-    std::string name="Result_k_0006";
+    std::string name="Result_k_06";
     print_vtk(d2q9,grid,0.0,u0,TbyTc,kappa,Force,P_tensor,name, dx ,dt);
 
 
@@ -108,26 +108,26 @@ int main()
     std::cout<<"Simulation time "<< sim_time<<std::endl;
 
 
-    for(int t = 1; t <=50000;t++){
+    for(int t = 1; t <=200000;t++){
 
         collide (grid,d2q9,beta,tau,TbyTc,kappa, t,Force,P_tensor,g, dx, dt);
 
         Periodic_left_Right(grid);
-        // Periodic_top_bottom(grid);
+        Periodic_top_bottom(grid);
 
 
         // BB_left     (grid,d2q9,u0);
         // BB_right    (grid,d2q9,u0);
 
-        BB_top      (grid,d2q9,u0);
-        BB_bottom   (grid,d2q9,u0);
+        // BB_top      (grid,d2q9,u0);
+        // BB_bottom   (grid,d2q9,u0);
 
 
 
         advection_D2Q9(grid);
 
 
-        if(t%500== 0){
+        if(t%2000== 0){
             std::cout<<t<<" ";
             printMass(grid);
             print_vtk(d2q9,grid,t,u0,TbyTc,kappa,Force,P_tensor,name,dx,dt);

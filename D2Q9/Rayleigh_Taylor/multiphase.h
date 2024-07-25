@@ -20,7 +20,7 @@ void Multiphase_terms(  Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D
 
     real ux = 0, uy = 0;
 
-
+    real sigma = 0;
 
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
@@ -37,18 +37,17 @@ void Multiphase_terms(  Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D
 
 
     Periodic_left_Right(rho);
-    // Periodic_top_bottom(rho);
+    Periodic_top_bottom(rho);
 
     // Grad_zero_left_Right(rho);
-    Grad_zero_top_bottom(rho);
-
+    // Grad_zero_top_bottom(rho);
 
 
 
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
 
-
+            
 
             //> laplacian of Rho  
             real Coeff = (2.0/(dt*dt*lb9.theta0));
@@ -74,22 +73,26 @@ void Multiphase_terms(  Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D
             }
 
 
+
             // //>------
             real kappa_node = kappa;
 
-            kappa_node = kappa - (1.0/3.0)*dx*dx* lb9.theta0* (
-                                                    -32.0 *b* lb9.theta0*(-16.0 + b* rho.Node(i,j)) / (pow(-4.0 + b*rho.Node(i,j) , 4.0))
-                                                        - 2.0*a
-                                                    ) 
-                                                ;
+            // kappa_node = kappa - (1.0/3.0)*dx*dx* lb9.theta0* (
+            //                                         -32.0 *b* lb9.theta0*(-16.0 + b* rho.Node(i,j)) / (pow(-4.0 + b*rho.Node(i,j) , 4.0))
+            //                                             - 2.0*a
+            //                                         ) 
+            //                                     ;
+
+            sigma  = sigma + 0.5*kappa_node*(gradient_rho.Node(i,j,0)*gradient_rho.Node(i,j,0) + gradient_rho.Node(i,j,1)*gradient_rho.Node(i,j,1)) ;
 
             //Ptensor
+    
+
 
             P_tensor.Node(i,j,0) = pnid.Node(i,j) + 0.5 *kappa_node*(pow(gradient_rho.Node(i,j,0), 2) - pow(gradient_rho.Node(i,j,1), 2) ) - kappa_node*rho.Node(i,j)*laplacian_rho.Node(i,j);
             P_tensor.Node(i,j,1) = kappa_node*gradient_rho.Node(i,j,0)*gradient_rho.Node(i,j,1);
             P_tensor.Node(i,j,2) = kappa_node*gradient_rho.Node(i,j,1)*gradient_rho.Node(i,j,0);
             P_tensor.Node(i,j,3) = pnid.Node(i,j) + 0.5 *kappa_node*(pow(gradient_rho.Node(i,j,1), 2) - pow(gradient_rho.Node(i,j,0), 2) ) - kappa_node*rho.Node(i,j)*laplacian_rho.Node(i,j);
-    
 
 
 
@@ -107,28 +110,28 @@ void Multiphase_terms(  Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D
 
 
     Periodic_left_Right(laplacian_rho);
-    // Periodic_top_bottom(laplacian_rho);
+    Periodic_top_bottom(laplacian_rho);
 
     // Grad_zero_left_Right(laplacian_rho);
-    Grad_zero_top_bottom(laplacian_rho);
+    // Grad_zero_top_bottom(laplacian_rho);
 
 
     //>----------------------------------------
     Periodic_left_Right(munid);
-    // Periodic_top_bottom(munid);
+    Periodic_top_bottom(munid);
 
     // Grad_zero_left_Right(munid);
-    Grad_zero_top_bottom(munid);
+    // Grad_zero_top_bottom(munid);
 
 
     //>----------------------------
     Periodic_left_Right(P_tensor);
-    // Periodic_top_bottom(P_tensor);
+    Periodic_top_bottom(P_tensor);
 
     // Grad_zero_left_Right(P_tensor);
-    Grad_zero_top_bottom(P_tensor);
+    // Grad_zero_top_bottom(P_tensor);
 
-
+    // std::cout<<"sigma       = "<<sigma<<std::endl;
 }
 
 
@@ -188,14 +191,27 @@ void Multiphase_Force_P(    Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &rho, Grid_N_C_
     Force.Node(i,j,1) = - Coeff_grad*(1.0/rho.Node(i,j))*(Force.Node(i,j,1)) - g   ;
 
 }
-
-
-
-
-
-
-
 ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
