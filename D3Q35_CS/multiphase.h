@@ -16,7 +16,7 @@ enum coodinates{X,Y,Z};
 
 template<typename T, typename T1>
 void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T> &rho, Grid_N_C_3D<T> &pnid, Grid_N_C_3D<T> &fnid, Grid_N_C_3D<T> &munid, Grid_N_C_3D<T> &laplacian_rho,  Grid_N_C_3D<T> &laplacian_fnid, Grid_N_C_3D<T> &gradient_rho, 
-            lbmD3Q35<T1> &lb35,lbmD3Q15<T1> &lb15, real TbyTc, real kappa, real a , real b ){
+            lbmD3Q35<T1> &lb35,lbmD3Q15<T1> &lb15, real TbyTc, real kappa, real a , real b, real dx, real dt ){
 
     real ux = 0, uy = 0, uz = 0;
 
@@ -26,9 +26,9 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
             for(int k = 0 + grid.noghost;k < grid.n_z_node - (grid.noghost) ; k++){
             
-                get_moments_Node(grid, lb35,  ux, uy, uz, rho.Node(i,j,k), i, j ,k, Force); 
+                get_moments_Node(grid, lb35,  ux, uy, uz, rho.Node(i,j,k), i, j ,k, Force, dx, dt); 
 
-                get_moments_Cell(grid, lb35,  ux, uy, uz, rho.Cell(i,j,k), i, j ,k, Force); 
+                get_moments_Cell(grid, lb35,  ux, uy, uz, rho.Cell(i,j,k), i, j ,k, Force, dx , dt); 
 
                 real eta = rho.Node(i,j,k)*b/4.0;
 
@@ -55,34 +55,34 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
 
 
 
-    //  Periodic_x(rho);
-    //  Periodic_y(rho);
+     Periodic_x(rho);
+     Periodic_y(rho);
      Periodic_z(rho);
 
 
-    grad_zero_x(rho);
-    grad_zero_y(rho);
+    // grad_zero_x(rho);
+    // grad_zero_y(rho);
     // grad_zero_z(rho);
 
 
 
-    //  Periodic_x(pnid);
-    //  Periodic_y(pnid);
+     Periodic_x(pnid);
+     Periodic_y(pnid);
      Periodic_z(pnid);
 
-    grad_zero_x(pnid);
-    grad_zero_y(pnid);
+    // grad_zero_x(pnid);
+    // grad_zero_y(pnid);
     // grad_zero_z(pnid);
 
 
 
 
-    //  Periodic_x(fnid);
-    //  Periodic_y(fnid);
+     Periodic_x(fnid);
+     Periodic_y(fnid);
      Periodic_z(fnid);
     
-    grad_zero_x(fnid);
-    grad_zero_y(fnid);
+    // grad_zero_x(fnid);
+    // grad_zero_y(fnid);
     // grad_zero_z(fnid);
 
 
@@ -96,8 +96,7 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
 
 
                 //> laplacian of Rho  
-                real del_t = 1.0;
-                real Coeff = (2.0/(del_t*del_t*lb35.theta0));
+                real Coeff = (2.0/(dt*dt*lb35.theta0));
                 
                 laplacian_rho.Node(i,j,k)  = 0.0;
 
@@ -127,7 +126,7 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
                 // //>------
                 real kappa_node = kappa;
 
-                // kappa_node = kappa - (1.0/2.0)* lb35.theta0* (
+                // kappa_node = kappa - (1.0/2.0)*dx*dx* lb35.theta0* (
                 //                                         -32.0 *b* lb35.theta0*(-16.0 + b* rho.Node(i,j,k)) / (pow(-4.0 + b*rho.Node(i,j,k) , 4.0))
                 //                                             - 2.0*a
                 //                                         ) 
@@ -145,7 +144,7 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
 
 
                 real kappa_cell = kappa;
-                // kappa_cell = kappa - (1.0/2.0)* lb35.theta0* (
+                // kappa_cell = kappa - (1.0/2.0)*dx*dx* lb35.theta0* (
                 //                                        -32.0 *b* lb35.theta0*(-16.0 + b* rho.Cell(i,j,k)) / (pow(-4.0 + b*rho.Cell(i,j,k) , 4.0))
                 //                                             - 2.0*a
                 //                                         ) 
@@ -164,29 +163,29 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
 
 
 
-    // Periodic_x(laplacian_rho);
-    // Periodic_y(laplacian_rho);
+    Periodic_x(laplacian_rho);
+    Periodic_y(laplacian_rho);
     Periodic_z(laplacian_rho);
 
-    grad_zero_x(laplacian_rho);
-    grad_zero_y(laplacian_rho);
+    // grad_zero_x(laplacian_rho);
+    // grad_zero_y(laplacian_rho);
     // grad_zero_z(laplacian_rho);
 
 
-    // Periodic_x(laplacian_fnid);
-    // Periodic_y(laplacian_fnid);
+    Periodic_x(laplacian_fnid);
+    Periodic_y(laplacian_fnid);
     Periodic_z(laplacian_fnid);
 
-    grad_zero_x(laplacian_fnid);
-    grad_zero_y(laplacian_fnid);
+    // grad_zero_x(laplacian_fnid);
+    // grad_zero_y(laplacian_fnid);
     // grad_zero_z(laplacian_fnid);
 
-    // Periodic_x(munid);
-    // Periodic_y(munid);
+    Periodic_x(munid);
+    Periodic_y(munid);
     Periodic_z(munid);
 
-    grad_zero_x(munid);
-    grad_zero_y(munid);
+    // grad_zero_x(munid);
+    // grad_zero_y(munid);
     // grad_zero_z(munid);
 
 
@@ -198,36 +197,34 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
 
 template<typename T, typename T1>
 void Multiphase_Force_Node(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &rho, Grid_N_C_3D<T> &pnid, Grid_N_C_3D<T> &fnid, Grid_N_C_3D<T> &munid, Grid_N_C_3D<T> &laplacian_rho,
-            lbmD3Q35<T1> &lb35,lbmD3Q15<T1> &lb15, Grid_N_C_3D<T> &Force, int i, int j,int k, real kappa, real a , real b){
+            lbmD3Q35<T1> &lb35,lbmD3Q15<T1> &lb15, Grid_N_C_3D<T> &Force, int i, int j,int k, real kappa, real a , real b, real g, real dx, real dt){
 
     
 
     //> CHEMICAL POTENTIAL FORMULATION 
-    real grad_mux = 0.0, grad_muy = 0.0, grad_muz = 0.0;
 
     Force.Node(i,j,k,0) = 0.0;
     Force.Node(i,j,k,1) = 0.0;
     Force.Node(i,j,k,2) = 0.0;
 
 
-    real del_t = 1.0;
-    real Coeff_grad = (1.0/(del_t*lb35.theta0));
+    real Coeff_grad = (1.0/(dt*lb35.theta0));
 
     for(int dv = 0; dv< 27; dv++){
-        grad_mux += lb35.W[dv]*lb35.Cx[dv]*munid.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
-        grad_muy += lb35.W[dv]*lb35.Cy[dv]*munid.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
-        grad_muz += lb35.W[dv]*lb35.Cz[dv]*munid.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+        Force.Node(i,j,k,0)+= lb35.W[dv]*lb35.Cx[dv]*munid.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+        Force.Node(i,j,k,1)+= lb35.W[dv]*lb35.Cy[dv]*munid.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+        Force.Node(i,j,k,2)+= lb35.W[dv]*lb35.Cz[dv]*munid.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
     }
 
     for(int dv = 27; dv<grid.d_v; dv++){
-        grad_mux += lb35.W[dv]*lb35.Cx[dv]*munid.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
-        grad_muy += lb35.W[dv]*lb35.Cy[dv]*munid.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
-        grad_muz += lb35.W[dv]*lb35.Cz[dv]*munid.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
+        Force.Node(i,j,k,0) += lb35.W[dv]*lb35.Cx[dv]*munid.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
+        Force.Node(i,j,k,1) += lb35.W[dv]*lb35.Cy[dv]*munid.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
+        Force.Node(i,j,k,2) += lb35.W[dv]*lb35.Cz[dv]*munid.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
     }
 
-    Force.Node(i,j,k,0) = - Coeff_grad*(grad_mux)   ;
-    Force.Node(i,j,k,1) = - Coeff_grad*(grad_muy)- 0.0001;
-    Force.Node(i,j,k,2) = - Coeff_grad*(grad_muz)   ;
+    Force.Node(i,j,k,0) = - Coeff_grad*(Force.Node(i,j,k,0))        ;
+    Force.Node(i,j,k,1) = - Coeff_grad*(Force.Node(i,j,k,1))  -g    ;
+    Force.Node(i,j,k,2) = - Coeff_grad*(Force.Node(i,j,k,2))        ;
 
     // // // > direct              
 
@@ -319,39 +316,34 @@ void Multiphase_Force_Node(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &rho, Grid_N_C_3
 
 template<typename T, typename T1>
 void Multiphase_Force_Cell(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &rho, Grid_N_C_3D<T> &pnid, Grid_N_C_3D<T> &fnid, Grid_N_C_3D<T> &munid, Grid_N_C_3D<T> &laplacian_rho,
-            lbmD3Q35<T1> &lb35, lbmD3Q15<T1> &lb15, Grid_N_C_3D<T> &Force, int i, int j,int k, real kappa, real a, real b){
+            lbmD3Q35<T1> &lb35, lbmD3Q15<T1> &lb15, Grid_N_C_3D<T> &Force, int i, int j,int k, real kappa, real a, real b, real g, real dx ,real dt){
 
     //> CHEMICAL POTENTIAL FORMULATION 
-    real grad_mux = 0.0, grad_muy = 0.0, grad_muz = 0.0;
     
     Force.Cell(i,j,k,0) = 0.0;
     Force.Cell(i,j,k,1) = 0.0;
     Force.Cell(i,j,k,2) = 0.0;
 
-    real del_t = 1.0;
-    real Coeff_grad = (1.0/(del_t*lb35.theta0));
-    
     
     //> CHEMICAL POTENTIAL FORMULATION 
-    del_t = 1.0;
-    Coeff_grad = (1.0/(del_t*lb35.theta0));
+    real Coeff_grad = (1.0/(dt*lb35.theta0));
 
     for(int dv = 0; dv< 27; dv++){
-        grad_mux += lb35.W[dv]*lb35.Cx[dv]*munid.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
-        grad_muy += lb35.W[dv]*lb35.Cy[dv]*munid.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
-        grad_muz += lb35.W[dv]*lb35.Cz[dv]*munid.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+        Force.Cell(i,j,k,0)  += lb35.W[dv]*lb35.Cx[dv]*munid.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+        Force.Cell(i,j,k,1)  += lb35.W[dv]*lb35.Cy[dv]*munid.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+        Force.Cell(i,j,k,2)  += lb35.W[dv]*lb35.Cz[dv]*munid.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
     }
 
     for(int dv = 27; dv< 35; dv++){
-        grad_mux += lb35.W[dv]*lb35.Cx[dv]*munid.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
-        grad_muy += lb35.W[dv]*lb35.Cy[dv]*munid.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
-        grad_muz += lb35.W[dv]*lb35.Cz[dv]*munid.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
+        Force.Cell(i,j,k,0)  += lb35.W[dv]*lb35.Cx[dv]*munid.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
+        Force.Cell(i,j,k,1)  += lb35.W[dv]*lb35.Cy[dv]*munid.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
+        Force.Cell(i,j,k,2)  += lb35.W[dv]*lb35.Cz[dv]*munid.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
     }
 
 
-    Force.Cell(i,j,k,0) = - Coeff_grad*(grad_mux);
-    Force.Cell(i,j,k,1) = - Coeff_grad*(grad_muy) - 0.0001;  
-    Force.Cell(i,j,k,2) = - Coeff_grad*(grad_muz);  
+    Force.Cell(i,j,k,0) = - Coeff_grad*(Force.Cell(i,j,k,0) )       ;
+    Force.Cell(i,j,k,1) = - Coeff_grad*(Force.Cell(i,j,k,1) ) - g   ;  
+    Force.Cell(i,j,k,2) = - Coeff_grad*(Force.Cell(i,j,k,2) )       ;  
 
 
 

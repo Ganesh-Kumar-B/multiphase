@@ -18,7 +18,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_3D<T> &grid,
-            lbmD3Q35<T1> &lb35, lbmD3Q15<T1> &lb15,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force ){
+            lbmD3Q35<T1> &lb35, lbmD3Q15<T1> &lb15,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force, real g, real dx, real dt ){
 
     Grid_N_C_3D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,grid.n_z,2,1);
     Grid_N_C_3D<T>  rho                             (grid.n_x,grid.n_y,grid.n_z,2,1);   
@@ -49,7 +49,7 @@ void collide(Grid_N_C_3D<T> &grid,
     real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;
     kappa = kappa*a;
 
-    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb35, lb15,TbyTc,kappa, a, b );
+    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb35, lb15,TbyTc,kappa, a, b,dx, dt );
 
 
 
@@ -58,16 +58,16 @@ void collide(Grid_N_C_3D<T> &grid,
         for(int j = 0 + grid.noghost;j < grid.n_y_node - (grid.noghost) ; j++){
             for(int k = 0 + grid.noghost;k < grid.n_z_node - (grid.noghost) ; k++){
                 
-
+                                
                 real Rho = 0.0;
 
-                Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb35, lb15,Force,i,j,k, kappa, a, b );             										// $ chemical potential formulation
+                Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb35, lb15,Force,i,j,k, kappa, a, b, g, dx, dt );             										// $ chemical potential formulation
                 //  Multiphase_Force_eta_Node(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb35,Fx,Fy,Fz,i,j,k,kappa, eta );  		// $41 paper
                 
 
 
-                get_moments_Node_force(grid, lb35,  ux, uy, uz,Rho, i, j, k,Force ,beta);            //for the node
-                get_equi(feq_Node_delu,lb35, ux, uy,uz, Rho);
+                // get_moments_Node_force(grid, lb35,  ux, uy, uz,Rho, i, j, k,Force ,beta, dx, dt);            //for the node
+                // get_equi(feq_Node_delu,lb35, ux, uy,uz, Rho);
 
 
                 // Force.Node(i,j,k,0) = 0;
@@ -76,14 +76,14 @@ void collide(Grid_N_C_3D<T> &grid,
 
 
                 
-                get_moments_Node(grid, lb35,  ux, uy, uz,Rho, i, j, k, Force );            //for the node
+                get_moments_Node(grid, lb35,  ux, uy, uz,Rho, i, j, k, Force, dx, dt );            //for the node
                 get_equi(feq_Node ,lb35, ux, uy,uz, Rho);
 
 
                 // // //> normal
                 for (int dv = 0; dv< grid.d_v; dv++){
                     grid.Node(i,j,k,dv) =  grid.Node(i,j,k,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,k,dv))
-                                        + 2.0 *beta * tau*lb35.thetaInverse *  feq_Node[dv] * (Force.Node(i,j,k,0) * (lb35.Cx[dv] - ux) + Force.Node(i,j,k,1) * (lb35.Cy[dv] - uy) + Force.Node(i,j,k,2) * (lb35.Cz[dv]- uz) );
+                                        + (1.0 - beta)*dt*lb35.thetaInverse *  feq_Node[dv] * (Force.Node(i,j,k,0) * (lb35.Cx[dv] - ux) + Force.Node(i,j,k,1) * (lb35.Cy[dv] - uy) + Force.Node(i,j,k,2) * (lb35.Cz[dv]- uz) );
                                         ;
                 }
 
@@ -127,13 +127,13 @@ void collide(Grid_N_C_3D<T> &grid,
                 Rho = 0.0;
 
                 
-                Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb35,lb15,Force,i,j,k, kappa, a ,b );                                               // $ chemical potential
+                Multiphase_Force_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,lb35,lb15,Force,i,j,k, kappa, a ,b , g, dx, dt );                                               // $ chemical potential
                 // Multiphase_Force_eta_Cell(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb35,Fx,Fy,Fz,i,j,k,kappa,eta );  // $ 41 paper
 
 
 
-                get_moments_Cell_force(grid, lb35,  ux, uy, uz,Rho, i, j, k,Force, beta);            //for the cell
-                get_equi(feq_Cell_delu,lb35, ux, uy,uz, Rho);
+                // get_moments_Cell_force(grid, lb35,  ux, uy, uz,Rho, i, j, k,Force, beta, dx , dt); //!check whether the dt scaling is correct           //for the cell
+                // get_equi(feq_Cell_delu,lb35, ux, uy,uz, Rho);
 
 
 
@@ -143,16 +143,15 @@ void collide(Grid_N_C_3D<T> &grid,
 
 
                 
-                get_moments_Cell(grid, lb35,  ux, uy, uz,Rho, i, j, k,Force);            //for the cell
+                get_moments_Cell(grid, lb35,  ux, uy, uz,Rho, i, j, k,Force, dx , dt);            //for the cell
                 get_equi(feq_Cell,lb35, ux, uy,uz, Rho);
 
                 
 
-
                 //> normal
                 for (int dv = 0; dv< grid.d_v; dv++){
                     grid.Cell(i,j,k,dv) =  grid.Cell(i,j,k,dv) + 2.0* beta*(feq_Cell[dv] - grid.Cell(i,j,k,dv))
-                                        + 2.0 *beta * tau*lb35.thetaInverse * feq_Cell[dv] * (Force.Cell(i,j,k,0) * (lb35.Cx[dv]- ux) +Force.Cell(i,j,k,1)* (lb35.Cy[dv]-uy) + Force.Cell(i,j,k,2) *( lb35.Cz[dv] - uz) );
+                                        + (1.0 - beta)*dt*lb35.thetaInverse * feq_Cell[dv] * (Force.Cell(i,j,k,0) * (lb35.Cx[dv]- ux) +Force.Cell(i,j,k,1)* (lb35.Cy[dv]-uy) + Force.Cell(i,j,k,2) *( lb35.Cz[dv] - uz) );
                                         ;
                 }       
 
@@ -308,7 +307,7 @@ void get_equi(real *feq , lbmD3Q35<T> &lb, real ux, real uy, real uz, real rho){
 
 
 template<typename T,typename T1>
-void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z, Grid_N_C_3D<T> &Force){ ///node or cell 0-Node 1- cell
+void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z, Grid_N_C_3D<T> &Force, real dx, real dt){ ///node or cell 0-Node 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Uz  = 0.0;
@@ -322,9 +321,9 @@ void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy,
         Rho += grid.Node(X,Y,Z,dv);
     }  
 
-    Ux = Ux/Rho + 0.5*Force.Node(X,Y,Z,0);
-    Uy = Uy/Rho + 0.5*Force.Node(X,Y,Z,1);
-    Uz = Uz/Rho + 0.5*Force.Node(X,Y,Z,2);  
+    Ux = Ux/Rho + 0.5*Force.Node(X,Y,Z,0)*dt;
+    Uy = Uy/Rho + 0.5*Force.Node(X,Y,Z,1)*dt;
+    Uz = Uz/Rho + 0.5*Force.Node(X,Y,Z,2)*dt;  
 
 
 }
@@ -333,7 +332,7 @@ void get_moments_Node(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy,
 
 
 template<typename T,typename T1>
-void get_moments_Node_force(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z, Grid_N_C_3D<T> &Force, real beta){ ///node or cell 0-Node 1- cell
+void get_moments_Node_force(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z, Grid_N_C_3D<T> &Force, real beta, real dx, real dt){ ///node or cell 0-Node 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Uz  = 0.0;
@@ -347,15 +346,15 @@ void get_moments_Node_force(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, rea
         Rho += grid.Node(X,Y,Z,dv);
     }  
 
-    Ux = Ux/Rho + Force.Node(X,Y,Z,0)/(1.0);
-    Uy = Uy/Rho + Force.Node(X,Y,Z,1)/(1.0);
-    Uz = Uz/Rho + Force.Node(X,Y,Z,2)/(1.0);  
+    Ux = Ux/Rho + Force.Node(X,Y,Z,0)/(1.0)*dt;
+    Uy = Uy/Rho + Force.Node(X,Y,Z,1)/(1.0)*dt;
+    Uz = Uz/Rho + Force.Node(X,Y,Z,2)/(1.0)*dt;  
 
 }
 
 
 template<typename T,typename T1>
-void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z,Grid_N_C_3D<T> &Force){ ///node or cell 0-Cell 1- cell
+void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z,Grid_N_C_3D<T> &Force, real dx, real dt){ ///node or cell 0-Cell 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Uz  = 0.0;
@@ -370,15 +369,15 @@ void get_moments_Cell(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy,
         Rho += grid.Cell(X,Y,Z,dv);
     }  
 
-    Ux = Ux/Rho + 0.5*Force.Cell(X,Y,Z,0);
-    Uy = Uy/Rho + 0.5*Force.Cell(X,Y,Z,1);
-    Uz = Uz/Rho + 0.5*Force.Cell(X,Y,Z,2);  
+    Ux = Ux/Rho + 0.5*Force.Cell(X,Y,Z,0)*dt;
+    Uy = Uy/Rho + 0.5*Force.Cell(X,Y,Z,1)*dt;
+    Uz = Uz/Rho + 0.5*Force.Cell(X,Y,Z,2)*dt;  
 
 }
 
 
 template<typename T,typename T1>
-void get_moments_Cell_force(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z,Grid_N_C_3D<T> &Force, real beta){ ///node or cell 0-Cell 1- cell
+void get_moments_Cell_force(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, real &Uy, real &Uz,real &Rho,  int X, int Y, int Z,Grid_N_C_3D<T> &Force, real beta, real dx, real dt){ ///node or cell 0-Cell 1- cell
     Ux  = 0.0;
     Uy  = 0.0;
     Uz  = 0.0;
@@ -394,9 +393,9 @@ void get_moments_Cell_force(Grid_N_C_3D<T> &grid, lbmD3Q35<T1> &lb,real &Ux, rea
     }  
 
 
-    Ux = Ux/Rho + Force.Cell(X,Y,Z,0)/(1.0);
-    Uy = Uy/Rho + Force.Cell(X,Y,Z,1)/(1.0);
-    Uz = Uz/Rho + Force.Cell(X,Y,Z,2)/(1.0); 
+    Ux = Ux/Rho + Force.Cell(X,Y,Z,0)/(1.0)*dt;
+    Uy = Uy/Rho + Force.Cell(X,Y,Z,1)/(1.0)*dt;
+    Uz = Uz/Rho + Force.Cell(X,Y,Z,2)/(1.0)*dt; 
 
 }
 
@@ -572,8 +571,8 @@ void initialization_equilibrium_profile_y(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,
     real  y_0 = 0.0;
     real  z_0 = 0.0;
 
-    real phi_l = -1.0;
-    real phi_h = +1.0;
+    real phi_l = +1.0;
+    real phi_h = -1.0;
 
     real phi;
     real ux_node = 0.0, uy_node = 0.0, uz_node = 0.0;
@@ -586,7 +585,7 @@ void initialization_equilibrium_profile_y(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,
                 y = ((real)j)/ grid.n_x - y_0;
                 z = ((real)k)/ grid.n_x - z_0;
 
-                phi = (tanh((y - 1 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
+                phi = (tanh((y - 1 - 0.005*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
 
                 Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
                 
@@ -600,7 +599,7 @@ void initialization_equilibrium_profile_y(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,
                 y = ((real)j+ 0.5)/ grid.n_x - y_0;
                 z = ((real)k+ 0.5)/ grid.n_x - z_0;
 
-                phi = (tanh((y - 1 - 0.05*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
+                phi = (tanh((y - 1 - 0.005*cos(2.0*M_PI*x))/(sqrt(2) * (1.0/grid.n_x))));
 
                 Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
 
@@ -617,31 +616,84 @@ void initialization_equilibrium_profile_y(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,
 }
         
 
+
 template<typename T, typename T1>
-void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_mean ){
+void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_mean,real rho_liq, real rho_gas, real R ){
 
 	real Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
     real x,y,z
            ;    ///distance between nodes 
     
-    real  x_0 = 0.5;
-    real  y_0 = 0.5;
-    real  z_0 = 0.5;
+    real  x_0 = 0;
+    real  y_0 = 0;
+    real  z_0 = 0;
+
+    real phi =  0;
+
+    real phi_l = -1.0;
+    real phi_h = +1.0;
 
     real ux_node = 0., uy_node = 0, uz_node = 0;
     
+    // for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
+    //     for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+    //         for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
+
+    //             x = ((real)i)/ grid.n_x - x_0;
+    //             y = ((real)j)/ grid.n_y - y_0;
+    //             z = ((real)k)/ grid.n_z - z_0;
+
+
+    //             phi = tanh( (0.2 - sqrt( (x -0.5)*(x - 0.5 ) + 1.0*(y - 0.5)*(y - 0.5) )  )/
+    //                     (sqrt(2.0) * (2.0/ grid.n_x) )  
+    //                     );
+
+    //             Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
+
+	// 			get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+	// 			for (int dv = 0; dv<grid.d_v; dv++)
+	// 				grid.Node(i,j,k,dv) = Feq_node[dv];
+
+	// 			x = ((real)i+0.5)/ grid.n_x - x_0;
+    //             y = ((real)j+0.5)/ grid.n_y - y_0;
+    //             z = ((real)k+0.5)/ grid.n_z - z_0;
+
+
+    //             phi = tanh( (0.2 - sqrt( (x -0.5)*(x - 0.5 ) + 1.0*(y - 0.5)*(y - 0.5) )  )/
+    //                     (sqrt(2.0) * (2.0/ grid.n_x) )  
+    //                     );
+
+    //             Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
+
+
+	// 			get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+	// 			for (int dv = 0; dv<grid.d_v; dv++)
+	// 				grid.Cell(i,j,k,dv) = Feq_node[dv];
+
+    //         }
+    //     }
+    // }
+
+ 
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
         for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
             for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
+
+                real  x_0 = 0;
+                real  y_0 = 0;
+                real  z_0 = 0;
 
                 x = ((real)i)/ grid.n_x - x_0;
                 y = ((real)j)/ grid.n_y - y_0;
                 z = ((real)k)/ grid.n_z - z_0;
 
-				double rho_gas = 0.8;
-				double rho_liq = 1.4;
-
-				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
+                
+                Rho = rho_gas;
+                    if(x*x + y*y < R*R){
+                        Rho = rho_liq;
+                    }
 
 				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
 
@@ -652,7 +704,11 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_me
                 y = ((real)j+0.5)/ grid.n_y - y_0;
                 z = ((real)k+0.5)/ grid.n_z - z_0;
 
-				Rho = (rho_liq + rho_gas)* 0.5 + (rho_liq - rho_gas) *0.5* tanh(0.1 - sqrt(x*x+ y*y));
+
+                Rho = rho_gas;
+                    if(x*x + y*y < R*R){
+                        Rho = rho_liq;
+                    }
 
 				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
 
@@ -662,6 +718,11 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_me
             }
         }
     }
+
+
+
+
+
 }
         
 

@@ -64,7 +64,7 @@ template<typename T>
 lbmD3Q35<T>::lbmD3Q35(T c1)
     {   
         dvN = 35;
-        theta0 = (31.0 + sqrt(7009))/252.0;
+        theta0 = c1*c1* (31.0 + sqrt(7009))/252.0;
         thetaInverse = 1.0/theta0;
 
 
