@@ -89,7 +89,7 @@ void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real
         
 
     file<<"POINT_DATA "<<1*grid.n_x*1*grid.n_y*1*grid.n_z<<std::endl;
-    file<<"SCALARS density double 1\nLOOKUP_TABLE default "<<1<<std::endl;
+    file<<"SCALARS density double 1\nLOOKUP_TABLE default"<<std::endl;
 
     for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
 	    for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
@@ -105,7 +105,7 @@ void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real
         }
     }
 
-    file<<"SCALARS pressure double 1\nLOOKUP_TABLE default "<<1<<std::endl;
+    file<<"SCALARS pressure double 1\nLOOKUP_TABLE default"<<std::endl;
 
     for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
 	    for (int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
@@ -117,7 +117,6 @@ void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real
                 real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;
 
                 get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force, dx, dt);
-                file<<rho1<<std::endl;
 
                 real eta = rho1*b/4.0;           
                 real p_value = (rho1*lb.theta0*(1.0 + eta + eta* eta - eta*eta*eta) )/pow(1.0 - eta,  3.0)  - 

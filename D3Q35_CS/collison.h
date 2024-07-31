@@ -18,7 +18,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_3D<T> &grid,
-            lbmD3Q35<T1> &lb35, lbmD3Q15<T1> &lb15,real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_3D<T> &Force, real g, real dx, real dt ){
+            lbmD3Q35<T1> &lb35, lbmD3Q15<T1> &lb15,real beta,real tau, real TbyTc, real kappa, real &sigma, int t,Grid_N_C_3D<T> &Force, real g, real dx, real dt ){
 
     Grid_N_C_3D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,grid.n_z,2,1);
     Grid_N_C_3D<T>  rho                             (grid.n_x,grid.n_y,grid.n_z,2,1);   
@@ -42,14 +42,13 @@ void collide(Grid_N_C_3D<T> &grid,
     ux = 0, uy = 0, uz = 0;
 
     real eta =  0;   //   0 ----> fourth order   1-----> second order 
- 
+    sigma = 0;
 
 
     real rho_critical = 1.0, T_critical = lb35.theta0/TbyTc ; 
     real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;
-    kappa = kappa*a;
 
-    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb35, lb15,TbyTc,kappa, a, b,dx, dt );
+    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb35, lb15,TbyTc,kappa,sigma, a, b,dx, dt );
 
 
 
@@ -681,9 +680,9 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_me
         for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
             for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
 
-                real  x_0 = 0;
-                real  y_0 = 0;
-                real  z_0 = 0;
+                real  x_0 = 0.5;
+                real  y_0 = 0.5;
+                real  z_0 = 0.5;
 
                 x = ((real)i)/ grid.n_x - x_0;
                 y = ((real)j)/ grid.n_y - y_0;

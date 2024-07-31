@@ -15,8 +15,9 @@
 enum coodinates{X,Y,Z};
 
 template<typename T, typename T1>
-void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T> &rho, Grid_N_C_3D<T> &pnid, Grid_N_C_3D<T> &fnid, Grid_N_C_3D<T> &munid, Grid_N_C_3D<T> &laplacian_rho,  Grid_N_C_3D<T> &laplacian_fnid, Grid_N_C_3D<T> &gradient_rho, 
-            lbmD3Q35<T1> &lb35,lbmD3Q15<T1> &lb15, real TbyTc, real kappa, real a , real b, real dx, real dt ){
+void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T> &rho, Grid_N_C_3D<T> &pnid, Grid_N_C_3D<T> &fnid, Grid_N_C_3D<T> &munid,
+                 Grid_N_C_3D<T> &laplacian_rho,  Grid_N_C_3D<T> &laplacian_fnid, Grid_N_C_3D<T> &gradient_rho, 
+            lbmD3Q35<T1> &lb35,lbmD3Q15<T1> &lb15, real TbyTc, real kappa, real &sigma,real a , real b, real dx, real dt ){
 
     real ux = 0, uy = 0, uz = 0;
 
@@ -121,6 +122,60 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
                 //>---------------------
 
 
+                //>-------gradient rho
+                gradient_rho.Node(i,j,k,0) = 0.0;
+                gradient_rho.Node(i,j,k,1) = 0.0;
+                gradient_rho.Node(i,j,k,2) = 0.0;
+
+
+                real Coeff_grad = (1.0/(dt*lb35.theta0));
+
+                for(int dv = 0; dv< 27; dv++){
+                    gradient_rho.Node(i,j,k,0)+= lb35.W[dv]*lb35.Cx[dv]*rho.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+                    gradient_rho.Node(i,j,k,1)+= lb35.W[dv]*lb35.Cy[dv]*rho.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+                    gradient_rho.Node(i,j,k,2)+= lb35.W[dv]*lb35.Cz[dv]*rho.Node( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+                }
+
+                for(int dv = 27; dv<grid.d_v; dv++){
+                    gradient_rho.Node(i,j,k,0) += lb35.W[dv]*lb35.Cx[dv]*rho.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
+                    gradient_rho.Node(i,j,k,1) += lb35.W[dv]*lb35.Cy[dv]*rho.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
+                    gradient_rho.Node(i,j,k,2) += lb35.W[dv]*lb35.Cz[dv]*rho.Cell( i+ (int)lb35.CxF[dv] , j + (int)lb35.CyF[dv], k + (int)lb35.CzF[dv]) ;
+                }
+
+                gradient_rho.Node(i,j,k,0) = Coeff_grad*(gradient_rho.Node(i,j,k,0))        ;
+                gradient_rho.Node(i,j,k,1) = Coeff_grad*(gradient_rho.Node(i,j,k,1))        ;
+                gradient_rho.Node(i,j,k,2) = Coeff_grad*(gradient_rho.Node(i,j,k,2))        ;
+
+
+                
+                            
+                gradient_rho.Cell(i,j,k,0) = 0.0;
+                gradient_rho.Cell(i,j,k,1) = 0.0;
+                gradient_rho.Cell(i,j,k,2) = 0.0;
+
+                
+                //> 
+                Coeff_grad = (1.0/(dt*lb35.theta0));
+
+                for(int dv = 0; dv< 27; dv++){
+                    gradient_rho.Cell(i,j,k,0)  += lb35.W[dv]*lb35.Cx[dv]*rho.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+                    gradient_rho.Cell(i,j,k,1)  += lb35.W[dv]*lb35.Cy[dv]*rho.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+                    gradient_rho.Cell(i,j,k,2)  += lb35.W[dv]*lb35.Cz[dv]*rho.Cell( i+ (int)lb35.Cx[dv] , j + (int)lb35.Cy[dv], k + (int)lb35.Cz[dv]) ;
+                }
+
+                for(int dv = 27; dv< 35; dv++){
+                    gradient_rho.Cell(i,j,k,0)  += lb35.W[dv]*lb35.Cx[dv]*rho.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
+                    gradient_rho.Cell(i,j,k,1)  += lb35.W[dv]*lb35.Cy[dv]*rho.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
+                    gradient_rho.Cell(i,j,k,2)  += lb35.W[dv]*lb35.Cz[dv]*rho.Node( i+ (int)lb35.CxC[dv] , j + (int)lb35.CyC[dv], k + (int)lb35.CzC[dv]) ;
+                }
+
+
+                gradient_rho.Cell(i,j,k,0) = Coeff_grad*(gradient_rho.Cell(i,j,k,0) )   ;
+                gradient_rho.Cell(i,j,k,1) = Coeff_grad*(gradient_rho.Cell(i,j,k,1) )   ;  
+                gradient_rho.Cell(i,j,k,2) = Coeff_grad*(gradient_rho.Cell(i,j,k,2) )   ;  
+
+
+
 
 
                 // //>------
@@ -131,6 +186,8 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
                 //                                             - 2.0*a
                 //                                         ) 
                 //                                     ;
+                sigma  = sigma + 0.5*kappa_node*(gradient_rho.Node(i,j,0)*gradient_rho.Node(i,j,0) + gradient_rho.Node(i,j,1)*gradient_rho.Node(i,j,1) + gradient_rho.Node(i,j,2)*gradient_rho.Node(i,j,2)) ;
+
 
                 double eta = rho.Node(i,j,k)*b/4.0;
 
@@ -150,6 +207,7 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
                 //                                         ) 
                 //                                     ;
 
+                sigma  = sigma + 0.5*kappa_cell*(gradient_rho.Cell(i,j,0)*gradient_rho.Cell(i,j,0) + gradient_rho.Cell(i,j,1)*gradient_rho.Cell(i,j,1) + gradient_rho.Cell(i,j,2)*gradient_rho.Cell(i,j,2)) ;
 
                 eta = rho.Cell(i,j,k)*b/4.0;
 

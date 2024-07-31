@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx = 100 ;int Ny = 100; int Nz = 3;
+    int Nx = 128 ;int Ny = 128; int Nz = 2;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
@@ -37,13 +37,18 @@ int main()
     real dt = dx/c;
 
 
-    real Re = 500;
+    real Re = 100;
     std::cout<<"Re      = "<<Re<<std::endl;
-    real L  = Nx;
+    real L  = 128;
 
 
-    real u0 = 0.4;
+    real u0 = 0.04;
     std::cout<<"u0      = "<<u0<<std::endl;
+
+    
+    real Ma = u0/cs;
+    std::cout<<"Ma      = "<<Ma<<std::endl;
+
 
     real g = (u0*u0)/L;
     g = 0;
@@ -63,7 +68,7 @@ int main()
 
     real beta = 1.0/(2.0*tauNdim + 1.0);
     std::cout<<"beta    = "<<beta<<std::endl;
-   
+    
 
 
 
@@ -75,8 +80,9 @@ int main()
 
     real TbyTc = 0.954  ;       ;
     std::cout<<"T/T0    = "<<TbyTc<<std::endl;
-    real kappa = 0.01;
-
+    real kappa = 0.0001;
+    std::cout<<"kappa   = "<<kappa<<std::endl;
+    real sigma = 0.0;
 
     //:fixed ------------------------------Main code--------------------------//
     
@@ -94,8 +100,7 @@ int main()
 
 
 
-
-    std::string name="Result_256_0.20_0.0001";
+    std::string name="Result_128_0.20_0.0001";
 
     print_vtk(d3q35,grid,0,u0,TbyTc,kappa,Force,name, dx, dt);
     printMass(grid);
@@ -103,10 +108,10 @@ int main()
 
     std::cout<<"simulation started and Simulation time "<< sim_time<<std::endl;
     
-    for(int t = 1; t <=20000;t++){
+    for(int t = 1; t <=50000;t++){
 
         // Periodic(grid);
-        collide (grid,d3q35,d3q15,beta,tau,TbyTc,kappa, t,Force,g, dx, dt);
+        collide (grid,d3q35,d3q15,beta,tau,TbyTc,kappa,sigma, t,Force,g, dx, dt);
 
         Periodic_x(grid);
         Periodic_y(grid);
@@ -121,7 +126,8 @@ int main()
         advection(grid);
         // stationary_correction(grid);
 
-        if(t%2000== 0){
+        if(t%1000== 0){
+            std::cout<<sigma<<std::endl;
             std::cout<<t<<" ";
             printMass(grid);
             print_vtk(d3q35,grid,t,u0,TbyTc,kappa,Force,name, dx, dt);
