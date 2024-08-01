@@ -17,7 +17,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_2D<T> &grid,
-            lbmD2Q9<T1> &lb9, real beta,real tau, real TbyTc, real kappa, int t,Grid_N_C_2D<T> &Force, Grid_N_C_2D<T> &P_tensor ,real g, real dx , real dt ){
+            lbmD2Q9<T1> &lb9, real beta,real tau, real TbyTc,real a,real b ,real kappa, real &sigma, int t,Grid_N_C_2D<T> &Force, Grid_N_C_2D<T> &P_tensor ,real g, real dx , real dt ){
 
     Grid_N_C_2D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,1,1);
     Grid_N_C_2D<T>  rho                             (grid.n_x,grid.n_y,1,1);   
@@ -25,9 +25,11 @@ void collide(Grid_N_C_2D<T> &grid,
     Grid_N_C_2D<T>  fnid                            (grid.n_x,grid.n_y,1,1);       
     Grid_N_C_2D<T>  munid                           (grid.n_x,grid.n_y,1,1);   
     Grid_N_C_2D<T>  laplacian_rho                   (grid.n_x,grid.n_y,1,1);   
+    Grid_N_C_2D<T>  laplacian_munid                 (grid.n_x,grid.n_y,1,1);   
     Grid_N_C_2D<T>  laplacian_fnid                  (grid.n_x,grid.n_y,1,1);   
     Grid_N_C_2D<T>  gradient_rho                    (grid.n_x,grid.n_y,1,2);   //2 components
-    
+
+
 
     real feq_Node[9] = {0},
 
@@ -37,15 +39,9 @@ void collide(Grid_N_C_2D<T> &grid,
 
 
 
-    real rho_critical = 1.0, T_critical = lb9.theta0/TbyTc ; 
+    sigma = 0;
 
-    real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;    //CS
-
-    // double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;   //VW
-
-    kappa = kappa*a*dx*dx;
-
-    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,P_tensor,lb9,TbyTc,kappa, a, b, dx, dt );
+    Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_munid,laplacian_fnid,gradient_rho,P_tensor,lb9,TbyTc,kappa,sigma, a, b, dx, dt );
 
     //       //  first the population of nodes are resetted and second  the population of the cells are resetted
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost) ; i++){
@@ -55,8 +51,11 @@ void collide(Grid_N_C_2D<T> &grid,
             real Rho = 0.0;
 
 
-            //  Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
-            Multiphase_Force_P(grid,rho,pnid, fnid, munid,laplacian_rho,P_tensor,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
+            Multiphase_Force_Node(grid,rho,pnid, fnid, munid,laplacian_rho,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
+            // Multiphase_Force_Node_4th_order(grid,rho,pnid, fnid, munid,laplacian_rho,laplacian_munid,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
+
+            
+            // Multiphase_Force_P(grid,rho,pnid, fnid, munid,laplacian_rho,P_tensor,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
 
 
 
@@ -75,7 +74,7 @@ void collide(Grid_N_C_2D<T> &grid,
 
     
 
-            
+
             // // // //> normal //from the he paper
             // for (int dv = 0; dv< grid.d_v; dv++){
             //     grid.Node(i,j,dv) =  grid.Node(i,j,dv) + (1.0/tau)*(feq_Node[dv] - grid.Node(i,j,dv))
@@ -226,7 +225,7 @@ void initialization_ellipse(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,re
 
 
 template<typename T, typename T1>
-void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,real rho_gas ){
+void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,real rho_gas, real R ){
 
 	real Feq_node[9] = {0},Rho = 0.0;
     real x,y
@@ -241,20 +240,45 @@ void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,rea
     real phi;
     real ux_node = 0.0, uy_node = 0.0;
     
+    // for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
+    //     for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+
+    //         x = ((real)i)/ grid.n_x - x_0;
+    //         y = ((real)j)/ grid.n_x - y_0;
+            
+    //         phi = tanh( (R*R - sqrt( (x -0.5)*(x - 0.5 ) + 0.5*(y - 0.5)*(y - 0.5) )  ) / 
+    //                     (sqrt(2.0) * (1.0/ grid.n_x) )  
+    //                     );
+
+    //         Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
+
+
+
+    //         get_equi(Feq_node,lb,ux_node,uy_node,Rho);
+
+    //         for (int dv = 0; dv<grid.d_v; dv++)
+    //             grid.Node(i,j,dv) = Feq_node[dv];
+
+
+    //     }
+    // }
+
+
+
+    x_0 = 0.5, y_0 = 0.5;
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
         for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
-
+            
             
             
             x = ((real)i)/ grid.n_x - x_0;
             y = ((real)j)/ grid.n_x - y_0;
             
-            phi = tanh( (0.25 - sqrt( (x -0.5)*(x - 0.5 ) + 0.5*(y - 0.5)*(y - 0.5) )  )/
-                        (sqrt(2.0) * (1.0/ grid.n_x) )  
-                        );
 
-            Rho = rho_gas + (phi - phi_l)/(phi_h - phi_l) *(rho_liq - rho_gas);
-
+            Rho = rho_gas;
+            if(x*x + y*y < R*R){
+                Rho = rho_liq;
+            }
             
 
             get_equi(Feq_node,lb,ux_node,uy_node,Rho);
@@ -265,6 +289,10 @@ void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,rea
 
         }
     }
+
+
+
+
 }
 
 

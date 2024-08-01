@@ -16,30 +16,31 @@ int main()
 
     int Nx = 256 ;int Ny = 256;
 
-
+    std::cout<<"Nx = "<<Nx<<"Ny = "<<Ny<<std::endl;
     Grid_N_C_2D<real> grid                  (Nx,Ny,1,9);
     Grid_N_C_2D<real> Force                 (Nx,Ny,1,2);
     Grid_N_C_2D<real> P_tensor              (Nx,Ny,1,4);   //4 components - 0-xx, 1xy, 2yx, 3yy
 
 
-    real c =1.0;
+
+    real c = 1.0;
     lbmD2Q9<real> d2q9(c);
     
     real cs = sqrt(d2q9.theta0);
     std::cout<<"theta   = "<<d2q9.theta0<<std::endl;
 
 
-    real dx = 1.0/Nx;
+    real dx = 0.5;
     real dt = dx/c;
+    std::cout<<"dx      = "<<dx<<std::endl;
 
 
-
-    real Re = 1000;
+    real Re = 200;
     std::cout<<"Re      = "<<Re<<std::endl;
-    real L  = Nx;
+    real L  = 128;
 
 
-    real u0 = 0.001;
+    real u0 = 0.05;
     std::cout<<"u0      = "<<u0<<std::endl;
 
 
@@ -70,32 +71,49 @@ int main()
     std::cout<<"beta    = "<<beta<<std::endl;
 
 
-
-    real Rho_mean = 1.0;
-    real rho_liq =  1.5819;
-    real rho_gas =  0.46344;
-
+    // real Rho_mean = 1.0;
+    // real rho_liq =  1.5819;
+    // real rho_gas =  0.46344;
 
 
 
+    real rho_liq =  1.36861;
+    real rho_gas =  0.688708;
 
-    real TbyTc = 0.95  ;       ;
+
+
+    real TbyTc = 0.98  ;       ;
     std::cout<<"T/T0    = "<<TbyTc<<std::endl;
-    real kappa = 0.006;
-    std::cout<<"kappa   = "<<kappa<<std::endl;
+    real kappa = 0.001;
+    std::cout<<"kappabar   = "<<kappa<<std::endl;
+    real sigma  = 0;
+
+
+
+    real rho_critical = 1.0, T_critical = d2q9.theta0/TbyTc ; 
+
+    real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;    //CS
+
+    // double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;   //VW
+
+    std::cout<<"kappa   ="<<kappa<<std::endl;
+
+
 
 
 
     //fixed ------------------------------Main code--------------------------//
-    // initialization(grid,d2q9,Rho_mean, rho_liq, rho_gas);
-    // initialization_equilibrium_profile_y(grid,d2q9,rho_liq, rho_gas);
+    //  initialization(grid,d2q9,Rho_mean, rho_liq, rho_gas);
+    //  initialization_equilibrium_profile_y(grid,d2q9,rho_liq, rho_gas);
 
-    // initialization_ellipse(grid,d2q9,rho_liq, rho_gas); // with bubble on top domain
+    //  initialization_ellipse(grid,d2q9,rho_liq, rho_gas); // with bubble on top domain
 
-    initialization_circle(grid,d2q9,rho_liq, rho_gas);
+    real R = 0.20;
+    std::cout<<"circle Radius: "<<R*Nx<<std::endl;
+    initialization_circle(grid,d2q9,rho_liq, rho_gas,R);
 
 
-    std::string name="Result_k_06";
+    std::string name="Result_256_0.20_yes";
     print_vtk(d2q9,grid,0.0,u0,TbyTc,kappa,Force,P_tensor,name, dx ,dt);
 
 
@@ -108,9 +126,12 @@ int main()
     std::cout<<"Simulation time "<< sim_time<<std::endl;
 
 
-    for(int t = 1; t <=200000;t++){
+    for(int t = 1; t <=50000;t++){
 
-        collide (grid,d2q9,beta,tau,TbyTc,kappa, t,Force,P_tensor,g, dx, dt);
+
+        collide (grid,d2q9,beta,tau,TbyTc, a, b,kappa,sigma, t,Force,P_tensor,g, dx, dt);
+
+
 
         Periodic_left_Right(grid);
         Periodic_top_bottom(grid);
@@ -127,8 +148,9 @@ int main()
         advection_D2Q9(grid);
 
 
-        if(t%2000== 0){
-            std::cout<<t<<" ";
+        if(t%500== 0 ){
+            std::cout<<t<<"     =";
+            std::cout<<"sigma "<<sigma<<std::endl;
             printMass(grid);
             print_vtk(d2q9,grid,t,u0,TbyTc,kappa,Force,P_tensor,name,dx,dt);
         }
