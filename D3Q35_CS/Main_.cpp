@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx = 128 ;int Ny = 128; int Nz = 2;
+    int Nx = 256 ;int Ny = 256; int Nz = 2;
     std::cout<<" domain size Nx =  "<<Nx<<" Ny = "<<Ny<<" Nz = "<< Nz<< std::endl;
 
     Grid_N_C_3D<real> grid            (Nx,Ny,Nz,2,35);
@@ -33,7 +33,8 @@ int main()
 
 
     
-    real dx = 1.0;
+    real dx = 64.0/Nx;
+    std::cout<<"dx      = "<<dx<<std::endl;
     real dt = dx/c;
 
 
@@ -68,7 +69,7 @@ int main()
 
     real beta = 1.0/(2.0*tauNdim + 1.0);
     std::cout<<"beta    = "<<beta<<std::endl;
-    
+
 
 
 
@@ -80,9 +81,15 @@ int main()
 
     real TbyTc = 0.954  ;       ;
     std::cout<<"T/T0    = "<<TbyTc<<std::endl;
-    real kappa = 0.0001;
+    real kappa = 0.01*dx*dx;
     std::cout<<"kappa   = "<<kappa<<std::endl;
     real sigma = 0.0;
+
+    
+    real rho_critical = 1.0, T_critical = d3q35.theta0/TbyTc ; 
+    real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;
+
+
 
     //:fixed ------------------------------Main code--------------------------//
     
@@ -100,18 +107,18 @@ int main()
 
 
 
-    std::string name="Result_128_0.20_0.0001";
+    std::string name="Result_256_0.20_0.01";
 
-    print_vtk(d3q35,grid,0,u0,TbyTc,kappa,Force,name, dx, dt);
+    print_vtk(d3q35,grid,0,u0,TbyTc,kappa, a, b,Force,name, dx, dt);
     printMass(grid);
     int sim_time = 20*Nx/u0;
 
     std::cout<<"simulation started and Simulation time "<< sim_time<<std::endl;
     
-    for(int t = 1; t <=50000;t++){
+    for(int t = 1; t <=25000;t++){
 
         // Periodic(grid);
-        collide (grid,d3q35,d3q15,beta,tau,TbyTc,kappa,sigma, t,Force,g, dx, dt);
+        collide (grid,d3q35,d3q15,beta,tau,TbyTc,kappa, a, b,sigma, t,Force,g, dx, dt);
 
         Periodic_x(grid);
         Periodic_y(grid);
@@ -130,7 +137,7 @@ int main()
             std::cout<<sigma<<std::endl;
             std::cout<<t<<" ";
             printMass(grid);
-            print_vtk(d3q35,grid,t,u0,TbyTc,kappa,Force,name, dx, dt);
+            print_vtk(d3q35,grid,t,u0,TbyTc,kappa, a, b,Force,name, dx, dt);
         }
     }
 

@@ -52,7 +52,7 @@ void printdata(lbmD3Q35<T1> &lbModel,  Grid_N_C_3D<T> &gridLB,  int step, real u
 }
 
 template<typename T, typename T1>
-void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real theta,real kappa, Grid_N_C_3D<T> &Force,const std::string &name, real dx , real dt)
+void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real theta,real kappa,real a, real b, Grid_N_C_3D<T> &Force,const std::string &name, real dx , real dt)
 {
     T u1,u2,u3,u4,um, rho1,rho2,del=0.05;
 
@@ -141,6 +141,29 @@ void print_vtk(lbmD3Q35<T1> &lb,  Grid_N_C_3D<T> &grid,  int step, real u0, real
             }
         }
     }
+
+
+        int i = grid.n_x/2; int j = grid.n_y/2; int k = grid.n_z/2;
+        // std::cout<<"i = "<<i <<"j = "<<j<<std::endl;
+        get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force, dx, dt);
+
+        real eta = rho1*b/4.0;           
+        real pnid_in = (rho1*lb.theta0*(1.0 + eta + eta* eta - eta*eta*eta) )/pow(1.0 - eta,  3.0)  - 
+                                a * rho1*rho1 ;
+
+
+  
+        i = grid.n_x - 5;  j = grid.n_y - 5; k = grid.n_z - 5;
+        // std::cout<<"i = "<<i <<"j = "<<j<<std::endl;
+
+        get_moments_Node(grid,lb,u1, u2,u3, rho1, i,j,k,Force, dx, dt);
+
+        eta = rho1*b/4.0;           
+        real pnid_out = (rho1*lb.theta0*(1.0 + eta + eta* eta - eta*eta*eta) )/pow(1.0 - eta,  3.0)  - 
+                                a * rho1*rho1 ;
+
+
+        std::cout<<"Delta P     = "<<pnid_in - pnid_out<<std::endl;
 
 
 

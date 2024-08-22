@@ -18,7 +18,7 @@
 
 template<typename T, typename T1>
 void collide(Grid_N_C_3D<T> &grid,
-            lbmD3Q35<T1> &lb35, lbmD3Q15<T1> &lb15,real beta,real tau, real TbyTc, real kappa, real &sigma, int t,Grid_N_C_3D<T> &Force, real g, real dx, real dt ){
+            lbmD3Q35<T1> &lb35, lbmD3Q15<T1> &lb15,real beta,real tau, real TbyTc, real kappa,real a, real b, real &sigma, int t,Grid_N_C_3D<T> &Force, real g, real dx, real dt ){
 
     Grid_N_C_3D<T>  laplacian_pnidplusfnidbyrho     (grid.n_x,grid.n_y,grid.n_z,2,1);
     Grid_N_C_3D<T>  rho                             (grid.n_x,grid.n_y,grid.n_z,2,1);   
@@ -45,8 +45,6 @@ void collide(Grid_N_C_3D<T> &grid,
     sigma = 0;
 
 
-    real rho_critical = 1.0, T_critical = lb35.theta0/TbyTc ; 
-    real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;
 
     Multiphase_terms(grid,Force,rho,pnid, fnid, munid,laplacian_rho,laplacian_fnid,gradient_rho,lb35, lb15,TbyTc,kappa,sigma, a, b,dx, dt );
 
@@ -643,7 +641,7 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_me
     //             z = ((real)k)/ grid.n_z - z_0;
 
 
-    //             phi = tanh( (0.2 - sqrt( (x -0.5)*(x - 0.5 ) + 1.0*(y - 0.5)*(y - 0.5) )  )/
+    //             phi = tanh( (0.2 - sqrt( (x -0.5)*(x - 0.5 ) + 0.5*(y - 0.5)*(y - 0.5) )  )/
     //                     (sqrt(2.0) * (2.0/ grid.n_x) )  
     //                     );
 
@@ -727,6 +725,73 @@ void initialization_2D_droplet(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_me
 
 
 
+template<typename T, typename T1>
+void initialization_2D_droplet_sharp_initialization(Grid_N_C_3D<T> &grid,lbmD3Q35<T1> &lb,real Rho_mean,real rho_liq, real rho_gas, real R ){
+
+    real Feq_node[35] = {0},Feq_cell[35] = {0},Rho = 0.0;
+    real x,y,z
+           ;    ///distance between nodes 
+    
+    real  x_0 = 0;
+    real  y_0 = 0;
+    real  z_0 = 0;
+
+    real phi =  0;
+
+    real phi_l = -1.0;
+    real phi_h = +1.0;
+
+    real ux_node = 0., uy_node = 0, uz_node = 0;
+ 
+    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
+        for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+            for(int k = 0 + grid.noghost; k < grid.n_z_node - (grid.noghost); k++){
+
+                real  x_0 = 0.5;
+                real  y_0 = 0.5;
+                real  z_0 = 0.5;
+
+                x = ((real)i)/ grid.n_x - x_0;
+                y = ((real)j)/ grid.n_y - y_0;
+                z = ((real)k)/ grid.n_z - z_0;
+
+                
+                Rho = rho_gas;
+                    if(x*x + y*y < R*R){
+                        Rho = rho_liq;
+                    }
+
+				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+				for (int dv = 0; dv<grid.d_v; dv++)
+					grid.Node(i,j,k,dv) = Feq_node[dv];
+
+				x = ((real)i+0.5)/ grid.n_x - x_0;
+                y = ((real)j+0.5)/ grid.n_y - y_0;
+                z = ((real)k+0.5)/ grid.n_z - z_0;
+
+
+                Rho = rho_gas;
+                    if(x*x + y*y < R*R){
+                        Rho = rho_liq;
+                    }
+
+				get_equi(Feq_node,lb,ux_node,uy_node,uz_node,Rho);
+
+				for (int dv = 0; dv<grid.d_v; dv++)
+					grid.Cell(i,j,k,dv) = Feq_node[dv];
+
+            }
+        }
+    }
+
+
+
+
+
+
+
+}
 template<typename T>
 void printMass(Grid_N_C_3D<T> &grid){    
     real a = 0;

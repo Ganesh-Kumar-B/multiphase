@@ -181,11 +181,12 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
                 // //>------
                 real kappa_node = kappa;
 
-                // kappa_node = kappa - (1.0/2.0)*dx*dx* lb35.theta0* (
-                //                                         -32.0 *b* lb35.theta0*(-16.0 + b* rho.Node(i,j,k)) / (pow(-4.0 + b*rho.Node(i,j,k) , 4.0))
-                //                                             - 2.0*a
-                //                                         ) 
-                //                                     ;
+                kappa_node = kappa - (1.0/2.0)*dt*dt* lb35.theta0* (
+                                                        -32.0 *b* lb35.theta0*(-16.0 + b* rho.Node(i,j,k)) / (pow(-4.0 + b*rho.Node(i,j,k) , 4.0))
+                                                            - 2.0*a
+                                                        ) 
+                                            ;
+                                            
                 sigma  = sigma + 0.5*kappa_node*(gradient_rho.Node(i,j,0)*gradient_rho.Node(i,j,0) + gradient_rho.Node(i,j,1)*gradient_rho.Node(i,j,1) + gradient_rho.Node(i,j,2)*gradient_rho.Node(i,j,2)) ;
 
 
@@ -201,11 +202,12 @@ void Multiphase_terms(Grid_N_C_3D<T> &grid, Grid_N_C_3D<T> &Force, Grid_N_C_3D<T
 
 
                 real kappa_cell = kappa;
-                // kappa_cell = kappa - (1.0/2.0)*dx*dx* lb35.theta0* (
-                //                                        -32.0 *b* lb35.theta0*(-16.0 + b* rho.Cell(i,j,k)) / (pow(-4.0 + b*rho.Cell(i,j,k) , 4.0))
-                //                                             - 2.0*a
-                //                                         ) 
-                //                                     ;
+
+                kappa_cell = kappa - (1.0/2.0)*dt*dt* lb35.theta0* (
+                                                       -32.0 *b* lb35.theta0*(-16.0 + b* rho.Cell(i,j,k)) / (pow(-4.0 + b*rho.Cell(i,j,k) , 4.0))
+                                                            - 2.0*a
+                                                        ) 
+                                                    ;
 
                 sigma  = sigma + 0.5*kappa_cell*(gradient_rho.Cell(i,j,0)*gradient_rho.Cell(i,j,0) + gradient_rho.Cell(i,j,1)*gradient_rho.Cell(i,j,1) + gradient_rho.Cell(i,j,2)*gradient_rho.Cell(i,j,2)) ;
 

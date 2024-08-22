@@ -1,6 +1,6 @@
 CXX = icpx
 CXXFLAGS = -fsycl -O3 -xCORE-AVX2
-TRASH = main hi.txt
+TRASH = main ./Result*
 .PHONY: clean
 
 all: build run
@@ -12,6 +12,6 @@ run:
 	time ./a.out
 
 clean:
-	$(RM) $(TRASH)
+	$(RM) -r $(TRASH)
 
 
