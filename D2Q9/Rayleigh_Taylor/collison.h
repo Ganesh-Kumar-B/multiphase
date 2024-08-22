@@ -31,7 +31,7 @@ void collide(Grid_N_C_2D<T> &grid,
 
 
 
-    real feq_Node[9] = {0},
+    real feq_Node[9] = {0}, feq_Node_delu[9] = {0},
 
     ux = 0, uy = 0;
 
@@ -58,7 +58,12 @@ void collide(Grid_N_C_2D<T> &grid,
             // Multiphase_Force_P(grid,rho,pnid, fnid, munid,laplacian_rho,P_tensor,lb9,Force,i,j, kappa, a, b, g,dx,dt );   //this gives force density
 
 
+            // ///// # for the exact difference
+            // get_moments_Node(grid, lb9,  ux, uy,Rho, i, j, Force,dx,dt );            //for the node
+            // get_equi(feq_Node_delu ,lb9, ux, uy, Rho);
+            // Force.Node(i,j,0) = 0; Force.Node(i,j,1) = 0; 
 
+            
             get_moments_Node(grid, lb9,  ux, uy,Rho, i, j, Force,dx,dt );            //for the node
             get_equi(feq_Node ,lb9, ux, uy, Rho);
 
@@ -71,8 +76,7 @@ void collide(Grid_N_C_2D<T> &grid,
             }
 
 
-
-    
+            
 
 
             // // // //> normal //from the he paper
@@ -83,6 +87,14 @@ void collide(Grid_N_C_2D<T> &grid,
             // }
 
 
+            // // //> exact difference
+            // for (int dv = 0; dv< grid.d_v; dv++){
+            //     grid.Node(i,j,dv) =  grid.Node(i,j,dv) + 2.0* beta*(feq_Node[dv] - grid.Node(i,j,dv))
+            //                          +   (feq_Node_delu[dv] - feq_Node[dv]) 
+            //                         ;
+
+           
+            // }
         }
     }
 
@@ -152,6 +164,8 @@ void initialization_equilibrium_profile_y(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,r
     for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
         for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
 
+
+
             x = ((real)i)/ grid.n_x - x_0;
             y = ((real)j)/ grid.n_x - y_0;
 
@@ -181,7 +195,7 @@ void initialization_equilibrium_profile_y(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,r
 
 template<typename T, typename T1>
 void initialization_ellipse(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,real rho_gas ){
-
+    
 	real Feq_node[9] = {0},Rho = 0.0;
     real x,y
            ;    ///distance between nodes 
@@ -225,7 +239,7 @@ void initialization_ellipse(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,re
 
 
 template<typename T, typename T1>
-void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,real rho_gas, real R ){
+void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,real rho_gas,real rho_c, real R ){
 
 	real Feq_node[9] = {0},Rho = 0.0;
     real x,y
@@ -236,6 +250,9 @@ void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,rea
 
     real phi_l = -1.0;
     real phi_h = +1.0;
+
+    rho_liq = rho_liq*rho_c;
+    rho_gas = rho_gas*rho_c;
 
     real phi;
     real ux_node = 0.0, uy_node = 0.0;
@@ -258,7 +275,6 @@ void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,rea
 
     //         for (int dv = 0; dv<grid.d_v; dv++)
     //             grid.Node(i,j,dv) = Feq_node[dv];
-
 
     //     }
     // }
@@ -296,6 +312,47 @@ void initialization_circle(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,rea
 }
 
 
+
+template<typename T, typename T1>
+void initialization_circle_with_tanh(Grid_N_C_2D<T> &grid,lbmD2Q9<T1> &lb,real rho_liq,real rho_gas, real rho_c, real R ){
+
+	real Feq_node[9] = {0},Rho = 0.0;
+    real x,y
+           ;    ///distance between nodes 
+    
+    real  x_0 = 0.5;
+    real  y_0 = 0.5;
+
+    rho_liq = rho_liq*rho_c;
+    rho_gas = rho_gas*rho_c;
+
+    real phi;
+    real ux_node = 0.0, uy_node = 0.0;
+
+
+
+    x_0 = 0.5, y_0 = 0.5;
+    for(int i = 0 + grid.noghost; i < grid.n_x_node - (grid.noghost); i++){
+        for(int j = 0 + grid.noghost; j < grid.n_y_node - (grid.noghost); j++){
+            
+            x = ((real)i)/ grid.n_x - x_0;
+            y = ((real)j)/ grid.n_x - y_0;
+            
+            real r = sqrt(x*x + y*y);
+            Rho = (rho_liq + rho_gas)*0.5 + (rho_liq - rho_gas)*0.5 * tanh(R*R - r*r) ;
+            
+            get_equi(Feq_node,lb,ux_node,uy_node,Rho);
+
+            for (int dv = 0; dv<grid.d_v; dv++)
+                grid.Node(i,j,dv) = Feq_node[dv];
+
+        }
+    }
+
+
+
+
+}
 
 
 template<typename T>

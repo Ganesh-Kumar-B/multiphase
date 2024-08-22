@@ -76,18 +76,16 @@ void Multiphase_terms(  Grid_N_C_2D<T> &grid, Grid_N_C_2D<T> &Force, Grid_N_C_2D
             // //>------
             real kappa_node = kappa;
 
-            kappa_node = kappa - (1.0/2.0)*dx*dx* lb9.theta0* (
-                                                    -32.0 *b* lb9.theta0*(-16.0 + b* rho.Node(i,j)) / (pow(-4.0 + b*rho.Node(i,j) , 4.0))
-                                                        - 2.0*a
-                                                    ) 
-                                                ;
-            
-            // std::cout<<(1.0/2.0)*dx*dx* lb9.theta0* (
+            sigma  = sigma + dx* 0.5*kappa_node*(gradient_rho.Node(i,j,0)*gradient_rho.Node(i,j,0) + gradient_rho.Node(i,j,1)*gradient_rho.Node(i,j,1)) ;
+
+            // kappa_node = kappa - (1.0/2.0)*dt*dt* lb9.theta0* (
             //                                         -32.0 *b* lb9.theta0*(-16.0 + b* rho.Node(i,j)) / (pow(-4.0 + b*rho.Node(i,j) , 4.0))
             //                                             - 2.0*a
-            //                                         ) <<std::endl;
+            //                                         ) 
+            //                                     ;
+            
+            // std::cout<<kappa_node <<"   "<<laplacian_rho.Node(i,j)<<"     " <<i<<"  "<<j<<std::endl;
 
-            sigma  = sigma + 0.5*kappa_node*(gradient_rho.Node(i,j,0)*gradient_rho.Node(i,j,0) + gradient_rho.Node(i,j,1)*gradient_rho.Node(i,j,1)) ;
 
             //Ptensor
 

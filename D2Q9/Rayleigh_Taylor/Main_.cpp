@@ -14,7 +14,7 @@
 int main()
 {
 
-    int Nx = 256 ;int Ny = 256;
+    int Nx = 128 ;int Ny = 128;
 
     std::cout<<"Nx = "<<Nx<<"Ny = "<<Ny<<std::endl;
     Grid_N_C_2D<real> grid                  (Nx,Ny,1,9);
@@ -30,14 +30,15 @@ int main()
     std::cout<<"theta   = "<<d2q9.theta0<<std::endl;
 
 
-    real dx = 0.5;
+
+    real L  = 128;
+    real dx = L/Nx ;
     real dt = dx/c;
     std::cout<<"dx      = "<<dx<<std::endl;
 
 
-    real Re = 200;
+    real Re = 100;
     std::cout<<"Re      = "<<Re<<std::endl;
-    real L  = 128;
 
 
     real u0 = 0.05;
@@ -77,24 +78,30 @@ int main()
 
 
 
-    real rho_liq =  1.36861;
-    real rho_gas =  0.688708;
+    // real rho_liq =  1.3165;
+    real rho_liq =  1.6165;
+    real rho_gas =  0.49947;
+    std::cout<<"rhol    = "<<rho_liq<<std::endl;
+    std::cout<<"rhog    = "<<rho_gas<<std::endl;
 
 
 
-    real TbyTc = 0.98  ;       ;
+
+
+    real TbyTc = 0.95  ;       ;
     std::cout<<"T/T0    = "<<TbyTc<<std::endl;
-    real kappa = 0.001;
-    std::cout<<"kappabar   = "<<kappa<<std::endl;
-    real sigma  = 0;
 
 
 
     real rho_critical = 1.0, T_critical = d2q9.theta0/TbyTc ; 
+    std::cout<<"rho_cri    = "<<rho_critical<<std::endl;
 
     real b = 0.521772/(rho_critical), a = b*T_critical/0.377332;    //CS
 
     // double b = 1.0/(3.0*rho_critical), a = b*T_critical*27.0/8.0;   //VW
+    real kappa = 0.001*a*dx*dx;
+    std::cout<<"kappabar   = "<<kappa<<std::endl;
+    real sigma  = 0;
 
     std::cout<<"kappa   ="<<kappa<<std::endl;
 
@@ -108,13 +115,14 @@ int main()
 
     //  initialization_ellipse(grid,d2q9,rho_liq, rho_gas); // with bubble on top domain
 
-    real R = 0.20;
-    std::cout<<"circle Radius: "<<R*Nx<<std::endl;
-    initialization_circle(grid,d2q9,rho_liq, rho_gas,R);
+    real R = 0.25;  // --> for the finite  
+    std::cout<<"circle Radius: "<<R*128<<std::endl;
+    initialization_circle(grid,d2q9,rho_liq, rho_gas,rho_critical,R);
+    // initialization_circle_with_tanh(grid,d2q9,rho_liq, rho_gas,rho_critical,R);
 
 
-    std::string name="Result_256_0.20_yes";
-    print_vtk(d2q9,grid,0.0,u0,TbyTc,kappa,Force,P_tensor,name, dx ,dt);
+    std::string name="Results_WC_128_35";
+    print_vtk(d2q9,grid,0.0,u0,TbyTc,kappa, a, b,Force,P_tensor,name, dx ,dt);
 
 
 
@@ -148,11 +156,11 @@ int main()
         advection_D2Q9(grid);
 
 
-        if(t%500== 0 ){
+        if(t%2000== 0 ){
             std::cout<<t<<"     =";
             std::cout<<"sigma "<<sigma<<std::endl;
             printMass(grid);
-            print_vtk(d2q9,grid,t,u0,TbyTc,kappa,Force,P_tensor,name,dx,dt);
+            print_vtk(d2q9,grid,t,u0,TbyTc,kappa, a,b,Force,P_tensor,name,dx,dt);
         }
     }
 
@@ -209,7 +217,12 @@ int main()
 
 
 
+//   real rho_liq =  1.6165;
+//     real rho_gas =  0.49947;
 
+
+
+//     real TbyTc = 0.95  ;  
 
 
 ;
