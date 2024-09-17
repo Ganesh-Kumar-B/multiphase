@@ -94,25 +94,38 @@ int main() {
     field2D<myReal, 4> fieldGrid(nX, nY, 1); 
 
     // defines grid to store rho and laplacianRho
-    field2D<myReal,2> denField(nX,nY,1);
-    field2D<myReal,1> muNid(nX,nY,1);
+    field2D<myReal,2> denField  (nX,nY,1);
+    field2D<myReal,1> muNid     (nX,nY,1);
+    field2D<myReal,1> FNid      (nX,nY,1);
 
-    double convectionTime = (double)nX / (u_ref); // based on ref length?
-    int iterations = 200000; (int)(15.0 * convectionTime / dt);
+
+    //defining the VdW paramters and temperature
+    myReal Tr = 0.95;
+    myReal rhoCritical = 1.0, TCritical = d2q9Model.theta0/Tr;
+    myReal b = 1.0/(3.0*rhoCritical), a = b*TCritical*27.0/8.0;
+    myReal kappa = 0.001;
+    myReal rhoLiq = 1.6165, rhoGas = 0.4997;
 
     // initializeTaylorGreen(lbmGrid,d2q9Model,u_ref);
-    initializeFEq(lbmGrid, d2q9Model);
+    // initializeFEq(lbmGrid, d2q9Model);
+    initialize1DInterface(lbmGrid, d2q9Model, rhoLiq, rhoGas);
+
     getHydroMomentGrid(d2q9Model, lbmGrid, fieldGrid);
 
     calculateMass(lbmGrid);
     printVtk(lbmGrid,d2q9Model,dt, forceField,0);
 
 
+
+    double convectionTime = (double)nX / (u_ref); // based on ref length?
+    int iterations = 200000; (int)(15.0 * convectionTime / dt);
+
     myReal time = 0.0;
 
     for (int timeStep = 1; timeStep <= iterations; timeStep++) {
 
-        calculateForce(lbmGrid, d2q9Model, forceField, g);
+        // calculateForce  (lbmGrid, d2q9Model, forceField, denField,muNid, a, b, kappa , dt);   // g_alpha = \rho * grad Munid 
+        calculateForce1 (lbmGrid, d2q9Model, forceField, denField,muNid,FNid, a, b, kappa , dt); // g_alpha = \rho * grad Munid
 
         collideD2Q9(lbmGrid, d2q9Model, beta, dt, forceField);
 

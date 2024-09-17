@@ -32,6 +32,12 @@
  * Last Change Date:
  *********************************************************************************************/
 
+#pragma once
+#include<iostream>
+#include<math.h>
+#include "D2Q9.h"
+
+
 // Base Version for understanding
 // no of operation is 9* (3*2+1)  +19 = 82  ops
 template <typename dataType1>
@@ -258,8 +264,8 @@ void advectionD2Q9(field2D<dataType, 9> &lbmGrid,
         {
             lbmGrid(i1, i2, d2q9Model.DV_ZERO_M) = lbmGrid(i1, i2 + 1, d2q9Model.DV_ZERO_M);
             lbmGrid(i1, i2, d2q9Model.DV_M_ZERO) = lbmGrid(i1 + 1, i2, d2q9Model.DV_M_ZERO);
-            lbmGrid(i1, i2, d2q9Model.DV_M_M) = lbmGrid(i1 + 1, i2 + 1, d2q9Model.DV_M_M);
-            lbmGrid(i1, i2, d2q9Model.DV_P_M) = lbmGrid(i1 - 1, i2 + 1, d2q9Model.DV_P_M);
+            lbmGrid(i1, i2, d2q9Model.DV_M_M)    = lbmGrid(i1 + 1, i2 + 1, d2q9Model.DV_M_M);
+            lbmGrid(i1, i2, d2q9Model.DV_P_M)    = lbmGrid(i1 - 1, i2 + 1, d2q9Model.DV_P_M);
         }
     }
 
@@ -269,8 +275,8 @@ void advectionD2Q9(field2D<dataType, 9> &lbmGrid,
         {
             lbmGrid(i1, i2, d2q9Model.DV_ZERO_P) = lbmGrid(i1, i2 - 1, d2q9Model.DV_ZERO_P);
             lbmGrid(i1, i2, d2q9Model.DV_P_ZERO) = lbmGrid(i1 - 1, i2, d2q9Model.DV_P_ZERO);
-            lbmGrid(i1, i2, d2q9Model.DV_M_P)   = lbmGrid(i1 + 1, i2 - 1, d2q9Model.DV_M_P);
-            lbmGrid(i1, i2, d2q9Model.DV_P_P)   = lbmGrid(i1 - 1, i2 - 1, d2q9Model.DV_P_P);
+            lbmGrid(i1, i2, d2q9Model.DV_M_P)    = lbmGrid(i1 + 1, i2 - 1, d2q9Model.DV_M_P);
+            lbmGrid(i1, i2, d2q9Model.DV_P_P)    = lbmGrid(i1 - 1, i2 - 1, d2q9Model.DV_P_P);
         }
     }
 }
@@ -296,6 +302,88 @@ void getDenField(field2D<dataType, 9> &lbmGrid,
     denField.makePeriodicX();
     denField.makePeriodicY();
 }
+
+template <typename dataType>
+void getLaplacianDenField(field2D<dataType, 9> &lbmGrid,
+                 lbmD2Q9<dataType> &d2q9Model,
+                 dataType dt,
+                 field2D<dataType, 2> denField){
+
+    dataType coeff = 2.0/(dt*dt*d2q9Model.theta0);
+
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+            denField(i1, i2, 1) = 0.0;
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++)
+                denField(i1, i2, 1) += d2q9Model.wt[dv]*denField(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 ); 
+            
+            denField(i1, i2, 1) = coeff*(denField(i1, i2, 1) - denField(i1 ,i2 , 0));
+
+            // std::cout<<denField(i1,i2,1) <<std::endl;
+
+        }
+    }
+
+    denField.makePeriodicX();
+    denField.makePeriodicY();
+}
+
+
+
+
+
+template <typename dataType>
+void getMuNid(field2D<dataType, 9> &lbmGrid,
+                 lbmD2Q9<dataType> &d2q9Model,
+                 field2D<dataType, 2> denField,
+                 field2D<dataType, 1> muNid, dataType a, dataType b, dataType kappa ,dataType dt){
+
+    
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+            muNid(i1 ,i2 , 0)  = -d2q9Model.theta0*log(1.0 - denField(i1,i2,0) *b );
+            muNid(i1 ,i2 , 0) += denField(i1,i2,0)*b*d2q9Model.theta0/(1.0 - denField(i1,i2,0) *b ) ;
+            muNid(i1 ,i2 , 0) -= 2.0*denField(i1,i2,0) *a;
+            muNid(i1 ,i2 , 0) -= kappa*denField(i1,i2,1);
+        }
+    }
+
+    muNid.makePeriodicX();
+    muNid.makePeriodicY();
+   
+}
+
+
+
+template <typename dataType>
+void getFNid(field2D<dataType, 9> &lbmGrid,
+                 lbmD2Q9<dataType> &d2q9Model,
+                 field2D<dataType, 2> denField,
+                 field2D<dataType, 1> FNid, dataType a, dataType b, dataType kappa ,dataType dt){
+
+    
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+            FNid(i1 ,i2 , 0)  = -a*denField(i1,i2,0)*denField(i1,i2,0) ;
+            FNid(i1 ,i2 , 0) -= denField(i1,i2,0)*d2q9Model.theta0*log(1.0 - denField(i1,i2,0) *b );
+        }
+    }
+
+    FNid.makePeriodicX();
+    FNid.makePeriodicY();
+   
+}
+
 
 template <typename dataType>
 void collideD2Q9(field2D<dataType, 9> &lbmGrid,
@@ -355,8 +443,8 @@ void initializeTaylorGreen(field2D<dataType, 9> &lbmGrid,
 
             dataType uX = u_ref * sin(x) * cos(y), uY = u_ref * -cos(x) * sin(y);
 
-            // getFEqIsoSecond(d2q9Model, rho, uX, uY);
-            getFEq(d2q9Model, rho, uX, uY);
+            getFEqIsoSecond(d2q9Model, rho, uX, uY);
+            // getFEq(d2q9Model, rho, uX, uY);
 
             for (int dv = 0; dv < d2q9Model.dvN; dv++)
             {
@@ -387,36 +475,127 @@ void initializeFEq(field2D<dataType, 9> &lbmGrid,
     }
 }
 
+
+
 template <typename dataType>
-void calculateForce(field2D<dataType, 9> &lbmGrid,
-                    lbmD2Q9<dataType> &d2q9Model,
-                    field2D<dataType, 2> &forceField,
-                    dataType g)
+void initialize1DInterface(field2D<dataType, 9> &lbmGrid,
+                   lbmD2Q9<dataType> &d2q9Model, dataType rhoLiq, dataType rhoGas)
 {
+
+    dataType rho = 1.0, uX = 0.0, uY = 0.0;
 
     for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
     {
         for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
         {
 
-            // Calculate generalized coordinates x and y
-            dataType x = static_cast<dataType>(i1) / lbmGrid.n1;
-            dataType y = static_cast<dataType>(i2) / lbmGrid.n2;
+            dataType x = (static_cast<dataType>(i1) / static_cast<dataType>(lbmGrid.n1));
+            dataType y = (static_cast<dataType>(i2) / static_cast<dataType>(lbmGrid.n1));
+            
+            dataType radius = sqrt(x*x + y*y);
+            rho = (rhoLiq + rhoGas)*0.5 + (rhoLiq - rhoGas)*0.5*tanh(x); 
 
-            // Apply force based on the value of y
-            if (y >= 0.5)
-            {
-                // Upper half
-                forceField(i1, i2, 0) = g;
-            }
-            else
-            {
-                // Lower half
-                forceField(i1, i2, 0) = -1.0 * g;
-            }
+
+            getFEqIsoSecond(d2q9Model, rho, uX, uY);
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++)
+                lbmGrid(i1, i2, dv) = d2q9Model.fEq[dv];
         }
     }
 }
+
+template <typename dataType>
+void calculateForce(field2D<dataType, 9> &lbmGrid,
+                    lbmD2Q9<dataType> &d2q9Model,
+                    field2D<dataType, 2> &forceField,
+                    field2D<dataType, 2> &denField,
+                    field2D<dataType, 1> &muNid,
+                    dataType a, dataType b, dataType kappa,dataType dt  )
+{
+
+    getDenField(lbmGrid,d2q9Model,dt,denField);
+    getLaplacianDenField(lbmGrid,d2q9Model,dt,denField);
+    getMuNid(lbmGrid,d2q9Model,denField,muNid,a, b, kappa,dt );
+
+    dataType coeff = 1.0/(dt*d2q9Model.theta0);
+
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+
+            forceField(i1,i2,0) = 0.0;
+            forceField(i1,i2,1) = 0.0;
+            for (int dv = 0; dv < d2q9Model.dvN; dv++){
+                forceField(i1,i2,0) += d2q9Model.wt[dv]*d2q9Model.cX[dv]*muNid(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 );
+                forceField(i1,i2,1) += d2q9Model.wt[dv]*d2q9Model.cY[dv]*muNid(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 ); 
+            }
+            
+            forceField(i1,i2,0) = -coeff*(forceField(i1,i2,0));
+            forceField(i1,i2,1) = -coeff*(forceField(i1,i2,1));
+
+        }
+    }
+
+}
+
+
+template <typename dataType>
+void calculateForce1(field2D<dataType, 9> &lbmGrid,
+                    lbmD2Q9<dataType> &d2q9Model,
+                    field2D<dataType, 2> &forceField,
+                    field2D<dataType, 2> &denField,
+                    field2D<dataType, 1> &muNid,
+                    field2D<dataType, 1> &FNid,
+
+                    dataType a, dataType b, dataType kappa,dataType dt  )
+{
+
+    getDenField(lbmGrid,d2q9Model,dt,denField);
+    getLaplacianDenField(lbmGrid,d2q9Model,dt,denField);
+    getMuNid(lbmGrid,d2q9Model,denField,muNid,a, b, kappa,dt );
+    getFNid(lbmGrid,d2q9Model,denField,FNid,a, b, kappa,dt );
+
+    dataType coeff = 1.0/(dt*d2q9Model.theta0);
+
+
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+            
+            dataType oneByRho = 1.0/denField(i1, i2, 0);
+
+            forceField(i1,i2,0) = 0.0;
+            forceField(i1,i2,1) = 0.0;
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++){
+                forceField(i1,i2,0) += d2q9Model.wt[dv]*d2q9Model.cX[dv]*muNid(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 );
+                forceField(i1,i2,1) += d2q9Model.wt[dv]*d2q9Model.cY[dv]*muNid(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 ); 
+            }
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++){
+                forceField(i1,i2,0) += oneByRho* muNid(i1, i2, 0)*d2q9Model.wt[dv]*d2q9Model.cX[dv]*denField(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 );
+                forceField(i1,i2,1) += oneByRho* muNid(i1, i2, 0)*d2q9Model.wt[dv]*d2q9Model.cY[dv]*denField(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 ); 
+            }
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++){
+                forceField(i1,i2,0) -= oneByRho*d2q9Model.wt[dv]*d2q9Model.cX[dv]*FNid(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 );
+                forceField(i1,i2,1) -= oneByRho*d2q9Model.wt[dv]*d2q9Model.cY[dv]*FNid(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 ); 
+            }
+            
+            forceField(i1,i2,0) = -coeff*(forceField(i1,i2,0));
+            forceField(i1,i2,1) = -coeff*(forceField(i1,i2,1));
+
+        }
+    }
+
+}
+
+
+
 
 template <typename dataType>
 void calculateMass(field2D<dataType, 9> &lbmGrid)
