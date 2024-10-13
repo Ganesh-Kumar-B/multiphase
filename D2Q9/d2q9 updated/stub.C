@@ -46,7 +46,7 @@ int main() {
     int nX(128);
     int nY(128);
     myReal latticeSpeed = 1.0;
-    myReal boxLength = nY;
+    myReal boxLength = 128.0;
     myReal dx = boxLength / nY;
     myReal dt = dx / latticeSpeed;
 
@@ -56,29 +56,23 @@ int main() {
     d2q9Model.setModelParameters();
 
     // Parameters related to flow
-    myReal knudsenNum = 0.001;
     myReal theta0 = d2q9Model.theta0;
-    // myReal tau = knudsenNum * boxLength / sqrt(theta0);
     myReal ReynoldsNumber = 200;
 
     myReal Ma = 0.05;
     myReal cs = std::sqrt(theta0);
-    myReal target_U0 = Ma * cs;
+    myReal uReference = Ma * cs;
 
-    myReal external_force = 8.0*target_U0*target_U0/(3.0*ReynoldsNumber*boxLength/2.0);
-    myReal kinematicVisc = target_U0 * boxLength/ReynoldsNumber;
+    myReal kinematicVisc = uReference * boxLength/ReynoldsNumber;
     myReal tau = kinematicVisc / theta0;
 
 
-    myReal g = external_force;
-    std::cout<<"g   "<<g<<std::endl;
-
-    myReal u_ref = (ReynoldsNumber * kinematicVisc) / boxLength;
-    std::cout << "u ref: " << u_ref << std::endl;
+    std::cout << "u ref: " << uReference << std::endl;
 
     myReal tauNdim = tau / dt;
 
     myReal beta = 1.0 / (2.0 * tauNdim + 1.0);
+    // myReal beta = 0.9;
     std::cout<<"beta    "<<beta<<std::endl;
 
     std::cout << "kinematic Viscosity = " << kinematicVisc << std::endl;
@@ -100,57 +94,55 @@ int main() {
 
 
     //defining the VdW paramters and temperature
-    myReal Tr = 0.95;
+    myReal Tr = 0.95;    
     myReal rhoCritical = 1.0, TCritical = d2q9Model.theta0/Tr;
     myReal b = 1.0/(3.0*rhoCritical), a = b*TCritical*27.0/8.0;
     myReal kappa = 0.001;
-    myReal rhoLiq = 1.6165, rhoGas = 0.4997;
+    myReal rhoLiq = 1.4691, rhoGas = 0.58017;
 
-    // initializeTaylorGreen(lbmGrid,d2q9Model,u_ref);
-    // initializeFEq(lbmGrid, d2q9Model);
-    initialize1DInterface(lbmGrid, d2q9Model, rhoLiq, rhoGas);
+
+    myReal radiusC = 0.30;
+    std::cout<<"Radius  :"<<radiusC<<std::endl;
+
+    // initializeTanhxRadial(lbmGrid, d2q9Model, rhoLiq, rhoGas,radiusC);
+    initializeCircle(lbmGrid, d2q9Model, rhoLiq, rhoGas,radiusC);
+
 
     getHydroMomentGrid(d2q9Model, lbmGrid, fieldGrid);
-
     calculateMass(lbmGrid);
-    printVtk(lbmGrid,d2q9Model,dt, forceField,0);
+
+    std::string name="Results";
+    printVtk(lbmGrid,d2q9Model,dt, forceField,name,Tr, a, b,0);
+    
 
 
-
-    double convectionTime = (double)nX / (u_ref); // based on ref length?
-    int iterations = 200000; (int)(15.0 * convectionTime / dt);
+    double convectionTime = (double)nX / (uReference); // based on ref length?
+    int iterations = 100000; (int)(15.0 * convectionTime / dt);
 
     myReal time = 0.0;
 
     for (int timeStep = 1; timeStep <= iterations; timeStep++) {
 
-        // calculateForce  (lbmGrid, d2q9Model, forceField, denField,muNid, a, b, kappa , dt);   // g_alpha = \rho * grad Munid 
-        calculateForce1 (lbmGrid, d2q9Model, forceField, denField,muNid,FNid, a, b, kappa , dt); // g_alpha = \rho * grad Munid
+        calculateForce  (lbmGrid, d2q9Model, forceField, denField,muNid, a, b, kappa , dt);             // g_alpha = \rho * grad Munid 
+        // calculateForce1 (lbmGrid, d2q9Model, forceField, denField,muNid,FNid, a, b, kappa , dt);     // g_alpha = \rho * grad Munid + Munid grad rho - grad f
 
         collideD2Q9(lbmGrid, d2q9Model, beta, dt, forceField);
 
         lbmGrid.makePeriodicX();
         lbmGrid.makePeriodicY();
 
-        // periodicX(lbmGrid, d2q9Model);
-        // periodicY(lbmGrid, d2q9Model);
-
         advectionD2Q9(lbmGrid, d2q9Model);
 
 
         time += dt;
-            if (timeStep % 5000 == 0) {
-            printVtk(lbmGrid, d2q9Model, dt, forceField, timeStep);
+        if (timeStep % 1000 == 0) {
+            printVtk(lbmGrid, d2q9Model, dt, forceField,name,Tr,a,b, timeStep);
             std::cout << " time " << timeStep << " ";
             calculateMass(lbmGrid);
             std::cout << "\n";
-            // printVelocityToTxt(lbmGrid, d2q9Model, timeStep);
         }
-        // if(timeStep % 2 == 0)
-        //     printEnstrophy(d2q9Model, lbmGrid, beta, dt, timeStep,
-        //     convectionTime, u_ref);
+        
     }
 
-    // printVelocityToTxt(lbmGrid, d2q9Model, iterations);
     return 0;
 }

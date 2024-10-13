@@ -58,7 +58,7 @@ public:
 
     // end point
     n1End = m1 + numPad - 1;
-    n2End = m1 + numPad - 1;
+    n2End = m2 + numPad - 1;
 
     // allocate memory
     // to be written: aligned version of it

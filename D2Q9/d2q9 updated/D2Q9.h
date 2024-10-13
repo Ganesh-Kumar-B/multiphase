@@ -37,6 +37,7 @@
 #include<math.h>
 #include<string.h>
 #include<fstream>
+#include"field2D.h"
  
 template<typename dataType>
 struct lbmD2Q9
@@ -77,6 +78,17 @@ struct lbmD2Q9
         wt[DV_P_M    ]    = wBCC;  cX[DV_P_M       ]  =   1.0;     cY[DV_P_M       ]   =  -1.0;
 
         
+        intcX[DV_ZERO_ZERO ]  =   0;     intcY[DV_ZERO_ZERO ]   =   0;
+        intcX[DV_P_ZERO    ]  =   1;     intcY[DV_P_ZERO    ]   =   0;
+        intcX[DV_M_ZERO    ]  =  -1;     intcY[DV_M_ZERO    ]   =   0;
+        intcX[DV_ZERO_P    ]  =   0;     intcY[DV_ZERO_P    ]   =   1;
+        intcX[DV_ZERO_M    ]  =   0;     intcY[DV_ZERO_M    ]   =  -1;
+        intcX[DV_P_P       ]  =   1;     intcY[DV_P_P       ]   =   1;
+        intcX[DV_M_P       ]  =  -1;     intcY[DV_M_P       ]   =   1;
+        intcX[DV_M_M       ]  =  -1;     intcY[DV_M_M       ]   =  -1;
+        intcX[DV_P_M       ]  =   1;     intcY[DV_P_M       ]   =  -1;
+
+
           
            for(int dv=0; dv<  dvN; dv++)  {
                      cX2[dv] =  cX[dv] *  cX[dv]  ;
@@ -112,7 +124,9 @@ struct lbmD2Q9
     dataType cX2[dvN];
     dataType cY2[dvN];
     dataType cSq[dvN];
-    
+    int intcX[dvN];
+    int intcY[dvN];
+
     //Lattice Parameters
     dataType latticeSpeed;
     dataType theta0; //Reference temperature

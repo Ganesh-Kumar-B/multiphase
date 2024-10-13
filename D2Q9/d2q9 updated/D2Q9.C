@@ -35,8 +35,10 @@
 #pragma once
 #include<iostream>
 #include<math.h>
-#include "D2Q9.h"
+#include"D2Q9.h"
 
+#include <sys/stat.h>
+#include <sys/types.h>
 
 // Base Version for understanding
 // no of operation is 9* (3*2+1)  +19 = 82  ops
@@ -288,9 +290,9 @@ void getDenField(field2D<dataType, 9> &lbmGrid,
                  field2D<dataType, 2> denField)
 {
     dataType rho;
-    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    for (int i2 = denField.n2Begin; i2 <= denField.n2End; i2++)
     {
-        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        for (int i1 = denField.n1Begin; i1 <= denField.n1End; i1++)
         {
             rho = 0.0;
             for (int dv = 0; dv < d2q9Model.dvN; dv++)
@@ -309,17 +311,19 @@ void getLaplacianDenField(field2D<dataType, 9> &lbmGrid,
                  dataType dt,
                  field2D<dataType, 2> denField){
 
+    ///-------laplacian (rho) = (2 /( dt^2 theta0)) *(Sum_i[w_i * rho(X + c_i*dt)]  - rho(X) )   
+
     dataType coeff = 2.0/(dt*dt*d2q9Model.theta0);
 
 
-    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    for (int i2 = denField.n2Begin; i2 <= denField.n2End; i2++)
     {
-        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        for (int i1 = denField.n1Begin; i1 <= denField.n1End; i1++)
         {
             denField(i1, i2, 1) = 0.0;
 
             for (int dv = 0; dv < d2q9Model.dvN; dv++)
-                denField(i1, i2, 1) += d2q9Model.wt[dv]*denField(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 ); 
+                denField(i1, i2, 1) += d2q9Model.wt[dv]*denField(i1 + d2q9Model.intcX[dv], i2 + d2q9Model.intcY[dv],0 ); 
             
             denField(i1, i2, 1) = coeff*(denField(i1, i2, 1) - denField(i1 ,i2 , 0));
 
@@ -344,14 +348,25 @@ void getMuNid(field2D<dataType, 9> &lbmGrid,
 
     
 
-    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    for (int i2 = muNid.n2Begin; i2 <= muNid.n2End; i2++)
     {
-        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        for (int i1 = muNid.n1Begin; i1 <= muNid.n1End; i1++)
         {
+
+            //kappa_correction
+            // dataType kappaCor = kappa - (1.0/2.0)*dt*dt*d2q9Model.theta0*( -2.0*a
+            //                                                     +(b*b* d2q9Model.theta0* denField(i1,i2,0))/(pow(1.0 - b*denField(i1,i2,0),2))
+            //                                                     +(b*d2q9Model.theta0)/(1.0- b*denField(i1,i2,0))
+            //                                                     );
+
+            dataType kappaCor = kappa;
+
+
+
             muNid(i1 ,i2 , 0)  = -d2q9Model.theta0*log(1.0 - denField(i1,i2,0) *b );
             muNid(i1 ,i2 , 0) += denField(i1,i2,0)*b*d2q9Model.theta0/(1.0 - denField(i1,i2,0) *b ) ;
             muNid(i1 ,i2 , 0) -= 2.0*denField(i1,i2,0) *a;
-            muNid(i1 ,i2 , 0) -= kappa*denField(i1,i2,1);
+            muNid(i1 ,i2 , 0) -= kappaCor*denField(i1,i2,1);
         }
     }
 
@@ -368,11 +383,10 @@ void getFNid(field2D<dataType, 9> &lbmGrid,
                  field2D<dataType, 2> denField,
                  field2D<dataType, 1> FNid, dataType a, dataType b, dataType kappa ,dataType dt){
 
-    
 
-    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    for (int i2 = FNid.n2Begin; i2 <= FNid.n2End; i2++)
     {
-        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        for (int i1 = FNid.n1Begin; i1 <= FNid.n1End; i1++)
         {
             FNid(i1 ,i2 , 0)  = -a*denField(i1,i2,0)*denField(i1,i2,0) ;
             FNid(i1 ,i2 , 0) -= denField(i1,i2,0)*d2q9Model.theta0*log(1.0 - denField(i1,i2,0) *b );
@@ -412,8 +426,8 @@ void collideD2Q9(field2D<dataType, 9> &lbmGrid,
 
             for (int dv = 0; dv < d2q9Model.dvN; dv++)
             {
-                dataType Fi = d2q9Model.wt[dv] * d2q9Model.oneByTheta0 *
-                                (forceField(i1, i2, 0) * d2q9Model.cX[dv] + forceField(i1, i2, 1) * d2q9Model.cY[dv]);
+                dataType Fi = d2q9Model.oneByTheta0*d2q9Model.fEq[dv] * (forceField(i1, i2, 0) * (d2q9Model.cX[dv] - uX) + forceField(i1, i2, 1) *( d2q9Model.cY[dv] - uY));
+
                 lbmGrid(i1, i2, dv) += 2.0 * beta * (d2q9Model.fEq[dv] - lbmGrid(i1, i2, dv)) + (1.0 - beta) * dt * Fi;
             }
         }
@@ -421,52 +435,29 @@ void collideD2Q9(field2D<dataType, 9> &lbmGrid,
 }
 
 
-template <typename dataType>
-void initializeTaylorGreen(field2D<dataType, 9> &lbmGrid,
-                           lbmD2Q9<dataType> &d2q9Model,
-                           dataType u_ref)
-{
 
-    dataType rho = 1.0;
-
-    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
-    {
-        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
-        {
-
-            dataType x =
-                (static_cast<dataType>(i1) / static_cast<dataType>(lbmGrid.n1)) * 2.0 *
-                M_PI;
-            dataType y =
-                (static_cast<dataType>(i2) / static_cast<dataType>(lbmGrid.n2)) * 2.0*
-                M_PI;
-
-            dataType uX = u_ref * sin(x) * cos(y), uY = u_ref * -cos(x) * sin(y);
-
-            getFEqIsoSecond(d2q9Model, rho, uX, uY);
-            // getFEq(d2q9Model, rho, uX, uY);
-
-            for (int dv = 0; dv < d2q9Model.dvN; dv++)
-            {
-                lbmGrid(i1, i2, dv) = d2q9Model.fEq[dv];
-            }
-        }
-    }
-}
 
 template <typename dataType>
-void initializeFEq(field2D<dataType, 9> &lbmGrid,
-                   lbmD2Q9<dataType> &d2q9Model)
+void initializeCircle(field2D<dataType, 9> &lbmGrid,
+                   lbmD2Q9<dataType> &d2q9Model, dataType rhoLiq, dataType rhoGas, dataType radiusC)
 {
 
     dataType rho = 1.0, uX = 0.0, uY = 0.0;
+    dataType x0 = 0.5, y0 = 0.5;
 
     for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
     {
         for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
         {
 
-            // getFEq(d2q9Model, rho,uX,uY);
+            dataType x = (static_cast<dataType>(i1) / static_cast<dataType>(lbmGrid.n1)) - x0;
+            dataType y = (static_cast<dataType>(i2) / static_cast<dataType>(lbmGrid.n1)) - y0;
+            
+            rho = rhoGas;
+            if(x*x + y*y < radiusC*radiusC){
+                rho = rhoLiq;
+            }
+
             getFEqIsoSecond(d2q9Model, rho, uX, uY);
 
             for (int dv = 0; dv < d2q9Model.dvN; dv++)
@@ -515,7 +506,7 @@ void calculateForce(field2D<dataType, 9> &lbmGrid,
 
     getDenField(lbmGrid,d2q9Model,dt,denField);
     getLaplacianDenField(lbmGrid,d2q9Model,dt,denField);
-    getMuNid(lbmGrid,d2q9Model,denField,muNid,a, b, kappa,dt );
+    getMuNid(lbmGrid,d2q9Model,denField,muNid,a, b, kappa,dt ); 
 
     dataType coeff = 1.0/(dt*d2q9Model.theta0);
 
@@ -528,8 +519,8 @@ void calculateForce(field2D<dataType, 9> &lbmGrid,
             forceField(i1,i2,0) = 0.0;
             forceField(i1,i2,1) = 0.0;
             for (int dv = 0; dv < d2q9Model.dvN; dv++){
-                forceField(i1,i2,0) += d2q9Model.wt[dv]*d2q9Model.cX[dv]*muNid(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 );
-                forceField(i1,i2,1) += d2q9Model.wt[dv]*d2q9Model.cY[dv]*muNid(i1 + (int)d2q9Model.cX[dv], i2 + (int)d2q9Model.cY[dv],0 ); 
+                forceField(i1,i2,0) += d2q9Model.wt[dv]*d2q9Model.cX[dv]*muNid(i1 + d2q9Model.intcX[dv], i2 + d2q9Model.intcY[dv],0 );
+                forceField(i1,i2,1) += d2q9Model.wt[dv]*d2q9Model.cY[dv]*muNid(i1 + d2q9Model.intcX[dv], i2 + d2q9Model.intcY[dv],0 ); 
             }
             
             forceField(i1,i2,0) = -coeff*(forceField(i1,i2,0));
@@ -551,7 +542,7 @@ void calculateForce1(field2D<dataType, 9> &lbmGrid,
 
                     dataType a, dataType b, dataType kappa,dataType dt  )
 {
-
+    
     getDenField(lbmGrid,d2q9Model,dt,denField);
     getLaplacianDenField(lbmGrid,d2q9Model,dt,denField);
     getMuNid(lbmGrid,d2q9Model,denField,muNid,a, b, kappa,dt );
@@ -614,17 +605,25 @@ void calculateMass(field2D<dataType, 9> &lbmGrid)
     std::cout << "total mass is: " << mass << std::endl;
 }
 
+
+
 template <typename dataType>
 void printVtk(field2D<dataType, 9> &lbmGrid,
               lbmD2Q9<dataType> &d2q9Model,
               dataType dt,
               field2D<dataType, 2> &forceField,
+              const std::string &name,
+              dataType thetaR,
+              dataType a,
+              dataType b,
               int timeStep)
 {
     std::ofstream file;
     char fileName[250];
-    dataType ux, uy;
-    sprintf(fileName, "./Result/velocity_%d.vtk", timeStep);
+    char foldername[250];
+    sprintf(foldername,"%s_%.2f",name.c_str(),thetaR);
+    mkdir(foldername,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    sprintf(fileName,"./%s_%.2f/velocity_%d.vtk",name.c_str(), thetaR,timeStep) ;
     file.open(fileName);
 
     file << "# vtk DataFile Version 3.0\nVelocity\nASCII\nDATASET "
@@ -656,6 +655,29 @@ void printVtk(field2D<dataType, 9> &lbmGrid,
         }
     }
 
+
+    file<<"SCALARS pressure double 1\nLOOKUP_TABLE default"<<std::endl;
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++)
+            {
+                d2q9Model.fTemp[dv] = lbmGrid(i1, i2, dv);
+            }
+
+            
+
+            getHydroMomentV1(d2q9Model, rho, uX, uY, theta);
+
+            dataType pressure = (rho*d2q9Model.theta0)/(1.0 - rho * b) - a * rho*rho;
+            file<<pressure<<std::endl;
+        }
+    }
+
+
     file << "VECTORS velocity double" << std::endl;
     for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
     {
@@ -673,6 +695,31 @@ void printVtk(field2D<dataType, 9> &lbmGrid,
             file << uX << " " << uY << " " << 0.0 << std::endl;
         }
     }
+
+    int i2 = lbmGrid.n2R/2, i1 = lbmGrid.n1R/2;
+    for (int dv = 0; dv < d2q9Model.dvN; dv++)
+    {
+        d2q9Model.fTemp[dv] = lbmGrid(i1, i2, dv);
+    }
+
+    getHydroMomentV1(d2q9Model, rho, uX, uY, theta);
+    dataType pIn = (rho*d2q9Model.theta0)/(1.0 - rho * b) - a * rho*rho;
+
+    i2 =  lbmGrid.n2End - 5; i1 = lbmGrid.n1End - 5;
+    for (int dv = 0; dv < d2q9Model.dvN; dv++)
+    {
+        d2q9Model.fTemp[dv] = lbmGrid(i1, i2, dv);
+    }
+
+    getHydroMomentV1(d2q9Model, rho, uX, uY, theta);
+    dataType pOut = (rho*d2q9Model.theta0)/(1.0 - rho * b) - a * rho*rho;
+
+
+    std::cout<<"pressure difference"<<pIn - pOut<<std::endl;
+
+
+
+
 }
 
 template <typename dataType>
@@ -714,4 +761,130 @@ void printVelocityToTxt(field2D<dataType, 9> &lbmGrid,
     }
 
     file.close(); // Close the file
+}
+
+
+
+
+template <typename dataType>
+void initializeTaylorGreen(field2D<dataType, 9> &lbmGrid,
+                           lbmD2Q9<dataType> &d2q9Model,
+                           dataType u_ref)
+{
+
+    dataType rho = 1.0;
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+
+            dataType x =
+                (static_cast<dataType>(i1) / static_cast<dataType>(lbmGrid.n1)) * 2.0 *
+                M_PI;
+            dataType y =
+                (static_cast<dataType>(i2) / static_cast<dataType>(lbmGrid.n2)) * 2.0*
+                M_PI;
+
+            dataType uX = u_ref * sin(x) * cos(y), uY = u_ref * -cos(x) * sin(y);
+
+            getFEqIsoSecond(d2q9Model, rho, uX, uY);
+            // getFEq(d2q9Model, rho, uX, uY);
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++)
+            {
+                lbmGrid(i1, i2, dv) = d2q9Model.fEq[dv];
+            }
+        }
+    }
+}
+
+template <typename dataType>
+void initializeFEq(field2D<dataType, 9> &lbmGrid,
+                   lbmD2Q9<dataType> &d2q9Model)
+{
+
+    dataType rho = 1.0, uX = 0.0, uY = 0.0;
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+
+            // getFEq(d2q9Model, rho,uX,uY);
+            getFEqIsoSecond(d2q9Model, rho, uX, uY);
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++)
+                lbmGrid(i1, i2, dv) = d2q9Model.fEq[dv];
+        }
+    }
+}
+
+
+
+template <typename dataType>
+void initializeTanhxRadial(field2D<dataType, 9> &lbmGrid,
+                   lbmD2Q9<dataType> &d2q9Model, dataType rhoLiq, dataType rhoGas, dataType radiusC)
+{
+
+    dataType rho = 1.0, uX = 0.0, uY = 0.0;
+    dataType x0 = 0.5, y0 = 0.5;
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+
+            dataType x = (static_cast<dataType>(i1) / static_cast<dataType>(lbmGrid.n1)) - x0;
+            dataType y = (static_cast<dataType>(i2) / static_cast<dataType>(lbmGrid.n1)) - y0;
+            
+            dataType radius = sqrt(x*x + y*y);
+            rho = (rhoLiq + rhoGas)*0.5 + (rhoLiq - rhoGas)*0.5 * tanh(radiusC*radiusC - radius*radius) ; 
+
+
+            getFEqIsoSecond(d2q9Model, rho, uX, uY);
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++)
+                lbmGrid(i1, i2, dv) = d2q9Model.fEq[dv];
+        }
+    }
+}
+
+
+
+template <typename dataType>
+void initializeEllipseWithTanhInterface(field2D<dataType, 9> &lbmGrid,
+                   lbmD2Q9<dataType> &d2q9Model, dataType rhoLiq, dataType rhoGas, dataType radiusC)
+{
+
+    dataType phiL = -1.0;
+    dataType phiH = +1.0;
+
+    dataType rho = 1.0, uX = 0.0, uY = 0.0;
+    dataType x0 = 0.0, y0 = 0.0;
+
+    for (int i2 = lbmGrid.n2Begin; i2 <= lbmGrid.n2End; i2++)
+    {
+        for (int i1 = lbmGrid.n1Begin; i1 <= lbmGrid.n1End; i1++)
+        {
+
+            dataType x = (static_cast<dataType>(i1) / static_cast<dataType>(lbmGrid.n1)) - x0;
+            dataType y = (static_cast<dataType>(i2) / static_cast<dataType>(lbmGrid.n1)) - y0;
+            
+            dataType phi = tanh( (0.25 - sqrt( (x -0.5)*(x - 0.5 ) + 0.5*(y - 0.5)*(y - 0.5) )  )/
+                            (sqrt(2.0) * (1.0/ lbmGrid.n1End) )  
+                            );
+
+            rho = rhoGas + (phi - phiL)/(phiH - phiL) *(rhoLiq - rhoGas);
+
+
+    
+
+
+            getFEqIsoSecond(d2q9Model, rho, uX, uY);
+
+            for (int dv = 0; dv < d2q9Model.dvN; dv++)
+                lbmGrid(i1, i2, dv) = d2q9Model.fEq[dv];
+        }
+    }
 }
